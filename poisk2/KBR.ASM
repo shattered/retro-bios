@@ -302,7 +302,7 @@ K29:                            ; TEST-RESET
 ;------ CTL-ALT-DEL HAS BEEN FOUND, DO I/O CLEANUP
 
         MOV     RESET_FLAG,1234H      ; SET FLAG FOR RESET FUNCTION
-;-------пюйуфлб ьлтбоб
+;-------РћР§РРЎРўРљРђ Р­РљР РђРќРђ
 ;        MOV     AX,3
 ;        INT     10H
 

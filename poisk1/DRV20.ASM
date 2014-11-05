@@ -1,75 +1,75 @@
 ;------------   INT 13      --------------- 
-;    **** χχοδ-χωχοδ ξα δισλετυ **** 
+;    **** Π’Π’ΠΠ”-Π’Π«Π’ΠΠ” ΠΠ Π”ΠΠ΅ΠΠ•ΠΆΠ£ **** 
  
-CONTROL_STAT   EQU    0C0H   ;ποςτ λοξτςομρ ι σοστορξιρ 
+CONTROL_STAT   EQU    0C0H   ;ΠΠΠ ΠΆ ΠΠΠΠΆΠ ΠΠ›Π― Π Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
 ;-------------------------------------------------- 
-; ξαϊξαώεξιε ςαϊςρδοχ ςεηιστςα (ποςτα) CONTROL_STAT 
+; ΠΠΠ—ΠΠΠ§Π•ΠΠΠ• Π ΠΠ—Π Π―Π”ΠΠ’ Π Π•Π“ΠΠ΅ΠΆΠ Π (ΠΠΠ ΠΆΠ) CONTROL_STAT 
 ;-------------------------------------------------- 
-;       D0 - ϊαξρτο 
-;       D1 - ιξδελσ ινπυμψσα, σοοτχ. DRQ 
-;       D2 - νη ξα 0 δοςοφλε ιμι τακναυτ πςι ϊπ ι ώτ 
-;       D3 - οϋιβλα CRC (λλ) 
-;       D4 - ξετ ϊαπισι, ξε ξακδεξ νασσιχ 
-;       D5 - νη ϊαηςυφεξα ιμι σο στιςαξιεν αν πςι ώτ 
-;            ιμι δοςοφλα ξε ξακδεξα πςι ϊπ 
-;       D6 - ϊαύιτα ϊαπισι 
-;       D7 - ξε ηοτοχ 
+;       D0 - Π—ΠΠΠ―ΠΆΠ 
+;       D1 - ΠΠΠ”Π•ΠΠ΅ ΠΠΠΠ£Π›Π¬Π΅Π, Π΅ΠΠΠΆΠ’. DRQ 
+;       D2 - ΠΠ“ ΠΠ 0 Π”ΠΠ ΠΠ–ΠΠ• ΠΠ›Π ΠΆΠΠ™ΠΠΠ£ΠΆ ΠΠ Π Π—Π Π Π§ΠΆ 
+;       D3 - ΠΠ¨ΠΠ‘ΠΠ CRC (ΠΠ) 
+;       D4 - ΠΠ•ΠΆ Π—ΠΠΠΠ΅Π, ΠΠ• ΠΠΠ™Π”Π•Π ΠΠΠ΅Π΅ΠΠ’ 
+;       D5 - ΠΠ“ Π—ΠΠ“Π Π£Π–Π•ΠΠ ΠΠ›Π Π΅Π Π΅ΠΆΠΠ ΠΠΠΠ•Π ΠΠ ΠΠ Π Π§ΠΆ 
+;            ΠΠ›Π Π”ΠΠ ΠΠ–ΠΠ ΠΠ• ΠΠΠ™Π”Π•ΠΠ ΠΠ Π Π—Π 
+;       D6 - Π—ΠΠ©ΠΠΆΠ Π—ΠΠΠΠ΅Π 
+;       D7 - ΠΠ• Π“ΠΠΆΠΠ’ 
 ;--------------------------------------------------- 
  
-TRACK          EQU    0C1H   ;ποςτ ξονεςα δοςοφλι 
-SECTOR         EQU    0C2H   ;ποςτ ξονεςα σελτοςα 
-DATA_F         EQU    0C3H   ;ποςτ δαξξωθ 
-;    ========   δμρ ώτεξιρ :  =========== 
+TRACK          EQU    0C1H   ;ΠΠΠ ΠΆ ΠΠΠΠ•Π Π Π”ΠΠ ΠΠ–ΠΠ 
+SECTOR         EQU    0C2H   ;ΠΠΠ ΠΆ ΠΠΠΠ•Π Π Π΅Π•ΠΠΆΠΠ Π 
+DATA_F         EQU    0C3H   ;ΠΠΠ ΠΆ Π”ΠΠΠΠ«Π¥ 
+;    ========   Π”Π›Π― Π§ΠΆΠ•ΠΠΠ― :  =========== 
 ; 
-MOTOR_EN       EQU    0C6H   ;σοστορξιε δχιηατεμρ <D0> 
-RD_INTRQ       EQU    0C4H   ;ώτεξιε INTRQ ιμι DRQ, D0-INTRQ 
+MOTOR_EN       EQU    0C6H   ;Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ• Π”Π’ΠΠ“ΠΠΆΠ•Π›Π― <D0> 
+RD_INTRQ       EQU    0C4H   ;Π§ΠΆΠ•ΠΠΠ• INTRQ ΠΠ›Π DRQ, D0-INTRQ 
 ; 
-;   =========   δμρ ϊαπισι :  =========== 
+;   =========   Π”Π›Π― Π—ΠΠΠΠ΅Π :  =========== 
 RG_C           EQU    0C4H   ;DDEN,HDSEL,FDRES, 
                              ;EN. MOTORS,DRIVES(SEL1,SEL2) 
 ;------------------------------------- 
-; ξαϊξαώεξιε ςαϊςρδοχ ςεηιστςα (ποςτα) RG_C 
+; ΠΠΠ—ΠΠΠ§Π•ΠΠΠ• Π ΠΠ—Π Π―Π”ΠΠ’ Π Π•Π“ΠΠ΅ΠΆΠ Π (ΠΠΠ ΠΆΠ) RG_C 
 ;------------------------------------- 
-;       D0 - DRIVE SELECT 0      -χωβος υστςοκστχα 0 
-;       D1 - DRIVE SELECT 1      -χωβος υστςοκστχα 1 
-;       D2 - MOTOR ON 0          -χλμ. νοτος 0 
-;       D3 - MOTOR ON 1          -χλμ. νοτος 1 
-;       D4 - SIDE (HEAD) SELECT  -χωβος στοςοξω (ηομοχλι) 
-;       D5 - DOUBLE DENSITY      -ςεφιν δχοκξοκ πμοτξοστι 
-;       D6 - FDC RESET           -σβςοσ δχοκξοκ πμοτξοστι 
-;       D7 - NO USE              -ξε ισπομψϊυετσρ 
+;       D0 - DRIVE SELECT 0      -Π’Π«Π‘ΠΠ  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 0 
+;       D1 - DRIVE SELECT 1      -Π’Π«Π‘ΠΠ  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 1 
+;       D2 - MOTOR ON 0          -Π’ΠΠ›. ΠΠΠΆΠΠ  0 
+;       D3 - MOTOR ON 1          -Π’ΠΠ›. ΠΠΠΆΠΠ  1 
+;       D4 - SIDE (HEAD) SELECT  -Π’Π«Π‘ΠΠ  Π΅ΠΆΠΠ ΠΠΠ« (Π“ΠΠ›ΠΠ’ΠΠ) 
+;       D5 - DOUBLE DENSITY      -Π Π•Π–ΠΠ Π”Π’ΠΠ™ΠΠΠ™ ΠΠ›ΠΠΆΠΠΠ΅ΠΆΠ 
+;       D6 - FDC RESET           -Π΅Π‘Π ΠΠ΅ Π”Π’ΠΠ™ΠΠΠ™ ΠΠ›ΠΠΆΠΠΠ΅ΠΆΠ 
+;       D7 - NO USE              -ΠΠ• ΠΠ΅ΠΠΠ›Π¬Π—Π£Π•ΠΆΠ΅Π― 
 ;------------------------------------- 
-MOTOR_ON       EQU    0C6H   ;χλμ. νοτοςα 
+MOTOR_ON       EQU    0C6H   ;Π’ΠΠ›. ΠΠΠΆΠΠ Π 
  
-; ========= ξ α   χ θ ο δ ε  ============= 
-;       αL      -λομιώεστχο σελτοςοχ δμρ ώτ-ϊπ 
-;       AH      -λοδ οπεςαγιι 
-;            0    -σβςοσ 
-;            1    -ώτεξιε σοστορξιρ 
-;            2    -ώτεξιε δαξξωθ 
-;            3    -ϊαπισψ δαξξωθ 
-;            4    -οπςοσ, πςοχεςλα 
-;            5    -ζοςνατιςοχαξιε 
+; ========= Π Π   Π’ Π¥ Π Π” Π•  ============= 
+;       ΠL      -ΠΠΠ›ΠΠ§Π•Π΅ΠΆΠ’Π Π΅Π•ΠΠΆΠΠ ΠΠ’ Π”Π›Π― Π§ΠΆ-Π—Π 
+;       AH      -ΠΠΠ” ΠΠΠ•Π ΠΠ¦ΠΠ 
+;            0    -Π΅Π‘Π ΠΠ΅ 
+;            1    -Π§ΠΆΠ•ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
+;            2    -Π§ΠΆΠ•ΠΠΠ• Π”ΠΠΠΠ«Π¥ 
+;            3    -Π—ΠΠΠΠ΅Π¬ Π”ΠΠΠΠ«Π¥ 
+;            4    -ΠΠΠ ΠΠ΅, ΠΠ ΠΠ’Π•Π ΠΠ 
+;            5    -Π¤ΠΠ ΠΠΠΆΠΠ ΠΠ’ΠΠΠΠ• 
 ;- - - - - - - - - - - - - - - - - - - - 
-;       DH      -ξονες ηομοχλι 
-;       DL      -ξονες υστςοκστχα (0-3) 
+;       DH      -ΠΠΠΠ•Π  Π“ΠΠ›ΠΠ’ΠΠ 
+;       DL      -ΠΠΠΠ•Π  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π (0-3) 
 ;- - - - - - - - - - - - - - - - - - - - 
-;       CH      -ξονες γιμιξδςα (δοςοφλι) 
-;       σL      -ξονες σελτοςα (1-17) 
+;       CH      -ΠΠΠΠ•Π  Π¦ΠΠ›ΠΠΠ”Π Π (Π”ΠΠ ΠΠ–ΠΠ) 
+;       Π΅L      -ΠΠΠΠ•Π  Π΅Π•ΠΠΆΠΠ Π (1-17) 
 ;- - - - - - - - - - - - - - - - - - - - 
-;       ES:BX   -αδςεσ βυζεςα 
+;       ES:BX   -ΠΠ”Π Π•Π΅ Π‘Π£Π¤Π•Π Π 
 ; 
-; ============== λοδω ϊαχεςϋεξιρ ================== 
-BAD_CMD         EQU    1        ;ξεχεςξαρ λοναξδα (αξ>5,DL>3) 
+; ============== ΠΠΠ”Π« Π—ΠΠ’Π•Π Π¨Π•ΠΠΠ― ================== 
+BAD_CMD         EQU    1        ;ΠΠ•Π’Π•Π ΠΠΠ― ΠΠΠΠΠΠ”Π (ΠΠ>5,DL>3) 
 BAD_ADDR_MARK   EQU    2        ; 
-WRITE_PROTECT   EQU    3        ;ϊαύιτα ϊαπισι 
+WRITE_PROTECT   EQU    3        ;Π—ΠΠ©ΠΠΆΠ Π—ΠΠΠΠ΅Π 
 RECORD_NOT_FND  EQU    4        ; 
 BAD_DMA         EQU    8        ; 
 DMA_BOUNDARY    EQU    9        ; 
 BAD_CRC         EQU    10H      ; 
-BAD_FDC         EQU    20H      ;ξετ σβςοσα 
+BAD_FDC         EQU    20H      ;ΠΠ•ΠΆ Π΅Π‘Π ΠΠ΅Π 
 BAD_SEEK        EQU    40H      ; 
-TIME_OUT        EQU    80H      ;τακν-αυτ 
+TIME_OUT        EQU    80H      ;ΠΆΠΠ™Π-ΠΠ£ΠΆ 
 ;=================================================== 
 ; 
 SEEK_OK         EQU    0 
@@ -85,13 +85,13 @@ WORD_DDEN       EQU   0
 data    segment at 40h 
         ORG     3EH 
 ;---------------------------------------------------------------------------- 
-; DISKETTE DATA AREAS     - οβμαστψ δαξξωθ 
+; DISKETTE DATA AREAS     - ΠΠ‘Π›ΠΠ΅ΠΆΠ¬ Π”ΠΠΠΠ«Π¥ 
 ;---------------------------------------------------------------------------- 
 SEEK_STATUS            DB     ?             ;DRIVE RECALIBRATION STATUS 
 ;                                           BIT 3-0= DRIVE 3-0 NEEDS RECAL 
 ;                                           BEFORE NEXT SEEK IF BIT IS=0 
-INT_FLAG               EQU    080H          ;ζμαη ξαμιώιρ πςεςωχαξιρ 
-MOTOR_STATUS           DB     ?             ;σοστορξιε δχιηατεμρ 
+INT_FLAG               EQU    080H          ;Π¤Π›ΠΠ“ ΠΠΠ›ΠΠ§ΠΠ― ΠΠ Π•Π Π«Π’ΠΠΠΠ― 
+MOTOR_STATUS           DB     ?             ;Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ• Π”Π’ΠΠ“ΠΠΆΠ•Π›Π― 
 ;                             BIT 3-0 = DRIVE 3-0 IS CURRENTLY RUNNING 
 ;                             BIT 7 = CURRENT OPERATION IS A WRITE, 
 ;                             REQUIRES DELAY 
@@ -100,17 +100,17 @@ MOTOR_WAIT             EQU    37            ;TWO SECONDS OF COUNTS FOR
 ;                                           MOTOR TURN OFF 
 MOTOR_COUNT            DB      ? 
 ; 
-DISKETTE_STATUS        DB     ?             ;βακτ λοδα χοϊχςατα 
+DISKETTE_STATUS        DB     ?             ;Π‘ΠΠ™ΠΆ ΠΠΠ”Π Π’ΠΠ—Π’Π ΠΠΆΠ 
 ; 
 NEC_STATUS             LABEL BYTE              ;7 BYTE 
 TRACK_PTR              DB     2 DUP(?) 
 
 
 
-STEP_MULT              DB     ?             ;πςιϊξαλ 1 -υστς 0,1 
-                                            ;        2 -υστς 2,3 
-DRIVER_N               DB     0             ;ξονες αλτιχξοηο υστς-χα 
-                       DB     3 DUP (?)       ;ςεϊεςχ 
+STEP_MULT              DB     ?             ;ΠΠ ΠΠ—ΠΠΠ 1 -Π£Π΅ΠΆΠ  0,1 
+                                            ;        2 -Π£Π΅ΠΆΠ  2,3 
+DRIVER_N               DB     0             ;ΠΠΠΠ•Π  ΠΠΠΆΠΠ’ΠΠΠ“Π Π£Π΅ΠΆΠ -Π’Π 
+                       DB     3 DUP (?)       ;Π Π•Π—Π•Π Π’ 
 
 
 
@@ -122,22 +122,22 @@ data ends
 code    segment 
         assume cs:code,ds:data 
  
-; λαςτςιδφξαρ σιηξατυςα 
+; ΠΠΠ ΠΆΠ ΠΠ”Π–ΠΠΠ― Π΅ΠΠ“ΠΠΠΆΠ£Π Π 
  
         DW      0AA55H 
         DB      03H 
  
 DISK_INIT    PROC   FAR 
  
-; π/π ιξιγιαμιϊαγιι δισλοχοηο αδαπτεςα 
+; Π/Π ΠΠΠΠ¦ΠΠΠ›ΠΠ—ΠΠ¦ΠΠ Π”ΠΠ΅ΠΠΠ’ΠΠ“Π ΠΠ”ΠΠΠΆΠ•Π Π 
  
         MOV     AX,0H 
         MOV     DS,AX 
         MOV     BX,410H 
         MOV     AX,DS:[BX] 
-        OR      AX,01H            ;δÒΑΚΧΕÒ ηνδ ΠÒΙΣΥΤΣΤΧΥΕΤ 
+        OR      AX,01H            ;Π”Ρ€Π°ΠΉΠ²ΠµΡ€ Π“ΠΠ” ΠΏΡ€ΠΈΡΡƒΡ‚ΡΡ‚Π²ΡƒΠµΡ‚ 
         MOV     DS:[BX],AX 
-        MOV     BX,4CH            ;υΣΤΑΞΟΧΙΤΨ ΧΕΛΤΟÒ INT13H 
+        MOV     BX,4CH            ;Π£ΡΡ‚Π°Π½ΠΎΠ²ΠΈΡ‚Ρ Π²ΠµΠΊΡ‚ΠΎΡ€ INT13H 
         LEA     AX,DISKETTE_IO 
         MOV     DS:[BX],AX 
         PUSH    CS 
@@ -147,65 +147,65 @@ DISK_INIT    PROC   FAR
 DISK_INIT    ENDP 
  
 DISKETTE_IO  PROC  FAR 
-        STI                     ;ςαϊςεϋεξιε πςεςωχαξικ 
-        PUSH    BX              ;σοθςαξεξιε ςεηιστςοχ 
+        STI                     ;Π ΠΠ—Π Π•Π¨Π•ΠΠΠ• ΠΠ Π•Π Π«Π’ΠΠΠΠ™ 
+        PUSH    BX              ;Π΅ΠΠ¥Π ΠΠΠ•ΠΠΠ• Π Π•Π“ΠΠ΅ΠΆΠ ΠΠ’ 
         PUSH    CX 
         PUSH    DS 
         PUSH    SI 
         PUSH    DI 
         PUSH    BP 
         PUSH    DX 
-        MOV     BP,SP           ;υλαϊατεμψ στελα 
-        MOV     SI,DATA         ;DATA-σεηνεξτ 
-        MOV     DS,SI           ;ιξιγιαγιρ DATA-σεηνεξτα 
-        PUSH    CX              ;σοθς. σθ 
+        MOV     BP,SP           ;Π£ΠΠΠ—ΠΠΆΠ•Π›Π¬ Π΅ΠΆΠ•ΠΠ 
+        MOV     SI,DATA         ;DATA-Π΅Π•Π“ΠΠ•ΠΠΆ 
+        MOV     DS,SI           ;ΠΠΠΠ¦ΠΠΠ¦ΠΠ― DATA-Π΅Π•Π“ΠΠ•ΠΠΆΠ 
+        PUSH    CX              ;Π΅ΠΠ¥Π . Π΅Π¥ 
         MOV     CH,1 
-        TEST    DL,2            ;υστςοκστχο 2,3? 
-        JNZ     STM             ;δα 
-        MOV     STEP_MULT,1     ;υστς0,υστς1 
+        TEST    DL,2            ;Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 2,3? 
+        JNZ     STM             ;Π”Π 
+        MOV     STEP_MULT,1     ;Π£Π΅ΠΆΠ 0,Π£Π΅ΠΆΠ 1 
         JMP     STM1 
-STM:    MOV     STEP_MULT,2     ;υστς2(*),υστς3(*) 
-        AND     DL,1            ;σοοτχ. χ 0,1 
-STM1:   MOV     CL,DL           ;ξονες υστςοκστχα 
-        ROL     CH,CL           ;σδχιη 1 πο ξονεςυ υστςοκστχα 
-        MOV     MOTOR_STATUS,CH ;βακτ ιξιγιαμιϊαγιι (ξονες υστςοκστχα) 
-        POP     CX              ;χοσσταξοχμεξιε σθ 
-        CALL    J1              ;ξα οπςεδεμεξιε λοδα λοναξδω 
-        MOV     AH,DISKETTE_STATUS ;λοδ ϊαχεςϋεξιρ 
-        CMP     AH,1            ;εσμι αξ=0,TO CF=1, ιξαώε CF=0 
-        CMC                     ;ιξχεςσιρ βιτα CF 
-        POP     DX              ;χοσσταξοχμεξιε ςεηιστςοχ 
+STM:    MOV     STEP_MULT,2     ;Π£Π΅ΠΆΠ 2(*),Π£Π΅ΠΆΠ 3(*) 
+        AND     DL,1            ;Π΅ΠΠΠΆΠ’. Π’ 0,1 
+STM1:   MOV     CL,DL           ;ΠΠΠΠ•Π  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 
+        ROL     CH,CL           ;Π΅Π”Π’ΠΠ“ 1 ΠΠ ΠΠΠΠ•Π Π£ Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 
+        MOV     MOTOR_STATUS,CH ;Π‘ΠΠ™ΠΆ ΠΠΠΠ¦ΠΠΠ›ΠΠ—ΠΠ¦ΠΠ (ΠΠΠΠ•Π  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π) 
+        POP     CX              ;Π’ΠΠ΅Π΅ΠΆΠΠΠΠ’Π›Π•ΠΠΠ• Π΅Π¥ 
+        CALL    J1              ;ΠΠ ΠΠΠ Π•Π”Π•Π›Π•ΠΠΠ• ΠΠΠ”Π ΠΠΠΠΠΠ”Π« 
+        MOV     AH,DISKETTE_STATUS ;ΠΠΠ” Π—ΠΠ’Π•Π Π¨Π•ΠΠΠ― 
+        CMP     AH,1            ;Π•Π΅Π›Π ΠΠ=0,TO CF=1, ΠΠΠΠ§Π• CF=0 
+        CMC                     ;ΠΠΠ’Π•Π Π΅ΠΠ― Π‘ΠΠΆΠ CF 
+        POP     DX              ;Π’ΠΠ΅Π΅ΠΆΠΠΠΠ’Π›Π•ΠΠΠ• Π Π•Π“ΠΠ΅ΠΆΠ ΠΠ’ 
         POP     BP 
         POP     DI 
         POP     SI 
         POP     DS 
         POP     CX 
         POP     BX 
-        RET     2               ;χοϊχςατ νεφσεηνεξτξωκ σ σοθς. ζμαηοχ 
+        RET     2               ;Π’ΠΠ—Π’Π ΠΠΆ ΠΠ•Π–Π΅Π•Π“ΠΠ•ΠΠΆΠΠ«Π™ Π΅ Π΅ΠΠ¥Π . Π¤Π›ΠΠ“ΠΠ’ 
 DISKETTE_IO ENDP 
  
-;========== οπςεδεμεξιε λοδα λοναξδω πο AH =========== 
-J1:     AND     MOTOR_STATUS,7FH  ;ιξδιλαγιρ δμρ ώτεξιρ (χ7=0) 
+;========== ΠΠΠ Π•Π”Π•Π›Π•ΠΠΠ• ΠΠΠ”Π ΠΠΠΠΠΠ”Π« ΠΠ AH =========== 
+J1:     AND     MOTOR_STATUS,7FH  ;ΠΠΠ”ΠΠΠΠ¦ΠΠ― Π”Π›Π― Π§ΠΆΠ•ΠΠΠ― (Π’7=0) 
         OR      AH,AH           ;AH = 0? 
-        JZ      DISK_RESET      ;δα, λοναξδα σβςοσα 
+        JZ      DISK_RESET      ;Π”Π, ΠΠΠΠΠΠ”Π Π΅Π‘Π ΠΠ΅Π 
         CMP     AH,6 
-        JNL     J3              ;ξεχεςξαρ λοναξδα (AH > 5) 
-        CMP     AH,1            ;ώτεξιε σοστορξιρ? 
-        JZ      DISK_STATUS     ;δα, (AH = 1) 
-        MOV     DISKETTE_STATUS,0   ;λοδ ϊαχεςϋεξιρ ξοςναμψξωκ (0) 
-        CMP     DL,2            ;υστςοκστχο 0,1? 
-        JAE     J3              ;ξετ (DL > 3) 
-        cmp     ah,5            ;αξ=5? 
-        jz      form            ;δα, ζοςνατιςοχαξιε 
-        CMP     AH,3            ;λοδ οπ-γιι ξε βομψϋε 3? 
-        JBE     RW_OPN          ;δα, ώτ/ϊπ οπεςαγιρ (AH = 2,AH = 3) 
-        JMP     VERIFY_OPN      ;οπ-γιρ πςοχεςλι (AH = 4) 
-J3:     MOV     DISKETTE_STATUS,BAD_CMD   ;λοδ οϋιβλι 
-        RET                     ;χοϊχςατ 
-form:   jmp     form1           ;ξα π/π ζοςνατιςοχαξιρ 
+        JNL     J3              ;ΠΠ•Π’Π•Π ΠΠΠ― ΠΠΠΠΠΠ”Π (AH > 5) 
+        CMP     AH,1            ;Π§ΠΆΠ•ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ―? 
+        JZ      DISK_STATUS     ;Π”Π, (AH = 1) 
+        MOV     DISKETTE_STATUS,0   ;ΠΠΠ” Π—ΠΠ’Π•Π Π¨Π•ΠΠΠ― ΠΠΠ ΠΠΠ›Π¬ΠΠ«Π™ (0) 
+        CMP     DL,2            ;Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 0,1? 
+        JAE     J3              ;ΠΠ•ΠΆ (DL > 3) 
+        cmp     ah,5            ;ΠΠ=5? 
+        jz      form            ;Π”Π, Π¤ΠΠ ΠΠΠΆΠΠ ΠΠ’ΠΠΠΠ• 
+        CMP     AH,3            ;ΠΠΠ” ΠΠ-Π¦ΠΠ ΠΠ• Π‘ΠΠ›Π¬Π¨Π• 3? 
+        JBE     RW_OPN          ;Π”Π, Π§ΠΆ/Π—Π ΠΠΠ•Π ΠΠ¦ΠΠ― (AH = 2,AH = 3) 
+        JMP     VERIFY_OPN      ;ΠΠ-Π¦ΠΠ― ΠΠ ΠΠ’Π•Π ΠΠ (AH = 4) 
+J3:     MOV     DISKETTE_STATUS,BAD_CMD   ;ΠΠΠ” ΠΠ¨ΠΠ‘ΠΠ 
+        RET                     ;Π’ΠΠ—Π’Π ΠΠΆ 
+form:   jmp     form1           ;ΠΠ Π/Π Π¤ΠΠ ΠΠΠΆΠΠ ΠΠ’ΠΠΠΠ― 
  
 ;=============================================================== 
-;       π/π ώτεξιρ σοστορξιρ (αξ=1) 
+;       Π/Π Π§ΠΆΠ•ΠΠΠ― Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― (ΠΠ=1) 
 ;=============================================================== 
 ; 
 ; 
@@ -215,560 +215,560 @@ DISK_STATUS:
 ; 
 ; 
 ;=============================================================== 
-;       π/π σβςοσα χ ισθοδξοε σοστορξιε (αξ=0) 
+;       Π/Π Π΅Π‘Π ΠΠ΅Π Π’ ΠΠ΅Π¥ΠΠ”ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ• (ΠΠ=0) 
 ;=============================================================== 
 DISK_RESET: 
-        PUSH    AX              ;σοθςαξεξιε ςεηιστςοχ 
+        PUSH    AX              ;Π΅ΠΠ¥Π ΠΠΠ•ΠΠΠ• Π Π•Π“ΠΠ΅ΠΆΠ ΠΠ’ 
         PUSH    SI 
         PUSH    CX 
         PUSH    DX 
-        CLI                     ;ϊαπςετ πςεςωχαξικ 
-        OUT     MOTOR_ON,AL     ;λ-χο σελτοςοχ-->C6 ????????????? 
-        MOV     SI,DX           ;ξονες υστςοκστχα 
-        AND     SI,1            ;χωδεμεξιε ξονεςα υστς. 
-        MOV     TRACK_PTR [SI],0   ;0 χ βακτ πο ξονεςυ υστς. 
-        MOV     CL,DL           ;ξονες υστςοκστχα 
-        MOV     AL,5            ;υστς. 0, νοτος 0 
-        SAL     AL,CL           ;σδχιη ξα λομιώεστχο πο ξονεςυ υστς. 
-        MOV     AH,DH           ;ξονες ηομοχλι (στοςοξω) 
-        AND     AH,1            ;χωδεμεξιε νμ. βιτα (0 ιμι 1) 
+        CLI                     ;Π—ΠΠΠ Π•ΠΆ ΠΠ Π•Π Π«Π’ΠΠΠΠ™ 
+        OUT     MOTOR_ON,AL     ;Π-Π’Π Π΅Π•ΠΠΆΠΠ ΠΠ’-->C6 ????????????? 
+        MOV     SI,DX           ;ΠΠΠΠ•Π  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 
+        AND     SI,1            ;Π’Π«Π”Π•Π›Π•ΠΠΠ• ΠΠΠΠ•Π Π Π£Π΅ΠΆΠ . 
+        MOV     TRACK_PTR [SI],0   ;0 Π’ Π‘ΠΠ™ΠΆ ΠΠ ΠΠΠΠ•Π Π£ Π£Π΅ΠΆΠ . 
+        MOV     CL,DL           ;ΠΠΠΠ•Π  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 
+        MOV     AL,5            ;Π£Π΅ΠΆΠ . 0, ΠΠΠΆΠΠ  0 
+        SAL     AL,CL           ;Π΅Π”Π’ΠΠ“ ΠΠ ΠΠΠ›ΠΠ§Π•Π΅ΠΆΠ’Π ΠΠ ΠΠΠΠ•Π Π£ Π£Π΅ΠΆΠ . 
+        MOV     AH,DH           ;ΠΠΠΠ•Π  Π“ΠΠ›ΠΠ’ΠΠ (Π΅ΠΆΠΠ ΠΠΠ«) 
+        AND     AH,1            ;Π’Π«Π”Π•Π›Π•ΠΠΠ• ΠΠ›. Π‘ΠΠΆΠ (0 ΠΠ›Π 1) 
         MOV     CL,4            ; 
-        ROL     AH,CL           ;ξονες ηομοχλι χ D4 
-        OR      AL,AH           ;(υστς+νοτος)+ηομοχλα 
-        OUT     RG_C,AL         ;σβςοσ .... δχοκξοκ πμοτξοστι 
-        OR      AL,40H          ;+ σβςοσ δχοκξοκ πμοτξοστι 
-        MOV     SEEK_STATUS,0   ;στατυσ ποπωτλι 0 
-        MOV     DISKETTE_STATUS,0  ;στατυσ σοστορξιρ 0 
-        OUT     RG_C,AL;        ;σο σβςοσον δχοκξοκ πμοτξοστι 
-        STI                     ;ςαϊςεϋιτψ πςεςωχαξιρ 
-        MOV     AH,2            ;2 ςαϊα 
-RETR:   XOR     CX,CX           ;σθ=0 
-RETR1:  PUSH    AX              ;σοθς. αθ 
-        IN      AL,CONTROL_STAT   ;ώτεξιε σοστορξιρ 
-        AND     AL,5            ;χωδεμεξιε βιτοχ 0 ι 2 
-        CMP     AL,4            ;ξοςναμψξο? (νη ξα δος 0) 
+        ROL     AH,CL           ;ΠΠΠΠ•Π  Π“ΠΠ›ΠΠ’ΠΠ Π’ D4 
+        OR      AL,AH           ;(Π£Π΅ΠΆΠ +ΠΠΠΆΠΠ )+Π“ΠΠ›ΠΠ’ΠΠ 
+        OUT     RG_C,AL         ;Π΅Π‘Π ΠΠ΅ .... Π”Π’ΠΠ™ΠΠΠ™ ΠΠ›ΠΠΆΠΠΠ΅ΠΆΠ 
+        OR      AL,40H          ;+ Π΅Π‘Π ΠΠ΅ Π”Π’ΠΠ™ΠΠΠ™ ΠΠ›ΠΠΆΠΠΠ΅ΠΆΠ 
+        MOV     SEEK_STATUS,0   ;Π΅ΠΆΠΠΆΠ£Π΅ ΠΠΠΠ«ΠΆΠΠ 0 
+        MOV     DISKETTE_STATUS,0  ;Π΅ΠΆΠΠΆΠ£Π΅ Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 0 
+        OUT     RG_C,AL;        ;Π΅Π Π΅Π‘Π ΠΠ΅ΠΠ Π”Π’ΠΠ™ΠΠΠ™ ΠΠ›ΠΠΆΠΠΠ΅ΠΆΠ 
+        STI                     ;Π ΠΠ—Π Π•Π¨ΠΠΆΠ¬ ΠΠ Π•Π Π«Π’ΠΠΠΠ― 
+        MOV     AH,2            ;2 Π ΠΠ—Π 
+RETR:   XOR     CX,CX           ;Π΅Π¥=0 
+RETR1:  PUSH    AX              ;Π΅ΠΠ¥Π . ΠΠ¥ 
+        IN      AL,CONTROL_STAT   ;Π§ΠΆΠ•ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
+        AND     AL,5            ;Π’Π«Π”Π•Π›Π•ΠΠΠ• Π‘ΠΠΆΠΠ’ 0 Π 2 
+        CMP     AL,4            ;ΠΠΠ ΠΠΠ›Π¬ΠΠ? (ΠΠ“ ΠΠ Π”ΠΠ  0) 
         POP     AX 
-        JZ      RESET_END       ;δα, λοξεγ σβςοσα 
-        LOOP    RETR1           ;ξετ, εστψ εύε "ϊαξρτο" 
+        JZ      RESET_END       ;Π”Π, ΠΠΠΠ•Π¦ Π΅Π‘Π ΠΠ΅Π 
+        LOOP    RETR1           ;ΠΠ•ΠΆ, Π•Π΅ΠΆΠ¬ Π•Π©Π• "Π—ΠΠΠ―ΠΆΠ" 
         DEC     AH              ; 
-        JNZ     RETR            ;ποπωτατψσρ 2 ςαϊα 
-        OR      DISKETTE_STATUS,BAD_FDC  ;ξετ σβςοσα δχ. πμοτξοστι 
-                                         ;χσε χςενρ "ϊαξρτο" 
-        MOV     TRACK_PTR [SI], 0FFH  ;FF χ βακτ πο ξονεςυ υστς. 
+        JNZ     RETR            ;ΠΠΠΠ«ΠΆΠΠΆΠ¬Π΅Π― 2 Π ΠΠ—Π 
+        OR      DISKETTE_STATUS,BAD_FDC  ;ΠΠ•ΠΆ Π΅Π‘Π ΠΠ΅Π Π”Π’. ΠΠ›ΠΠΆΠΠΠ΅ΠΆΠ 
+                                         ;Π’Π΅Π• Π’Π Π•ΠΠ― "Π—ΠΠΠ―ΠΆΠ" 
+        MOV     TRACK_PTR [SI], 0FFH  ;FF Π’ Π‘ΠΠ™ΠΆ ΠΠ ΠΠΠΠ•Π Π£ Π£Π΅ΠΆΠ . 
 RESET_END: 
-        POP     DX              ;χοσσταξοχμεξιε ςεηιστςοχ 
+        POP     DX              ;Π’ΠΠ΅Π΅ΠΆΠΠΠΠ’Π›Π•ΠΠΠ• Π Π•Π“ΠΠ΅ΠΆΠ ΠΠ’ 
         POP     CX 
         POP     SI 
         POP     AX 
         RET 
  
 ;=============================================================== 
-;       π/π ώτεξιρ-ϊαπισι 
+;       Π/Π Π§ΠΆΠ•ΠΠΠ―-Π—ΠΠΠΠ΅Π 
 ;=============================================================== 
 ; 
-RW_OPN: OR      AH,AH           ;λοδ αξ=2 (ώτεξιε)? 
-        JNP     J9              ;δα       ???????????????? 
-        OR      MOTOR_STATUS,80H   ;πςιϊξαλ ϊαπισι 
-J9:     CALL    SELECT_DRIVE    ;χωβος υστς.+νοτος+ηομοχλα 
-        CALL    TEST_WAIT       ;ϊαδεςφλα 
-        TEST    MOTOR_STATUS,80H   ;ϊαπισψ? 
-        JNZ     WRITE_DISK      ;δα 
-READ_DISK:                      ;ώτεξιε σ δισλα 
-        MOV     DL,0            ;σώετώιλ ώισμα σελτοςοχ 
+RW_OPN: OR      AH,AH           ;ΠΠΠ” ΠΠ=2 (Π§ΠΆΠ•ΠΠΠ•)? 
+        JNP     J9              ;Π”Π       ???????????????? 
+        OR      MOTOR_STATUS,80H   ;ΠΠ ΠΠ—ΠΠΠ Π—ΠΠΠΠ΅Π 
+J9:     CALL    SELECT_DRIVE    ;Π’Π«Π‘ΠΠ  Π£Π΅ΠΆΠ .+ΠΠΠΆΠΠ +Π“ΠΠ›ΠΠ’ΠΠ 
+        CALL    TEST_WAIT       ;Π—ΠΠ”Π•Π Π–ΠΠ 
+        TEST    MOTOR_STATUS,80H   ;Π—ΠΠΠΠ΅Π¬? 
+        JNZ     WRITE_DISK      ;Π”Π 
+READ_DISK:                      ;Π§ΠΆΠ•ΠΠΠ• Π΅ Π”ΠΠ΅ΠΠ 
+        MOV     DL,0            ;Π΅Π§Π•ΠΆΠ§ΠΠ Π§ΠΠ΅Π›Π Π΅Π•ΠΠΆΠΠ ΠΠ’ 
         PUSH    BX 
-        MOV     BL,SEEK_COMMAND ;ποισλ σ ϊαηςυϊλοκ νη ι πςοχ. 
-        CALL    SEEK            ;ποισλ 
+        MOV     BL,SEEK_COMMAND ;ΠΠΠΠ΅Π Π΅ Π—ΠΠ“Π Π£Π—ΠΠΠ™ ΠΠ“ Π ΠΠ ΠΠ’. 
+        CALL    SEEK            ;ΠΠΠΠ΅Π 
         POP     BX 
-        JC      ERR_OUT         ;βωμα οϋιβλα (CF=1) 
+        JC      ERR_OUT         ;Π‘Π«Π›Π ΠΠ¨ΠΠ‘ΠΠ (CF=1) 
 READ_LENG: 
-        CALL    READ            ;ξα π/π ώτεξιρ 
-        JC      ERR_OUT         ;βωμα οϋιβλα 
-        INC     DL              ;+1 λ σώετώιλυ σελτςοχ 
-        CALL    GET_SECTOR      ;υσταξοχλα ξα σμεδ. σελτος 
-        CMP     AL,DL           ;χσε σελτοςα? 
-        JNZ     READ_LENG       ;εύε ξετ 
-        RET                     ;ώτεξιε ϊαχεςϋεξο 
+        CALL    READ            ;ΠΠ Π/Π Π§ΠΆΠ•ΠΠΠ― 
+        JC      ERR_OUT         ;Π‘Π«Π›Π ΠΠ¨ΠΠ‘ΠΠ 
+        INC     DL              ;+1 Π Π΅Π§Π•ΠΆΠ§ΠΠΠ£ Π΅Π•ΠΠΆΠ ΠΠ’ 
+        CALL    GET_SECTOR      ;Π£Π΅ΠΆΠΠΠΠ’ΠΠ ΠΠ Π΅Π›Π•Π”. Π΅Π•ΠΠΆΠΠ  
+        CMP     AL,DL           ;Π’Π΅Π• Π΅Π•ΠΠΆΠΠ Π? 
+        JNZ     READ_LENG       ;Π•Π©Π• ΠΠ•ΠΆ 
+        RET                     ;Π§ΠΆΠ•ΠΠΠ• Π—ΠΠ’Π•Π Π¨Π•ΠΠ 
 ERR_OUT: 
-        MOV     AL,DL           ;ξονες σελτοςα σ οϋιβλοκ 
+        MOV     AL,DL           ;ΠΠΠΠ•Π  Π΅Π•ΠΠΆΠΠ Π Π΅ ΠΠ¨ΠΠ‘ΠΠΠ™ 
         RET 
 WRITE_DISK: 
-        MOV     DL,0            ;σώετώιλ ώισμα σελτοςοχ 
+        MOV     DL,0            ;Π΅Π§Π•ΠΆΠ§ΠΠ Π§ΠΠ΅Π›Π Π΅Π•ΠΠΆΠΠ ΠΠ’ 
         PUSH    BX 
-        MOV     BL,SEEK_COMMAND ;ποισλ σ ϊαηςυϊλοκ νη ι πςοχ. 
-        CALL    SEEK            ;ποισλ 
+        MOV     BL,SEEK_COMMAND ;ΠΠΠΠ΅Π Π΅ Π—ΠΠ“Π Π£Π—ΠΠΠ™ ΠΠ“ Π ΠΠ ΠΠ’. 
+        CALL    SEEK            ;ΠΠΠΠ΅Π 
         POP     BX 
-        JC      ERR_OUT         ;βωμα οϋιβλα 
+        JC      ERR_OUT         ;Π‘Π«Π›Π ΠΠ¨ΠΠ‘ΠΠ 
 WRITE_LENG: 
-        CALL    WRITE           ;ϊαπισψ 
-        JC      ERR_OUT         ;βωμα οϋιβλα 
-        INC     DL              ;+1 λ σώετώιλυ σελτοςοχ 
-        CALL    GET_SECTOR      ;υσταξοχλα ξα σμεδ. σελτος 
-        CMP     AL,DL           ;χσε σελτοςα? 
-        JNZ     WRITE_LENG      ;ξε ύε 
-        RET                     ;ϊαπισψ ϊαχεςϋεξα 
+        CALL    WRITE           ;Π—ΠΠΠΠ΅Π¬ 
+        JC      ERR_OUT         ;Π‘Π«Π›Π ΠΠ¨ΠΠ‘ΠΠ 
+        INC     DL              ;+1 Π Π΅Π§Π•ΠΆΠ§ΠΠΠ£ Π΅Π•ΠΠΆΠΠ ΠΠ’ 
+        CALL    GET_SECTOR      ;Π£Π΅ΠΆΠΠΠΠ’ΠΠ ΠΠ Π΅Π›Π•Π”. Π΅Π•ΠΠΆΠΠ  
+        CMP     AL,DL           ;Π’Π΅Π• Π΅Π•ΠΠΆΠΠ Π? 
+        JNZ     WRITE_LENG      ;ΠΠ• Π©Π• 
+        RET                     ;Π—ΠΠΠΠ΅Π¬ Π—ΠΠ’Π•Π Π¨Π•ΠΠ 
  
  
 ;========================================================================== 
-;       π/π ζοςνατιςοχαξιρ δισλετω δοςοφλι 
+;       Π/Π Π¤ΠΠ ΠΠΠΆΠΠ ΠΠ’ΠΠΠΠ― Π”ΠΠ΅ΠΠ•ΠΆΠ« Π”ΠΠ ΠΠ–ΠΠ 
 ;========================================================================== 
-FORM1:  CALL    SELECT_DRIVE    ;υστς+νοτος+ηομοχλα 
-        CALL    TEST_WAIT       ;χλμ νοτοςα 
+FORM1:  CALL    SELECT_DRIVE    ;Π£Π΅ΠΆΠ +ΠΠΠΆΠΠ +Π“ΠΠ›ΠΠ’ΠΠ 
+        CALL    TEST_WAIT       ;Π’ΠΠ› ΠΠΠΆΠΠ Π 
         PUSH    BX 
-        MOV     BL,SEEK_COMNOV  ;λοδ 10 -ποισλ 
-        CALL    SEEK            ;ξα π/π ποισλα 
+        MOV     BL,SEEK_COMNOV  ;ΠΠΠ” 10 -ΠΠΠΠ΅Π 
+        CALL    SEEK            ;ΠΠ Π/Π ΠΠΠΠ΅ΠΠ 
         POP     BX 
-        JC      ERR_FORM        ;εσμι βωμα οϋβ, CF=1 
+        JC      ERR_FORM        ;Π•Π΅Π›Π Π‘Π«Π›Π ΠΠ¨Π‘, CF=1 
         CALL    WRITE_TRACK 
 ERR_FORM: 
         MOV     AL,9 
         RET 
  
-;SUBROUTINE  WRITE TRACK FOR FORMAT-π/π ζοςνατιςοχαξιρ 
-;SI-TRACK,SIDE                     -SI δοςοφλα,στοςοξα 
-;DI-END NUMB SEC ,SIZE SEC         -DI λοξ.ξον.σελτοςα,ςαϊνες 
-;AH-SECTOR                         -AH σελτος 
-;ES-SIZE SEC IN BYTE               -ES ςαϊνες σελτοςα 
+;SUBROUTINE  WRITE TRACK FOR FORMAT-Π/Π Π¤ΠΠ ΠΠΠΆΠΠ ΠΠ’ΠΠΠΠ― 
+;SI-TRACK,SIDE                     -SI Π”ΠΠ ΠΠ–ΠΠ,Π΅ΠΆΠΠ ΠΠΠ 
+;DI-END NUMB SEC ,SIZE SEC         -DI ΠΠΠ.ΠΠΠ.Π΅Π•ΠΠΆΠΠ Π,Π ΠΠ—ΠΠ•Π  
+;AH-SECTOR                         -AH Π΅Π•ΠΠΆΠΠ  
+;ES-SIZE SEC IN BYTE               -ES Π ΠΠ—ΠΠ•Π  Π΅Π•ΠΠΆΠΠ Π 
 ; 
 WRITE_TRACK: 
         PUSH ES 
-        MOV     AX,ES:[BX]      ;σμοχο σ βυζεςα (δος., στος.) 
-        MOV     SI,512          ;ςαϊνες σελτοςα 
+        MOV     AX,ES:[BX]      ;Π΅Π›ΠΠ’Π Π΅ Π‘Π£Π¤Π•Π Π (Π”ΠΠ ., Π΅ΠΆΠΠ .) 
+        MOV     SI,512          ;Π ΠΠ—ΠΠ•Π  Π΅Π•ΠΠΆΠΠ Π 
         MOV     ES,SI           ; 
 WR_TRACK5: 
-        MOV     SI,AX           ;δοςοφλα, στοςοξα 
-        MOV     DI,10*256+2     ;λοξεώξωκ  σώετώιλ σελτοςοχ 
-        MOV     AH,01           ;ξαώαμψξωκ σώετώιλ σελτοςοχ 
-        CALL    WRITE_TR        ;ϊαπισψ ξα δοςοφλυ 
+        MOV     SI,AX           ;Π”ΠΠ ΠΠ–ΠΠ, Π΅ΠΆΠΠ ΠΠΠ 
+        MOV     DI,10*256+2     ;ΠΠΠΠ•Π§ΠΠ«Π™  Π΅Π§Π•ΠΆΠ§ΠΠ Π΅Π•ΠΠΆΠΠ ΠΠ’ 
+        MOV     AH,01           ;ΠΠΠ§ΠΠ›Π¬ΠΠ«Π™ Π΅Π§Π•ΠΆΠ§ΠΠ Π΅Π•ΠΠΆΠΠ ΠΠ’ 
+        CALL    WRITE_TR        ;Π—ΠΠΠΠ΅Π¬ ΠΠ Π”ΠΠ ΠΠ–ΠΠ£ 
         POP     ES 
         RET 
  
-       ;π/π ϊαπισι ζοςνατα ξα δοςοφλυ 
+       ;Π/Π Π—ΠΠΠΠ΅Π Π¤ΠΠ ΠΠΠΆΠ ΠΠ Π”ΠΠ ΠΠ–ΠΠ£ 
 WRITE_TR: 
-        MOV     DX,DATA_F       ;ποςτ δαξξωθ 
-        MOV     AL,WR_TRACK     ;λοδ "ϊαπισψ δοςοφλι" 
-        CLI                     ;ϊαπςετ πςεςωχαξικ 
-        OUT     CONTROL_STAT,AL ;λοναξδα "ϊπ δοςοφλι" 
-                        ;80 βακτ 4ε (πςοβεμ) 
+        MOV     DX,DATA_F       ;ΠΠΠ ΠΆ Π”ΠΠΠΠ«Π¥ 
+        MOV     AL,WR_TRACK     ;ΠΠΠ” "Π—ΠΠΠΠ΅Π¬ Π”ΠΠ ΠΠ–ΠΠ" 
+        CLI                     ;Π—ΠΠΠ Π•ΠΆ ΠΠ Π•Π Π«Π’ΠΠΠΠ™ 
+        OUT     CONTROL_STAT,AL ;ΠΠΠΠΠΠ”Π "Π—Π Π”ΠΠ ΠΠ–ΠΠ" 
+                        ;80 Π‘ΠΠ™ΠΆ 4Π• (ΠΠ ΠΠ‘Π•Π›) 
         MOV     CX,80 
 WLD01:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,4EH 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD01 
-                        ;12 βακτ 00 
+                        ;12 Π‘ΠΠ™ΠΆ 00 
         MOV     CX,12 
 WLD02:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         SUB     AL,AL 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD02 
-                        ;3 βακτα F6 (ϊπ σ2) 
+                        ;3 Π‘ΠΠ™ΠΆΠ F6 (Π—Π Π΅2) 
         MOV     CX,3 
 WLD03:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,0F6H 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD03 
-                        ;1 βακτ FC (ιν) 
+                        ;1 Π‘ΠΠ™ΠΆ FC (ΠΠ) 
         IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,0FCH 
         OUT     DX,AL          ;WRITE DATA 
-                        ;50 βακτ 4ε (1-κ πςοβεμ) 
+                        ;50 Π‘ΠΠ™ΠΆ 4Π• (1-Π™ ΠΠ ΠΠ‘Π•Π›) 
         MOV     CX,50 
 WLD05:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,4EH 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD05 
-                        ;11 βακτ 00 
+                        ;11 Π‘ΠΠ™ΠΆ 00 
         MOV     CX,11 
 WLD06:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         SUB     AL,AL 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD06 
-                        ;+1 βακτ 00 
+                        ;+1 Π‘ΠΠ™ΠΆ 00 
 WR_SEC: 
         IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         SUB     AL,AL 
         OUT     DX,AL          ;WRITE DATA 
-                        ;3 βακτα F5 (ϊπ α1) 
+                        ;3 Π‘ΠΠ™ΠΆΠ F5 (Π—Π Π1) 
         MOV     CX,3 
 WLD08:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,0F5H 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD08 
-                        ;1 βακτ FE (αδςεσξαρ νετλα) 
+                        ;1 Π‘ΠΠ™ΠΆ FE (ΠΠ”Π Π•Π΅ΠΠΠ― ΠΠ•ΠΆΠΠ) 
 WLD09:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,0FEH 
         OUT     DX,AL          ;WRITE DATA 
                                ;adress label 
-                        ;1 βακτ (ξονες δοςοφλι) 
+                        ;1 Π‘ΠΠ™ΠΆ (ΠΠΠΠ•Π  Π”ΠΠ ΠΠ–ΠΠ) 
         MOV     BX,SI 
 WLD0A:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,BL 
         OUT     DX,AL          ;WRITE DATA 
                                ;number track 
-                        ;1 βακτ (ξονες στοςοξω) 
+                        ;1 Π‘ΠΠ™ΠΆ (ΠΠΠΠ•Π  Π΅ΠΆΠΠ ΠΠΠ«) 
 WLD0B:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,BH 
         OUT     DX,AL          ;WRITE DATA 
                                ;number side 
-                        ;1 βακτ (ξονες σελτοςα) 
+                        ;1 Π‘ΠΠ™ΠΆ (ΠΠΠΠ•Π  Π΅Π•ΠΠΆΠΠ Π) 
 WLD0C:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,AH 
         OUT     DX,AL          ;WRITE DATA 
                                ;number sector 
-        INC     AH             ;+1 λ ξονεςυ σελτοςα 
-                        ;1 βακτ (δμιξα σελτοςα) 
-        MOV     BX,DI          ; <0α02> 
+        INC     AH             ;+1 Π ΠΠΠΠ•Π Π£ Π΅Π•ΠΠΆΠΠ Π 
+                        ;1 Π‘ΠΠ™ΠΆ (Π”Π›ΠΠΠ Π΅Π•ΠΠΆΠΠ Π) 
+        MOV     BX,DI          ; <0Π02> 
 WLD0D:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,BL 
         OUT     DX,AL          ;WRITE DATA 
                                 ;size sector 
-                        ;1 βακτ F7 (2 βακτα λλ) 
+                        ;1 Π‘ΠΠ™ΠΆ F7 (2 Π‘ΠΠ™ΠΆΠ ΠΠ) 
 WLD0E:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,0F7H 
         OUT     DX,AL          ;WRITE DATA 
                                  ;byte crc 
-                        ;22 βακτα 4ε (2-κ πςοβεμ) 
+                        ;22 Π‘ΠΠ™ΠΆΠ 4Π• (2-Π™ ΠΠ ΠΠ‘Π•Π›) 
         MOV     CX,22 
 WLD0F:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,4EH 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD0F 
-                        ;12 βακτ 00 
+                        ;12 Π‘ΠΠ™ΠΆ 00 
         MOV     CX,12 
 WLD10:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         SUB     AL,AL 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD10 
-                        ;3 βακτα F5 (ϊπ α1) 
+                        ;3 Π‘ΠΠ™ΠΆΠ F5 (Π—Π Π1) 
         MOV     CX,3 
 WLD11:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,0F5H 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD11 
-                        ;1 βακτ FB (αδς.νετλα δαξξωθ) 
-                        ;βεϊ στιςαξιρ 
+                        ;1 Π‘ΠΠ™ΠΆ FB (ΠΠ”Π .ΠΠ•ΠΆΠΠ Π”ΠΠΠΠ«Π¥) 
+                        ;Π‘Π•Π— Π΅ΠΆΠΠ ΠΠΠΠ― 
 WLD12:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,0FBH 
         OUT     DX,AL          ;WRITE DATA 
-                        ;πο ςαϊνεςυ σελτοςα <512> βακτ 4ε 
+                        ;ΠΠ Π ΠΠ—ΠΠ•Π Π£ Π΅Π•ΠΠΆΠΠ Π <512> Π‘ΠΠ™ΠΆ 4Π• 
         MOV     CX,ES 
 WLD13:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,4EH 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD13 
-                        ;1 βακτ F7 (2 βακτα λλ) 
+                        ;1 Π‘ΠΠ™ΠΆ F7 (2 Π‘ΠΠ™ΠΆΠ ΠΠ) 
 WLD14:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,0F7H 
         OUT     DX,AL          ;WRITE DATA 
-                        ;54 βακτα 4ε (3-κ πςοβεμ) 
+                        ;54 Π‘ΠΠ™ΠΆΠ 4Π• (3-Π™ ΠΠ ΠΠ‘Π•Π›) 
         MOV     CX,54 
 WLD15:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,4EH 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD15 
-                        ;11 βακτ 00 
+                        ;11 Π‘ΠΠ™ΠΆ 00 
         MOV     CX,11 
 WLD16:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         SUB     AL,AL 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD16 
-        CMP     AH,BH           ;χσε σελτοςα οτ 1-9 (αξ=10) 
-        JNZ     WR_SEC          ;ξετ εύε 
-                        ;598 βακτ 4ε (4-κ πςοβεμ) 
+        CMP     AH,BH           ;Π’Π΅Π• Π΅Π•ΠΠΆΠΠ Π ΠΠΆ 1-9 (ΠΠ=10) 
+        JNZ     WR_SEC          ;ΠΠ•ΠΆ Π•Π©Π• 
+                        ;598 Π‘ΠΠ™ΠΆ 4Π• (4-Π™ ΠΠ ΠΠ‘Π•Π›) 
         MOV     CX,598 
         MOV     BL,04EH 
 WLD17:  IN      AL,RD_INTRQ    ;WAIT FOR DRQ OR INTRQ 
         MOV     AL,BL 
         OUT     DX,AL          ;WRITE DATA 
         LOOP    WLD17 
-        IN      AL,CONTROL_STAT ;ώτεξιε σοστορξιρ 
+        IN      AL,CONTROL_STAT ;Π§ΠΆΠ•ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
         AND     AL,47H          ; 
-        JZ      WRDSK_END       ;ξοςναμψξο ϊαπισαξο 
-        TEST    AL,40H          ;ϊαύιτα ϊαπισι? 
-        MOV     AL,WRITE_PROTECT ;λοδ οϋιβλι "ϊαύιτα" 
-        JNZ     ERR_EX          ;δα, οϋιβλα 
-        MOV     AL,BAD_FDC      ;λοδ οβύεκ οϋιβλι 
+        JZ      WRDSK_END       ;ΠΠΠ ΠΠΠ›Π¬ΠΠ Π—ΠΠΠΠ΅ΠΠΠ 
+        TEST    AL,40H          ;Π—ΠΠ©ΠΠΆΠ Π—ΠΠΠΠ΅Π? 
+        MOV     AL,WRITE_PROTECT ;ΠΠΠ” ΠΠ¨ΠΠ‘ΠΠ "Π—ΠΠ©ΠΠΆΠ" 
+        JNZ     ERR_EX          ;Π”Π, ΠΠ¨ΠΠ‘ΠΠ 
+        MOV     AL,BAD_FDC      ;ΠΠΠ” ΠΠ‘Π©Π•Π™ ΠΠ¨ΠΠ‘ΠΠ 
 ERR_EX:                         ; 
-        OR      DISKETTE_STATUS,AL ;δοβαχμεξιε λοδα οϋιβλι 
-        STC                     ;CF=1 -- οϋιβλα 
+        OR      DISKETTE_STATUS,AL ;Π”ΠΠ‘ΠΠ’Π›Π•ΠΠΠ• ΠΠΠ”Π ΠΠ¨ΠΠ‘ΠΠ 
+        STC                     ;CF=1 -- ΠΠ¨ΠΠ‘ΠΠ 
 WRDSK_END: 
         RET 
  
 ;=============================================================== 
-;       υσταξοχλα ξα σμεδυΰύικ σελτος 
+;       Π£Π΅ΠΆΠΠΠΠ’ΠΠ ΠΠ Π΅Π›Π•Π”Π£Π®Π©ΠΠ™ Π΅Π•ΠΠΆΠΠ  
 ;=============================================================== 
 GET_SECTOR: 
         PUSH    AX 
-        INC     CL              ;υχεμιώεξιε ξονεςα σελτοςα 
+        INC     CL              ;Π£Π’Π•Π›ΠΠ§Π•ΠΠΠ• ΠΠΠΠ•Π Π Π΅Π•ΠΠΆΠΠ Π 
         MOV     AL,CL 
-        OUT     SECTOR,AL       ;χωχοδ ξονεςα σελτοςα 
+        OUT     SECTOR,AL       ;Π’Π«Π’ΠΠ” ΠΠΠΠ•Π Π Π΅Π•ΠΠΆΠΠ Π 
         POP     AX 
         RET 
  
 ;=============================================================== 
-;       π/π πςοχεςλι δοςοφλι 
+;       Π/Π ΠΠ ΠΠ’Π•Π ΠΠ Π”ΠΠ ΠΠ–ΠΠ 
 ;=============================================================== 
 VERIFY_OPN: 
-        CALL    SELECT_DRIVE    ;υστς+νοτος+ηομοχλα 
-        CALL    TEST_WAIT       ;χλμ. νοτοςα 
-        MOV     DL,0            ;σώ. σώιταξωθ σελτοςοχ 
+        CALL    SELECT_DRIVE    ;Π£Π΅ΠΆΠ +ΠΠΠΆΠΠ +Π“ΠΠ›ΠΠ’ΠΠ 
+        CALL    TEST_WAIT       ;Π’ΠΠ›. ΠΠΠΆΠΠ Π 
+        MOV     DL,0            ;Π΅Π§. Π΅Π§ΠΠΆΠΠΠ«Π¥ Π΅Π•ΠΠΆΠΠ ΠΠ’ 
         PUSH    BX 
-        MOV     BL,SEEK_COMMAND ;ποισλ σ ϊαηςυϊλοκ νη ι πςοχεςλοκ 
+        MOV     BL,SEEK_COMMAND ;ΠΠΠΠ΅Π Π΅ Π—ΠΠ“Π Π£Π—ΠΠΠ™ ΠΠ“ Π ΠΠ ΠΠ’Π•Π ΠΠΠ™ 
         CALL    SEEK 
         POP     BX 
-        JC      ERR_OUTL        ;βωμα οϋιβλα ποισλα 
+        JC      ERR_OUTL        ;Π‘Π«Π›Π ΠΠ¨ΠΠ‘ΠΠ ΠΠΠΠ΅ΠΠ 
 VERIFY_LENG: 
-        CALL    VERIFY          ;π/π πςοχεςλι ώτεξιεν 
-        JC      ERR_OUTL        ;βωμα οϋιβλα 
-        INC     DL              ;+1 σώιταξωκ σελτος 
-        CALL    GET_SECTOR      ;υσταξοχλα ξα σμεδυΰύικ σελτος 
-        CMP     AL,DL           ;χσε σελτοςα ? 
-        JNZ     VERIFY_LENG     ;ξετ εύε 
-        RET                     ;πςοχεςλα ϊαχεςϋεξα 
+        CALL    VERIFY          ;Π/Π ΠΠ ΠΠ’Π•Π ΠΠ Π§ΠΆΠ•ΠΠΠ•Π 
+        JC      ERR_OUTL        ;Π‘Π«Π›Π ΠΠ¨ΠΠ‘ΠΠ 
+        INC     DL              ;+1 Π΅Π§ΠΠΆΠΠΠ«Π™ Π΅Π•ΠΠΆΠΠ  
+        CALL    GET_SECTOR      ;Π£Π΅ΠΆΠΠΠΠ’ΠΠ ΠΠ Π΅Π›Π•Π”Π£Π®Π©ΠΠ™ Π΅Π•ΠΠΆΠΠ  
+        CMP     AL,DL           ;Π’Π΅Π• Π΅Π•ΠΠΆΠΠ Π ? 
+        JNZ     VERIFY_LENG     ;ΠΠ•ΠΆ Π•Π©Π• 
+        RET                     ;ΠΠ ΠΠ’Π•Π ΠΠ Π—ΠΠ’Π•Π Π¨Π•ΠΠ 
  
 VERIFY: PUSH    AX 
         PUSH    DX 
-        MOV     DX,DATA_F       ;ποςτ δαξξωθ 
-        MOV     AL,READ_COMMAND ;λοδ "ώτεξιε σελτοςα" 
-        CLI                     ;ϊαπςετ πςεςωχαξικ" 
-        OUT     CONTROL_STAT,AL ;λοναξδα 
+        MOV     DX,DATA_F       ;ΠΠΠ ΠΆ Π”ΠΠΠΠ«Π¥ 
+        MOV     AL,READ_COMMAND ;ΠΠΠ” "Π§ΠΆΠ•ΠΠΠ• Π΅Π•ΠΠΆΠΠ Π" 
+        CLI                     ;Π—ΠΠΠ Π•ΠΆ ΠΠ Π•Π Π«Π’ΠΠΠΠ™" 
+        OUT     CONTROL_STAT,AL ;ΠΠΠΠΠΠ”Π 
         NOP 
-VLOOP:  IN      AL,RD_INTRQ     ;ώτεξιε DRQ ιμι INTRQ 
-        SHR     AL,1            ;νμ. βιτ χ σF 
-        IN      AL,DX           ;ώτεξιε βακτα 
-        JC      VLOOP           ;σελτος εύε ξε χεσψ 
+VLOOP:  IN      AL,RD_INTRQ     ;Π§ΠΆΠ•ΠΠΠ• DRQ ΠΠ›Π INTRQ 
+        SHR     AL,1            ;ΠΠ›. Π‘ΠΠΆ Π’ Π΅F 
+        IN      AL,DX           ;Π§ΠΆΠ•ΠΠΠ• Π‘ΠΠ™ΠΆΠ 
+        JC      VLOOP           ;Π΅Π•ΠΠΆΠΠ  Π•Π©Π• ΠΠ• Π’Π•Π΅Π¬ 
         STI 
-        CALL    ERR_TABL        ;ζοςνιςοχαξιε λοδα ϊαχεςϋεξιρ 
+        CALL    ERR_TABL        ;Π¤ΠΠ ΠΠΠ ΠΠ’ΠΠΠΠ• ΠΠΠ”Π Π—ΠΠ’Π•Π Π¨Π•ΠΠΠ― 
         POP     DX 
         POP     AX 
-        RET                     ;χοϊχςατ 
+        RET                     ;Π’ΠΠ—Π’Π ΠΠΆ 
 ERR_OUTL: 
         JMP     ERR_OUT 
  
 ;=============================================================== 
-;       π/π ποισλα δοςοφλι 
+;       Π/Π ΠΠΠΠ΅ΠΠ Π”ΠΠ ΠΠ–ΠΠ 
 ;=============================================================== 
-SEEK:   PUSH    AX              ;σοθς. AX,DX 
+SEEK:   PUSH    AX              ;Π΅ΠΠ¥Π . AX,DX 
         PUSH    DX              ; 
         MOV     AH,0            ; 
-        MOV     AL,MOTOR_STATUS ;στατυσ νοτοςα 
-        AND     AL,7FH          ;βεϊ οπεςαγιι 
+        MOV     AL,MOTOR_STATUS ;Π΅ΠΆΠΠΆΠ£Π΅ ΠΠΠΆΠΠ Π 
+        AND     AL,7FH          ;Π‘Π•Π— ΠΠΠ•Π ΠΠ¦ΠΠ 
         SUB     AL,1            ;-1  ?????????????????????? 
-        MOV     SI,AX           ;σοθς.στατυσα 
-        CMP     TRACK_PTR [SI],0FFH  ;σβςοσ βωμ ξοςναμψξωκ? 
-        JNZ     SEEK0           ;δα 
-SEEK00: PUSH    AX              ;βωμα οϋιβλα σβςοσα 
-        CALL    SELECT_DRIVE    ;χωβος υστς+ηομοχλα 
-        PUSH    DX              ;Cοθς. DX 
-        MOV     DX,SI           ;στατυσ υστςοκστχα (ξονες) 
-        CALL    DISK_RESET      ;σβςοσ 
+        MOV     SI,AX           ;Π΅ΠΠ¥Π .Π΅ΠΆΠΠΆΠ£Π΅Π 
+        CMP     TRACK_PTR [SI],0FFH  ;Π΅Π‘Π ΠΠ΅ Π‘Π«Π› ΠΠΠ ΠΠΠ›Π¬ΠΠ«Π™? 
+        JNZ     SEEK0           ;Π”Π 
+SEEK00: PUSH    AX              ;Π‘Π«Π›Π ΠΠ¨ΠΠ‘ΠΠ Π΅Π‘Π ΠΠ΅Π 
+        CALL    SELECT_DRIVE    ;Π’Π«Π‘ΠΠ  Π£Π΅ΠΆΠ +Π“ΠΠ›ΠΠ’ΠΠ 
+        PUSH    DX              ;CΠΠ¥Π . DX 
+        MOV     DX,SI           ;Π΅ΠΆΠΠΆΠ£Π΅ Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π (ΠΠΠΠ•Π ) 
+        CALL    DISK_RESET      ;Π΅Π‘Π ΠΠ΅ 
         POP     DX 
         POP     AX 
-        CMP     DISKETTE_STATUS,0 ;στατυσ 0 (σβςοσ ξοςναμψξωκ)? 
-        JNZ     SEEK3           ;ξετ, οϋιβλα 
-        OR      TRACK_PTR [SI],AH ;AH=0   δμρ πεςχοηο χθοδα χ SEEK00 
-                                  ;AH=80H δμρ χτοςοηο χθοδα χ SEEK00 
-SEEK0:  MOV     AL,TRACK_PTR [SI] ;σβςοσ βωμ ξοςναμψξωκ 
+        CMP     DISKETTE_STATUS,0 ;Π΅ΠΆΠΠΆΠ£Π΅ 0 (Π΅Π‘Π ΠΠ΅ ΠΠΠ ΠΠΠ›Π¬ΠΠ«Π™)? 
+        JNZ     SEEK3           ;ΠΠ•ΠΆ, ΠΠ¨ΠΠ‘ΠΠ 
+        OR      TRACK_PTR [SI],AH ;AH=0   Π”Π›Π― ΠΠ•Π Π’ΠΠ“Π Π’Π¥ΠΠ”Π Π’ SEEK00 
+                                  ;AH=80H Π”Π›Π― Π’ΠΆΠΠ ΠΠ“Π Π’Π¥ΠΠ”Π Π’ SEEK00 
+SEEK0:  MOV     AL,TRACK_PTR [SI] ;Π΅Π‘Π ΠΠ΅ Π‘Π«Π› ΠΠΠ ΠΠΠ›Π¬ΠΠ«Π™ 
         MOV     AH,AL           ;0 
-        AND     AH,80H          ;χωδεμεξιε δ7 (0) 
-        AND     AL,7FH          ;χωδεμεξιε δ6-δ0 (0) 
-        MOV     TRACK_PTR [SI],CH ;ξονες δοςοφλι 
+        AND     AH,80H          ;Π’Π«Π”Π•Π›Π•ΠΠΠ• Π”7 (0) 
+        AND     AL,7FH          ;Π’Π«Π”Π•Π›Π•ΠΠΠ• Π”6-Π”0 (0) 
+        MOV     TRACK_PTR [SI],CH ;ΠΠΠΠ•Π  Π”ΠΠ ΠΠ–ΠΠ 
         OR      TRACK_PTR [SI],AH ;+ ???????????? 
         MOV     AH,20H 
         SUB     AL,CH 
-        JZ      SEEK2           ;δμρ AL = CH,AH:=21H 
-        JNC     SEEK1           ;δμρ AL > CH,AH:=21H 
-        NEG     AL              ;δμρ AL < CH,AH:=1 
+        JZ      SEEK2           ;Π”Π›Π― AL = CH,AH:=21H 
+        JNC     SEEK1           ;Π”Π›Π― AL > CH,AH:=21H 
+        NEG     AL              ;Π”Π›Π― AL < CH,AH:=1 
         MOV     AH,0 
-SEEK1:  CMP     STEP_MULT,1     ;υστς 0,1 
-        JZ      STM3            ;δα 
-        SHL     AL,1            ;δμρ υστς 2(*),3(*) AL:=AL*2 
-STM3:   OR      AL,AL           ;δμρ υστς 0,1 
+SEEK1:  CMP     STEP_MULT,1     ;Π£Π΅ΠΆΠ  0,1 
+        JZ      STM3            ;Π”Π 
+        SHL     AL,1            ;Π”Π›Π― Π£Π΅ΠΆΠ  2(*),3(*) AL:=AL*2 
+STM3:   OR      AL,AL           ;Π”Π›Π― Π£Π΅ΠΆΠ  0,1 
         JZ      SEEK2 
         CALL    STEP 
         JMP     SEEK22 
-SEEK2:  MOV     AL,CH           ;ξονες δοςοφλι 
-        OUT     TRACK,AL        ;χωχοδ ξονεςα δοςοφλι 
-SEEK22: MOV     DX,DATA_F       ;αδςεσ ποςτα δαξξωθ 
-        MOV     AL,CH           ;δοςοφλα 
-        OUT     DX,AL           ;χωχοδ ξονεςα δοςοφλι 
-        MOV     DX,CONTROL_STAT ;ποςτ σοστορξιρ 
-        MOV     AL,BL           ;λοναξδα ποισλα 
-        OUT     DX,AL           ;ποδαώα λοναξδω 
+SEEK2:  MOV     AL,CH           ;ΠΠΠΠ•Π  Π”ΠΠ ΠΠ–ΠΠ 
+        OUT     TRACK,AL        ;Π’Π«Π’ΠΠ” ΠΠΠΠ•Π Π Π”ΠΠ ΠΠ–ΠΠ 
+SEEK22: MOV     DX,DATA_F       ;ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ Π”ΠΠΠΠ«Π¥ 
+        MOV     AL,CH           ;Π”ΠΠ ΠΠ–ΠΠ 
+        OUT     DX,AL           ;Π’Π«Π’ΠΠ” ΠΠΠΠ•Π Π Π”ΠΠ ΠΠ–ΠΠ 
+        MOV     DX,CONTROL_STAT ;ΠΠΠ ΠΆ Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
+        MOV     AL,BL           ;ΠΠΠΠΠΠ”Π ΠΠΠΠ΅ΠΠ 
+        OUT     DX,AL           ;ΠΠΠ”ΠΠ§Π ΠΠΠΠΠΠ”Π« 
         NOP 
         NOP 
-        IN      AL,RD_INTRQ     ;ώτεξιε ποςτα σ INTRQ 
-        IN      AL,DX           ;ώτεξιε σοστορξιρ 
-        AND     AL,19H          ;χωδεμεξιε δ0,δ3,δ4 
-        CMP     AL,SEEK_OK      ;ξοςναμψξο? 
-        JNZ     SEEK20          ;ξετ 
-        AND     TRACK_PTR [SI],7FH ;ϊαβοκ δ7 
+        IN      AL,RD_INTRQ     ;Π§ΠΆΠ•ΠΠΠ• ΠΠΠ ΠΆΠ Π΅ INTRQ 
+        IN      AL,DX           ;Π§ΠΆΠ•ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
+        AND     AL,19H          ;Π’Π«Π”Π•Π›Π•ΠΠΠ• Π”0,Π”3,Π”4 
+        CMP     AL,SEEK_OK      ;ΠΠΠ ΠΠΠ›Π¬ΠΠ? 
+        JNZ     SEEK20          ;ΠΠ•ΠΆ 
+        AND     TRACK_PTR [SI],7FH ;Π—ΠΠ‘ΠΠ™ Π”7 
         JMP     SHORT EXIT_SEEK 
 SEEK20: MOV     AL,TRACK_PTR [SI]  ; 
-        AND     AL,80H          ;χωδεμεξιε δ7 
-        CMP     AL,80H          ;δ7=1? 
-        JZ      SEEK3           ;δα, υφε ποχτοςρμι 
-        MOV     AH,80H          ;ξετ, ποχτοςιτψ 
+        AND     AL,80H          ;Π’Π«Π”Π•Π›Π•ΠΠΠ• Π”7 
+        CMP     AL,80H          ;Π”7=1? 
+        JZ      SEEK3           ;Π”Π, Π£Π–Π• ΠΠΠ’ΠΆΠΠ Π―Π›Π 
+        MOV     AH,80H          ;ΠΠ•ΠΆ, ΠΠΠ’ΠΆΠΠ ΠΠΆΠ¬ 
         JMP     SEEK00 
-SEEK3:  OR      DISKETTE_STATUS,BAD_SEEK ;+οϋιβλα ποισλα 
-        MOV     TRACK_PTR [SI],0FFH      ;οϋιβλα 
-        STC                     ;CF=1-->οϋιβλα ποισλα 
+SEEK3:  OR      DISKETTE_STATUS,BAD_SEEK ;+ΠΠ¨ΠΠ‘ΠΠ ΠΠΠΠ΅ΠΠ 
+        MOV     TRACK_PTR [SI],0FFH      ;ΠΠ¨ΠΠ‘ΠΠ 
+        STC                     ;CF=1-->ΠΠ¨ΠΠ‘ΠΠ ΠΠΠΠ΅ΠΠ 
 EXIT_SEEK: 
-        MOV     AL,CL           ;σελτος 
+        MOV     AL,CL           ;Π΅Π•ΠΠΆΠΠ  
         MOV     DX,SECTOR 
-        OUT     DX,AL           ;ποδαώα 
+        OUT     DX,AL           ;ΠΠΠ”ΠΠ§Π 
         POP     DX 
         POP     AX 
         RET 
  
 ;============================================================== 
-;       π/π ώτεξιρ      ES:BX --> αδςεσ βυζεςα. 
+;       Π/Π Π§ΠΆΠ•ΠΠΠ―      ES:BX --> ΠΠ”Π Π•Π΅ Π‘Π£Π¤Π•Π Π. 
 ;============================================================== 
 READ:   PUSH    AX 
         PUSH    DX 
-        MOV     DI,BX           ;σνεύεξιε 
-        MOV     DX,DATA_F       ;ποςτ δαξξωθ 
-        MOV     AL,READ_COMMAND ;λοδ λοναξδω "ώτεξιε σελτοςα" 
-        CLI                     ;ϊαπςετ πςεςωχαξικ 
-        OUT     CONTROL_STAT,AL ;χωχοδ λοδα οπεςαγιι 
+        MOV     DI,BX           ;Π΅ΠΠ•Π©Π•ΠΠΠ• 
+        MOV     DX,DATA_F       ;ΠΠΠ ΠΆ Π”ΠΠΠΠ«Π¥ 
+        MOV     AL,READ_COMMAND ;ΠΠΠ” ΠΠΠΠΠΠ”Π« "Π§ΠΆΠ•ΠΠΠ• Π΅Π•ΠΠΆΠΠ Π" 
+        CLI                     ;Π—ΠΠΠ Π•ΠΆ ΠΠ Π•Π Π«Π’ΠΠΠΠ™ 
+        OUT     CONTROL_STAT,AL ;Π’Π«Π’ΠΠ” ΠΠΠ”Π ΠΠΠ•Π ΠΠ¦ΠΠ 
         JMP     RLOOP+1         ; 
-RLOOP:  STOSB                   ;πςεσωμλα βακτα  AL_-->ES:DI 
-        IN      AL,RD_INTRQ     ;ώτ.  INTRQ ιμι DRQ 
+RLOOP:  STOSB                   ;ΠΠ Π•Π΅Π«Π›ΠΠ Π‘ΠΠ™ΠΆΠ  AL_-->ES:DI 
+        IN      AL,RD_INTRQ     ;Π§ΠΆ.  INTRQ ΠΠ›Π DRQ 
         SHR     AL,1            ; 
-        IN      AL,DX           ;ώτεξιε βακτα δαξξωθ 
+        IN      AL,DX           ;Π§ΠΆΠ•ΠΠΠ• Π‘ΠΠ™ΠΆΠ Π”ΠΠΠΠ«Π¥ 
         JC      RLOOP 
-        STI                     ;ϊαπςετ πςεςωχαξκ 
-        CALL    ERR_TABL        ;λοδ ϊαχεϋεξιρ 
-        MOV     BX,DI           ;σνεύεξιε σχοβοδξοηο βακτα 
+        STI                     ;Π—ΠΠΠ Π•ΠΆ ΠΠ Π•Π Π«Π’ΠΠΠ™ 
+        CALL    ERR_TABL        ;ΠΠΠ” Π—ΠΠ’Π•Π¨Π•ΠΠΠ― 
+        MOV     BX,DI           ;Π΅ΠΠ•Π©Π•ΠΠΠ• Π΅Π’ΠΠ‘ΠΠ”ΠΠΠ“Π Π‘ΠΠ™ΠΆΠ 
         POP     DX 
         POP     AX 
-        RET                     ;χοϊχςατ 
+        RET                     ;Π’ΠΠ—Π’Π ΠΠΆ 
  
 ;============================================================== 
-;       π/π ϊαπισι      ES:BX --> αδςεσ βυζεςα. 
+;       Π/Π Π—ΠΠΠΠ΅Π      ES:BX --> ΠΠ”Π Π•Π΅ Π‘Π£Π¤Π•Π Π. 
 ;============================================================== 
 WRITE:  PUSH    AX 
         PUSH    DX 
         PUSH    DS 
-        MOV     AX,ES           ;αδςεσ ES B DS 
+        MOV     AX,ES           ;ΠΠ”Π Π•Π΅ ES B DS 
         MOV     DS,AX 
-        MOV     SI,BX           ;σνεύεξιε βυζεςα χ SI 
-        MOV     DX,DATA_F       ;αδςεσ ποςτα δαξξωθ 
-        MOV     AL,WRITE_COMMAND ;λοδ λοναξδω "ϊαπισψ σελτοςα" 
-        CLI                     ;ϊαπςετ πςεςωχαξικ 
-        OUT     CONTROL_STAT,AL ;χωχοδ λοδα 
+        MOV     SI,BX           ;Π΅ΠΠ•Π©Π•ΠΠΠ• Π‘Π£Π¤Π•Π Π Π’ SI 
+        MOV     DX,DATA_F       ;ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ Π”ΠΠΠΠ«Π¥ 
+        MOV     AL,WRITE_COMMAND ;ΠΠΠ” ΠΠΠΠΠΠ”Π« "Π—ΠΠΠΠ΅Π¬ Π΅Π•ΠΠΆΠΠ Π" 
+        CLI                     ;Π—ΠΠΠ Π•ΠΆ ΠΠ Π•Π Π«Π’ΠΠΠΠ™ 
+        OUT     CONTROL_STAT,AL ;Π’Π«Π’ΠΠ” ΠΠΠ”Π 
 WLOOP:  IN      AL,RD_INTRQ 
         SHR     AL,1 
         LODSB                   ;AL <-- DS:SI 
-        OUT     DX,AL           ;χωχοδ βακτα 
+        OUT     DX,AL           ;Π’Π«Π’ΠΠ” Π‘ΠΠ™ΠΆΠ 
         JC      WLOOP 
-        STI                     ;ςαϊςεϋεξιε πςεςωχαξικ 
-        DEC     SI              ;σνεύεξιε ποσμεδξεηο χωχεδεξξοηο βακτα 
-        MOV     AX,DS           ;χοσσταξοχμεξιε αδςεσα σεηνεξτα 
+        STI                     ;Π ΠΠ—Π Π•Π¨Π•ΠΠΠ• ΠΠ Π•Π Π«Π’ΠΠΠΠ™ 
+        DEC     SI              ;Π΅ΠΠ•Π©Π•ΠΠΠ• ΠΠΠ΅Π›Π•Π”ΠΠ•Π“Π Π’Π«Π’Π•Π”Π•ΠΠΠΠ“Π Π‘ΠΠ™ΠΆΠ 
+        MOV     AX,DS           ;Π’ΠΠ΅Π΅ΠΆΠΠΠΠ’Π›Π•ΠΠΠ• ΠΠ”Π Π•Π΅Π Π΅Π•Π“ΠΠ•ΠΠΆΠ 
         MOV     ES,AX 
         MOV     BX,SI 
         POP     DS 
-        CALL    ERR_TABL        ;ζοςνιςοχαξιε λοδα ϊαχεςϋεξιρ 
+        CALL    ERR_TABL        ;Π¤ΠΠ ΠΠΠ ΠΠ’ΠΠΠΠ• ΠΠΠ”Π Π—ΠΠ’Π•Π Π¨Π•ΠΠΠ― 
         POP     DX 
         POP     AX 
-        RET                     ;χοϊχςατ 
+        RET                     ;Π’ΠΠ—Π’Π ΠΠΆ 
  
 ;============================================================== 
-;   π/π ζοςνιςοχαξιρ λοδοχ ϊαχεςϋεξιρ 
+;   Π/Π Π¤ΠΠ ΠΠΠ ΠΠ’ΠΠΠΠ― ΠΠΠ”ΠΠ’ Π—ΠΠ’Π•Π Π¨Π•ΠΠΠ― 
 ;============================================================== 
 ERR_TABL: 
         PUSH    AX              ; 
         PUSH    DX 
-        MOV     DX,CONTROL_STAT ;ποςτ σοστορξιρ 
-        IN      AL,DX           ;ώτεξιε σοστορξιρ 
-        AND     AL,0DFH         ;οώιστλα βιτα 5  ??????????????? 
-        CMP     AL,READ_WRITE_OK   ;ξοςναμψξο (=0)? 
-        JZ      NORM_EXIT       ;δα 
-        IN      AL,DX           ;ώτεξιε σοστορξιρ 
-        TEST    MOTOR_STATUS,80H   ;ώτεξιε? 
-        JZ      R_W_ERROR       ;δα 
-WRITE_ERROR:                    ;εσμι ϊαπισψ 
-        TEST    AL,40H          ;ϊαύιτα ϊαπισι ? 
-        MOV     AH,WRITE_PROTECT  ;λοδ οϋιβλι (ϊαύιτα ϊαπισι) 
-        JNZ     ERR_EXIT        ;δα, οϋιβλα 
+        MOV     DX,CONTROL_STAT ;ΠΠΠ ΠΆ Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
+        IN      AL,DX           ;Π§ΠΆΠ•ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
+        AND     AL,0DFH         ;ΠΠ§ΠΠ΅ΠΆΠΠ Π‘ΠΠΆΠ 5  ??????????????? 
+        CMP     AL,READ_WRITE_OK   ;ΠΠΠ ΠΠΠ›Π¬ΠΠ (=0)? 
+        JZ      NORM_EXIT       ;Π”Π 
+        IN      AL,DX           ;Π§ΠΆΠ•ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
+        TEST    MOTOR_STATUS,80H   ;Π§ΠΆΠ•ΠΠΠ•? 
+        JZ      R_W_ERROR       ;Π”Π 
+WRITE_ERROR:                    ;Π•Π΅Π›Π Π—ΠΠΠΠ΅Π¬ 
+        TEST    AL,40H          ;Π—ΠΠ©ΠΠΆΠ Π—ΠΠΠΠ΅Π ? 
+        MOV     AH,WRITE_PROTECT  ;ΠΠΠ” ΠΠ¨ΠΠ‘ΠΠ (Π—ΠΠ©ΠΠΆΠ Π—ΠΠΠΠ΅Π) 
+        JNZ     ERR_EXIT        ;Π”Π, ΠΠ¨ΠΠ‘ΠΠ 
 R_W_ERROR: 
-        TEST    AL,10H          ;πςιϊξαλ "ξετ ϊαπισι" ? 
-        MOV     AH,RECORD_NOT_FND  ;λοδ ότοκ οϋιβλι 
-        JNZ     ERR_EXIT        ;δα, οϋιβλα "ξετ ϊαπισι" 
-        TEST    AL,8            ;λοδ οϋιβλι CRC ? 
-        MOV     AH,BAD_CRC      ;λοδ ότοκ οϋιβλι 
-        JNZ     ERR_EXIT        ;δα, οϋιβλα CRC 
-        MOV     AH,BAD_FDC      ;λοδ οϋιβλι δχοκξοκ πμοτξοστι 
+        TEST    AL,10H          ;ΠΠ ΠΠ—ΠΠΠ "ΠΠ•ΠΆ Π—ΠΠΠΠ΅Π" ? 
+        MOV     AH,RECORD_NOT_FND  ;ΠΠΠ” Π­ΠΆΠΠ™ ΠΠ¨ΠΠ‘ΠΠ 
+        JNZ     ERR_EXIT        ;Π”Π, ΠΠ¨ΠΠ‘ΠΠ "ΠΠ•ΠΆ Π—ΠΠΠΠ΅Π" 
+        TEST    AL,8            ;ΠΠΠ” ΠΠ¨ΠΠ‘ΠΠ CRC ? 
+        MOV     AH,BAD_CRC      ;ΠΠΠ” Π­ΠΆΠΠ™ ΠΠ¨ΠΠ‘ΠΠ 
+        JNZ     ERR_EXIT        ;Π”Π, ΠΠ¨ΠΠ‘ΠΠ CRC 
+        MOV     AH,BAD_FDC      ;ΠΠΠ” ΠΠ¨ΠΠ‘ΠΠ Π”Π’ΠΠ™ΠΠΠ™ ΠΠ›ΠΠΆΠΠΠ΅ΠΆΠ 
 ERR_EXIT: 
         MOV     AL,AH           ; 
-        OR      DISKETTE_STATUS,AL ;χ στατυσ δισλα λοδ οϋιβλι 
-        STC                     ;υσταξοχλα ζμαηα CF=1 (οϋιβλα) 
+        OR      DISKETTE_STATUS,AL ;Π’ Π΅ΠΆΠΠΆΠ£Π΅ Π”ΠΠ΅ΠΠ ΠΠΠ” ΠΠ¨ΠΠ‘ΠΠ 
+        STC                     ;Π£Π΅ΠΆΠΠΠΠ’ΠΠ Π¤Π›ΠΠ“Π CF=1 (ΠΠ¨ΠΠ‘ΠΠ) 
 NORM_EXIT: 
-        POP     DX              ;χοσσταξοχμεξιε DX, AX 
+        POP     DX              ;Π’ΠΠ΅Π΅ΠΆΠΠΠΠ’Π›Π•ΠΠΠ• DX, AX 
         POP     AX 
-        RET                     ;χοϊχςατ 
+        RET                     ;Π’ΠΠ—Π’Π ΠΠΆ 
  
 ;============================================================== 
-;       χωβος υστςοκστχα : DL-->ξον.υστς., DH-->ξον.ηομοχλι 
+;       Π’Π«Π‘ΠΠ  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π : DL-->ΠΠΠ.Π£Π΅ΠΆΠ ., DH-->ΠΠΠ.Π“ΠΠ›ΠΠ’ΠΠ 
 ;============================================================== 
 SELECT_DRIVE: 
-        PUSH    AX              ;σοθς. ςεηιστςοχ 
+        PUSH    AX              ;Π΅ΠΠ¥Π . Π Π•Π“ΠΠ΅ΠΆΠ ΠΠ’ 
         PUSH    CX 
-        MOV     CL,DL           ;DL=0 δμρ υστς. 0,2(*) 
-        MOV     AL,5            ;υστς. 0, νοτος 0 
-        SAL     AL,CL           ;σδχιη πο ξονεςυ υστςοκστχα 
-        MOV     AH,DH           ;ξονες ηομοχλι 
-        AND     AH,1            ;νμ. βιτ 
+        MOV     CL,DL           ;DL=0 Π”Π›Π― Π£Π΅ΠΆΠ . 0,2(*) 
+        MOV     AL,5            ;Π£Π΅ΠΆΠ . 0, ΠΠΠΆΠΠ  0 
+        SAL     AL,CL           ;Π΅Π”Π’ΠΠ“ ΠΠ ΠΠΠΠ•Π Π£ Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π 
+        MOV     AH,DH           ;ΠΠΠΠ•Π  Π“ΠΠ›ΠΠ’ΠΠ 
+        AND     AH,1            ;ΠΠ›. Π‘ΠΠΆ 
         MOV     CL,4            ; 
-        ROL     AH,CL           ;ξονες ηομοχλι χ ποϊ. D4 
-        OR      AL,AH           ;υστς +νοτος +ηομοχλα 
-        OR      AL,40H          ;+σβςοσ δχ. πμοτξοστι 
-        OUT     RG_C,AL         ;χωχοδ (χωβος υστςοκστχα ) 
-        POP     CX              ;χοσσταξοχμεξιε ςεηιστςοχ 
+        ROL     AH,CL           ;ΠΠΠΠ•Π  Π“ΠΠ›ΠΠ’ΠΠ Π’ ΠΠΠ—. D4 
+        OR      AL,AH           ;Π£Π΅ΠΆΠ  +ΠΠΠΆΠΠ  +Π“ΠΠ›ΠΠ’ΠΠ 
+        OR      AL,40H          ;+Π΅Π‘Π ΠΠ΅ Π”Π’. ΠΠ›ΠΠΆΠΠΠ΅ΠΆΠ 
+        OUT     RG_C,AL         ;Π’Π«Π’ΠΠ” (Π’Π«Π‘ΠΠ  Π£Π΅ΠΆΠ ΠΠ™Π΅ΠΆΠ’Π ) 
+        POP     CX              ;Π’ΠΠ΅Π΅ΠΆΠΠΠΠ’Π›Π•ΠΠΠ• Π Π•Π“ΠΠ΅ΠΆΠ ΠΠ’ 
         POP     AX 
-        RET                     ;χοϊχςατ 
+        RET                     ;Π’ΠΠ—Π’Π ΠΠΆ 
  
 ;============================================================= 
-;       π/π οφιδαξιρ δμρ νοτοςα. ϊαδεςφλα ολομο 0.5SEC. 
+;       Π/Π ΠΠ–ΠΠ”ΠΠΠΠ― Π”Π›Π― ΠΠΠΆΠΠ Π. Π—ΠΠ”Π•Π Π–ΠΠ ΠΠΠΠ›Π 0.5SEC. 
 ;============================================================= 
 TEST_WAIT: 
         PUSH    AX 
         PUSH    BX 
         PUSH    CX 
         MOV     BL,1 
-        IN      AL,MOTOR_EN     ;ώτ. σοστορξιρ νοτοςα --> D0 
-        TEST    AL,1            ;νοτος χλμ (D0=0) ? 
-        OUT     MOTOR_ON,AL     ;χλμ MOTOςα 
+        IN      AL,MOTOR_EN     ;Π§ΠΆ. Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― ΠΠΠΆΠΠ Π --> D0 
+        TEST    AL,1            ;ΠΠΠΆΠΠ  Π’ΠΠ› (D0=0) ? 
+        OUT     MOTOR_ON,AL     ;Π’ΠΠ› MOTOΠ Π 
         JNZ     J36 
         TEST    DRIVER_N,DL 
         JNZ     J37 
  
 J36:    MOV     CX,0 
 DISK_TIME: 
-        LOOP    DISK_TIME       ;ϊαδεςφλα 
+        LOOP    DISK_TIME       ;Π—ΠΠ”Π•Π Π–ΠΠ 
         CLI 
         MOV     DRIVER_N,DL 
         STI 
-        TEST    MOTOR_STATUS,80H  ;ώτεξιε? 
-        JZ      J37             ;δα 
-WAIT_WRITE:                     ;εσμι ϊαπισψ 
+        TEST    MOTOR_STATUS,80H  ;Π§ΠΆΠ•ΠΠΠ•? 
+        JZ      J37             ;Π”Π 
+WAIT_WRITE:                     ;Π•Π΅Π›Π Π—ΠΠΠΠ΅Π¬ 
         MOV     CX,0 
         WAIT_TIME: 
-        LOOP    WAIT_TIME       ;χςενρ δμρ ϊαπισι 
+        LOOP    WAIT_TIME       ;Π’Π Π•ΠΠ― Π”Π›Π― Π—ΠΠΠΠ΅Π 
 J37:    MOV     AH,4 
 RET_RDY: 
-        OUT     MOTOR_ON,AL     ;χλμ νοτοςα 
+        OUT     MOTOR_ON,AL     ;Π’ΠΠ› ΠΠΠΆΠΠ Π 
         MOV     CX,0 
-WT_RDY: IN      AL,CONTROL_STAT ;ώτεξιε σοστορξιρ 
-        AND     AL,80H          ;ηοτοχ? 
-        JZ      END_RDY         ;δα 
-        LOOP    WT_RDY          ;65535 ςαϊ οπςοσ 
-        DEC     AH              ;ι χσε εύε 4 ςαϊα 
+WT_RDY: IN      AL,CONTROL_STAT ;Π§ΠΆΠ•ΠΠΠ• Π΅ΠΠ΅ΠΆΠΠ―ΠΠΠ― 
+        AND     AL,80H          ;Π“ΠΠΆΠΠ’? 
+        JZ      END_RDY         ;Π”Π 
+        LOOP    WT_RDY          ;65535 Π ΠΠ— ΠΠΠ ΠΠ΅ 
+        DEC     AH              ;Π Π’Π΅Π• Π•Π©Π• 4 Π ΠΠ—Π 
         JNZ     RET_RDY 
 END_RDY: 
-        POP     CX              ;χοσσταξοχμεξιε 
+        POP     CX              ;Π’ΠΠ΅Π΅ΠΆΠΠΠΠ’Π›Π•ΠΠΠ• 
         POP     BX 
         POP     AX 
-        RET                     ;χοϊχςατ 
+        RET                     ;Π’ΠΠ—Π’Π ΠΠΆ 
  
  
 STEP:   PUSH    CX 

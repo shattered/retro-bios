@@ -1,6 +1,6 @@
 
 PEREDV PROC NEAR
-;----ιξχεςσιρ ιϊοβςαφεξικ
+;----ΠΠΠ’Π•Π Π΅ΠΠ― ΠΠ—ΠΠ‘Π ΠΠ–Π•ΠΠΠ™
 SAV1:   push	ds
 	call	dds
 	assume	ds:data

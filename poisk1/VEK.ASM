@@ -1,33 +1,33 @@
 ;--------------------------------------------------------------------------- 
-; Эти векторы пересылаются в область прерываний 8086 
-;  по включении питания 
+; п╜я┌п╦ п╡п╣п╨я┌п╬я─я▀ п©п╣я─п╣я│я▀п╩п╟я▌я┌я│я▐ п╡ п╬п╠п╩п╟я│я┌я▄ п©я─п╣я─я▀п╡п╟п╫п╦п╧ 8086 
+;  п©п╬ п╡п╨п╩я▌я┤п╣п╫п╦п╦ п©п╦я┌п╟п╫п╦я▐ 
 ;---------------------------------------------------------------------------- 
-VECTOR_TABLE    LABEL  WORD          ;Таблица векторов прерываний 
-        DW      DUMMY_RETURN           ;Прерывание 5H 
-        DW      DUMMY_RETURN           ;Прерывание 6H 
-        DW      DUMMY_RETURN           ;Прерывание 7H 
-        DW      OFFSET TIMER_INT     ;Прерывание 8 
-        DW      OFFSET KB_INT        ;Прерывание 9 
-        DW      OFFSET HARD_RETURN   ;Прерывание A 
-        DW      OFFSET HARD_RETURN   ;Прерывание B 
-        DW      OFFSET HARD_RETURN   ;Прерывание C 
-        DW      OFFSET HARD_RETURN   ;Прерывание D 
-        DW      OFFSET SCANINT       ;Прерывание E 
-        DW      OFFSET HARD_RETURN   ;Прерывание F 
-        DW      OFFSET VIDEO_IO      ;Прерывание 10H 
-        DW      OFFSET EQUIPMENT     ;Прерывание 11H 
-        DW      OFFSET MEMORY_SIZE_DETERMINE   ;Прерывание 12H 
-        DW      DUMMY_RETURN           ;Прерывание 13H 
-        DW      DUMMY_RETURN           ;Прерывание 14H 
-        DW      OFFSET CASSETTE_IO     ;Прерывание 15H 
-        DW      KEYBOARD_IO            ;Прерывание 16H 
-        DW      DUMMY_RETURN           ;Прерывание 17H 
-        DW      OFFSET MONITOR         ;Прерывание 18H (Монитор) 
-        DW      OFFSET BOOT_STRAP      ;Прерывание 19H 
-        DW      TIME_OF_DAY            ;Прерывание 1AH (Время суток) 
-        DW      DUMMY_RETURN           ;Прерывание 1BH (Прерывание клавиатуры) 
-        DW      DUMMY_RETURN           ;Прерывание 1CH (Прерывание таймера) 
-        DW      VIDEO_PARMS            ;Прерывание 1DH (Параметры ВИДЕО) 
-        DW      DUMMY_RETURN           ;Прерывание 1EH (Параметры диска) 
-        DW      OFFSET ALTC            ;Прерывание 1FH (Указатель VIDEO_EXT) 
+VECTOR_TABLE    LABEL  WORD          ;п╒п╟п╠п╩п╦я├п╟ п╡п╣п╨я┌п╬я─п╬п╡ п©я─п╣я─я▀п╡п╟п╫п╦п╧ 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 5H 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 6H 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 7H 
+        DW      OFFSET TIMER_INT     ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 8 
+        DW      OFFSET KB_INT        ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 9 
+        DW      OFFSET HARD_RETURN   ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ A 
+        DW      OFFSET HARD_RETURN   ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ B 
+        DW      OFFSET HARD_RETURN   ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ C 
+        DW      OFFSET HARD_RETURN   ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ D 
+        DW      OFFSET SCANINT       ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ E 
+        DW      OFFSET HARD_RETURN   ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ F 
+        DW      OFFSET VIDEO_IO      ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 10H 
+        DW      OFFSET EQUIPMENT     ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 11H 
+        DW      OFFSET MEMORY_SIZE_DETERMINE   ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 12H 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 13H 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 14H 
+        DW      OFFSET CASSETTE_IO     ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 15H 
+        DW      KEYBOARD_IO            ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 16H 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 17H 
+        DW      OFFSET MONITOR         ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 18H (п°п╬п╫п╦я┌п╬я─) 
+        DW      OFFSET BOOT_STRAP      ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 19H 
+        DW      TIME_OF_DAY            ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 1AH (п▓я─п╣п╪я▐ я│я┐я┌п╬п╨) 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 1BH (п÷я─п╣я─я▀п╡п╟п╫п╦п╣ п╨п╩п╟п╡п╦п╟я┌я┐я─я▀) 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 1CH (п÷я─п╣я─я▀п╡п╟п╫п╦п╣ я┌п╟п╧п╪п╣я─п╟) 
+        DW      VIDEO_PARMS            ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 1DH (п÷п╟я─п╟п╪п╣я┌я─я▀ п▓п≤п■п∙п·) 
+        DW      DUMMY_RETURN           ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 1EH (п÷п╟я─п╟п╪п╣я┌я─я▀ п╢п╦я│п╨п╟) 
+        DW      OFFSET ALTC            ;п÷я─п╣я─я▀п╡п╟п╫п╦п╣ 1FH (пёп╨п╟п╥п╟я┌п╣п╩я▄ VIDEO_EXT) 
  

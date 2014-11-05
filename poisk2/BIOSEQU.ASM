@@ -3,36 +3,36 @@
 ;-----------------------------------------------------------------------------
 
 TIM		EQU	   HF_NUM
-PORT_A          EQU        60H         ;8255 αδςεσ ποςτα A
-PORT_B          EQU        61H         ;8255 αδςεσ ποςτα B
-PORT_C          EQU        62H         ;8255 αδςεσ ποςτα C
+PORT_A          EQU        60H         ;8255 ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ A
+PORT_B          EQU        61H         ;8255 ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ B
+PORT_C          EQU        62H         ;8255 ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ C
 CMD_PORT        EQU        63H
-INTA00          EQU        20H         ;8259 ποςτ
-INTA01          EQU        21H         ;8259 ποςτ
+INTA00          EQU        20H         ;8259 ΠΠΠ ΠΆ
+INTA01          EQU        21H         ;8259 ΠΠΠ ΠΆ
 EOI             EQU        20H
 TIMER           EQU        40H
-TIM_CTL         EQU        43H         ;αδςεσ ποςτα υπςαχμεξιρ τακνεςα 8253
+TIM_CTL         EQU        43H         ;ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ Π£ΠΠ ΠΠ’Π›Π•ΠΠΠ― ΠΆΠΠ™ΠΠ•Π Π 8253
 TIMER0          EQU        40H         ;8253 TIMER/CNTER 0 PORT ADDR
 TIMER2          EQU        3FCH
 TIM2_CTL        EQU        3FFH        ;8253 TIMER2 CONTROL PORT ADDR
 TIMER20         EQU        3FCH        ;8253 TIMER/CNTER2 0 PORT ADDR
 TMINT           EQU        01          ;TIMER 0 INTR RECVD MASK
-DMA             EQU        00          ;αδςεσ ποςτα ςεηιστςα λαξαμα 0 DMA
-DMA_3_ADDR	EQU	   DMA+6       ; βαϊοχωκ αδςεσ λαξαμα 3 DMA
-DMA_3_CNT	EQU	   DMA+7       ; σώετώιλ σμοχ λαξαμα 3 DMA
-DMA08           EQU        08          ; αδςεσ ποςτα ςεηιστςα στατυσα DMA
-DMA_MASK	EQU	   DMA+10      ; ςεηιστς νασλι DMA
-DMA_MODE	EQU	   DMA+11D     ; ςεηιστς ςεφινα DMA
+DMA             EQU        00          ;ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ Π Π•Π“ΠΠ΅ΠΆΠ Π ΠΠΠΠΠ›Π 0 DMA
+DMA_3_ADDR	EQU	   DMA+6       ; Π‘ΠΠ—ΠΠ’Π«Π™ ΠΠ”Π Π•Π΅ ΠΠΠΠΠ›Π 3 DMA
+DMA_3_CNT	EQU	   DMA+7       ; Π΅Π§Π•ΠΆΠ§ΠΠ Π΅Π›ΠΠ’ ΠΠΠΠΠ›Π 3 DMA
+DMA08           EQU        08          ; ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ Π Π•Π“ΠΠ΅ΠΆΠ Π Π΅ΠΆΠΠΆΠ£Π΅Π DMA
+DMA_MASK	EQU	   DMA+10      ; Π Π•Π“ΠΠ΅ΠΆΠ  ΠΠΠ΅ΠΠ DMA
+DMA_MODE	EQU	   DMA+11D     ; Π Π•Π“ΠΠ΅ΠΆΠ  Π Π•Π–ΠΠΠ DMA
 DMA_F_F		EQU	   DMA+12D     ; DMA flip/flop
-DMA_3_HIGH	EQU	   082H	       ; ποςτ δμρ 4 σταςϋιθ βιτοχ DMA
+DMA_3_HIGH	EQU	   082H	       ; ΠΠΠ ΠΆ Π”Π›Π― 4 Π΅ΠΆΠΠ Π¨ΠΠ¥ Π‘ΠΠΆΠΠ’ DMA
 
 DMA_READ_CMD	EQU	   01001000B   ; MEM  --> Port
 DMA_WRITE_CMD	EQU	   01000100B   ; Port --> MEM
 MAX_PERIOD      EQU        540H
 MIN_PERIOD      EQU        410H
-KBD_IN          EQU        60H         ;αδςεσ ποςτα χχοδα δαξξωθ σ λμαχιατυςω
-KBDINT          EQU        02          ;νασλα πςεςωχαξικ λμαχιατυςω
-KB_DATA         EQU        60H         ;ποςτ σλαξ-λοδοχ λμαχιατυςω
+KBD_IN          EQU        60H         ;ΠΠ”Π Π•Π΅ ΠΠΠ ΠΆΠ Π’Π’ΠΠ”Π Π”ΠΠΠΠ«Π¥ Π΅ ΠΠ›ΠΠ’ΠΠΠΆΠ£Π Π«
+KBDINT          EQU        02          ;ΠΠΠ΅ΠΠ ΠΠ Π•Π Π«Π’ΠΠΠΠ™ ΠΠ›ΠΠ’ΠΠΠΆΠ£Π Π«
+KB_DATA         EQU        60H         ;ΠΠΠ ΠΆ Π΅ΠΠΠ-ΠΠΠ”ΠΠ’ ΠΠ›ΠΠ’ΠΠΠΆΠ£Π Π«
 KB_CTL          EQU        61H         ;CONTROL BITS FOR KEYBOARD SENSE DATA
 
 SENSE_FAIL	EQU	   0FFH	       ; Sense oparation failed
@@ -274,7 +274,7 @@ ADDR_6845          DW      ?             ;BASE ADDRESS FOR ACTIVE DISPLAY CARD
 CRT_MODE_SET       DB      ?             ;CURRENT SETTING OF THE 3*8 REGISTER
 CRT_PALETTE        DB      ?             ;CURRENT PALETTE SETTING COLOR CARD
 ;----------------------------------------------------------------------------
-;  οΒΜΑΣΤΨ ΔΑΞΞΩΘ ΛΑΣΣΕΤΞΟΗΟ ΝΑΗΞΙΤΟΖΟΞΑ  & POST DATA AREA
+;  ΠΠ±Π»Π°ΡΡ‚Ρ Π΄Π°Π½Π½Ρ‹Ρ… ΠΊΠ°ΡΡΠµΡ‚Π½ΠΎΠ³ΠΎ ΠΌΠ°Π³Π½ΠΈΡ‚ΠΎΡ„ΠΎΠ½Π°  & POST DATA AREA
 ;----------------------------------------------------------------------------
 IO_ROM_INIT	label	Word		;PNTR to optional I/O ROM INIT
 					;ROUTINE
@@ -349,12 +349,12 @@ DSK_TRK        	  DB        1 DUP (?)  ; DRIVE 0 PRESENT CYLINDER
                   DB        1 DUP (?)  ; DRIVE 1 PRESENT CYLINDER
 
 ;----------------------------------------------------------------------------
-;  οΒΜΑΣΤΨ ΔΑΞΞΩΘ ΛΑΣΣΕΤΞΟΗΟ ΝΑΗΞΙΤΟΖΟΞΑ
+;  ΠΠ±Π»Π°ΡΡ‚Ρ Π΄Π°Π½Π½Ρ‹Ρ… ΠΊΠ°ΡΡΠµΡ‚Π½ΠΎΠ³ΠΎ ΠΌΠ°Π³Π½ΠΈΡ‚ΠΎΡ„ΠΎΠ½Π°
 ;----------------------------------------------------------------------------
 	ORG	0ACH
-LowLim          DW	?		;MIN δμιτ. πεςιοδα "1"
+LowLim          DW	?		;MIN Π”Π›ΠΠΆ. ΠΠ•Π ΠΠΠ”Π "1"
 LOAD_ADDR	DW	?
-BUFFERM		DB	4 DUP (?)	; ΙΝΡ ΖΑΚΜΑ ΔΜΡ ΛΑΣΣΕΤΞΟΗΟ ΝΑΗΞΙΤΟΖΟΞΑ
+BUFFERM		DB	4 DUP (?)	; ΠΈΠΌΡ Ρ„Π°ΠΉΠ»Π° Π΄Π»Ρ ΠΊΠ°ΡΡΠµΡ‚Π½ΠΎΠ³ΠΎ ΠΌΠ°Π³Π½ΠΈΡ‚ΠΎΡ„ΠΎΠ½Π°
 UPPP		DB	?
 RIG_1		DB	?
 doww		db	?

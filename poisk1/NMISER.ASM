@@ -1,7 +1,7 @@
  
 ;------------------------------------------------------------------------ 
 ;                                                                       ; 
-;     *******          Программа обслуживания NMI            *******    ; 
+;     *******          п÷я─п╬пЁя─п╟п╪п╪п╟ п╬п╠я│п╩я┐п╤п╦п╡п╟п╫п╦я▐ NMI            *******    ; 
 ;                                                                       ; 
 ;------------------------------------------------------------------------ 
 NMI_SERVICE: 
@@ -16,25 +16,25 @@ NMI_SERVICE:
         PUSH    AX 
         MOV     AX,DSEGMENT 
         MOV     DS,AX 
-        MOV     AX,START_BUFFER   ;Адрес начала буфера 
+        MOV     AX,START_BUFFER   ;п░п╢я─п╣я│ п╫п╟я┤п╟п╩п╟ п╠я┐я└п╣я─п╟ 
         MOV     ES,AX 
         IN      AX,TRAP_A 
         MOV     BX,AX 
         TEST    AH,40h 
         JNZ     IO_ROUTINES 
-MWTC_ROUTINE:                     ;Подпрограмма обслуживания ВИДЕО 
-                                  ; (запись текста) 
-        CLI                       ;Запрет прерываний 
+MWTC_ROUTINE:                     ;п÷п╬п╢п©я─п╬пЁя─п╟п╪п╪п╟ п╬п╠я│п╩я┐п╤п╦п╡п╟п╫п╦я▐ п▓п≤п■п∙п· 
+                                  ; (п╥п╟п©п╦я│я▄ я┌п╣п╨я│я┌п╟) 
+        CLI                       ;п≈п╟п©я─п╣я┌ п©я─п╣я─я▀п╡п╟п╫п╦п╧ 
         MOV     DI,BX 
-        AND     DI,3FFEh          ;Выбор части адреса 
-        MOV     DX,ES:[DI]        ;Чтение символа/атрибута 
+        AND     DI,3FFEh          ;п▓я▀п╠п╬я─ я┤п╟я│я┌п╦ п╟п╢я─п╣я│п╟ 
+        MOV     DX,ES:[DI]        ;п╖я┌п╣п╫п╦п╣ я│п╦п╪п╡п╬п╩п╟/п╟я┌я─п╦п╠я┐я┌п╟ 
         SAR     DI,1 
         MOV     AX,DI 
         MOV     CL,AH 
         SAR     CL,1 
         SAR     CL,1 
         TEST    CRT_MODE,2        ;80x25 ? 
-        JZ      MW4               ;Нет, 40x25 
+        JZ      MW4               ;п²п╣я┌, 40x25 
         SAR     CL,1              ;CL = PageNo 
         MOV     CH,80             ;CH = 80 
         AND     AH,7 
@@ -48,7 +48,7 @@ MW2:
         SAL     DI,1 
         ADD     DI,AX 
         POP     AX 
-        CMP     CL,ACTIVE_PAGE    ;Активная страница? 
+        CMP     CL,ACTIVE_PAGE    ;п░п╨я┌п╦п╡п╫п╟я▐ я│я┌я─п╟п╫п╦я├п╟? 
         JNE     AX_NMI 
         XOR     CH,CH 
         MOV     SI,CX 
@@ -66,7 +66,7 @@ MW3:
         XOR     AH,AH 
         MOV     CL,1 
         TEST    CRT_MODE,2        ;\80x25 ? 
-        JNZ     MW31              ;\ДА 
+        JNZ     MW31              ;\п■п░ 
         and     di,0fffh          ;\ 
         JMP     MW32              ;\ 
 MW31:   AND     DI,1FFFH          ;\ 
@@ -76,14 +76,14 @@ MW32:   CALL    S1B
 AX_NMI: 
         POP     AX 
 NMI_RET: 
-        JMP     VIDEO_RETURN      ;Переход на возврат из ВИДЕО 
+        JMP     VIDEO_RETURN      ;п÷п╣я─п╣я┘п╬п╢ п╫п╟ п╡п╬п╥п╡я─п╟я┌ п╦п╥ п▓п≤п■п∙п· 
 MW4: 
         MOV     CH,40 
         AND     AH,3 
         JMP     MW2 
  
-IO_ROUTINES:                      ;Дешифрация остальных NMI 
-                                  ;  (обращение к портам ВИДЕО) 
+IO_ROUTINES:                      ;п■п╣я┬п╦я└я─п╟я├п╦я▐ п╬я│я┌п╟п╩я▄п╫я▀я┘ NMI 
+                                  ;  (п╬п╠я─п╟я┴п╣п╫п╦п╣ п╨ п©п╬я─я┌п╟п╪ п▓п≤п■п∙п·) 
         TEST    AH,80h 
         JNZ     IOWC_ROUTINE 
  
@@ -95,27 +95,27 @@ IORC_ROUTINE:
 IOWC_ROUTINE: 
         IN      AL,TRAP_D 
         MOV     SI,AX 
-        CMP     BL,0D4h ;         ;Порт 3D4 ? 
+        CMP     BL,0D4h ;         ;п÷п╬я─я┌ 3D4 ? 
         JE      PORT_3D4 
-        CMP     BL,0D5h           ;Порт 3D5 ? 
+        CMP     BL,0D5h           ;п÷п╬я─я┌ 3D5 ? 
         JE      PORT_3D5 
-        CMP     BL,0D8h           ;Порт 3D8 ? 
+        CMP     BL,0D8h           ;п÷п╬я─я┌ 3D8 ? 
         JE      PORT_3D8 
-        CMP     BL,0D9h           ;Порт 3D9 ? 
+        CMP     BL,0D9h           ;п÷п╬я─я┌ 3D9 ? 
         JNE     AX_NMI 
 PORT_3D9: 
-        XCHG    AL,AH             ;Сохранить первоначальные данные 
-        IN      AL,SCR_MODE       ;ввести байт текущего режима 
-        AND     AX,37C8H          ;Маска D7,D6 и D3 
-                                  ;Выбор D4,D5 и D2..D0 
-        OR      AL,AH             ;Составить новый байт 
-        OUT     SCR_MODE,AL       ;Задать новый режим экрана 
+        XCHG    AL,AH             ;п║п╬я┘я─п╟п╫п╦я┌я▄ п©п╣я─п╡п╬п╫п╟я┤п╟п╩я▄п╫я▀п╣ п╢п╟п╫п╫я▀п╣ 
+        IN      AL,SCR_MODE       ;п╡п╡п╣я│я┌п╦ п╠п╟п╧я┌ я┌п╣п╨я┐я┴п╣пЁп╬ я─п╣п╤п╦п╪п╟ 
+        AND     AX,37C8H          ;п°п╟я│п╨п╟ D7,D6 п╦ D3 
+                                  ;п▓я▀п╠п╬я─ D4,D5 п╦ D2..D0 
+        OR      AL,AH             ;п║п╬я│я┌п╟п╡п╦я┌я▄ п╫п╬п╡я▀п╧ п╠п╟п╧я┌ 
+        OUT     SCR_MODE,AL       ;п≈п╟п╢п╟я┌я▄ п╫п╬п╡я▀п╧ я─п╣п╤п╦п╪ я█п╨я─п╟п╫п╟ 
         JMP     AX_NMI 
-PORT_3D4:                         ;Запись в порт 3D4 (число 6845) 
-        MOV     REG_6845,AL       ;Сохранить это в памяти 
-        JMP     AX_NMI            ;Все сделано 
+PORT_3D4:                         ;п≈п╟п©п╦я│я▄ п╡ п©п╬я─я┌ 3D4 (я┤п╦я│п╩п╬ 6845) 
+        MOV     REG_6845,AL       ;п║п╬я┘я─п╟п╫п╦я┌я▄ я█я┌п╬ п╡ п©п╟п╪я▐я┌п╦ 
+        JMP     AX_NMI            ;п▓я│п╣ я│п╢п╣п╩п╟п╫п╬ 
 PORT_3D5: 
-        MOV     CL,REG_6845       ;Восстановить число 
+        MOV     CL,REG_6845       ;п▓п╬я│я│я┌п╟п╫п╬п╡п╦я┌я▄ я┤п╦я│п╩п╬ 
         CMP     CL,11 
         JNZ     REG10 
         MOV     BYTE PTR CURSOR_MODE,AL 
@@ -123,14 +123,14 @@ REG10:  CMP     CL,10
         JNZ     REG14 
         MOV     BYTE PTR CURSOR_MODE+1,AL 
 REG14: 
-        CMP     CL,15             ;Регистр=15? 
+        CMP     CL,15             ;п═п╣пЁп╦я│я┌я─=15? 
         JE      REG_15 
-        CMP     CL,14             ;Регистр=14? 
-        JNE     AX_NMI            ;Если регистр не 14 и не 15, ничего не делать 
-        MOV     CURSOR_POS_H,AL   ;Сохранить верхнюю позицию курсора 
-        JMP     AX_NMI            ;Все сделано 
-REG_15:                           ;Регистр 15 
-        MOV     CURSOR_POS_L,AL   ;Сохранить нижнюю позицию курсора 
+        CMP     CL,14             ;п═п╣пЁп╦я│я┌я─=14? 
+        JNE     AX_NMI            ;п∙я│п╩п╦ я─п╣пЁп╦я│я┌я─ п╫п╣ 14 п╦ п╫п╣ 15, п╫п╦я┤п╣пЁп╬ п╫п╣ п╢п╣п╩п╟я┌я▄ 
+        MOV     CURSOR_POS_H,AL   ;п║п╬я┘я─п╟п╫п╦я┌я▄ п╡п╣я─я┘п╫я▌я▌ п©п╬п╥п╦я├п╦я▌ п╨я┐я─я│п╬я─п╟ 
+        JMP     AX_NMI            ;п▓я│п╣ я│п╢п╣п╩п╟п╫п╬ 
+REG_15:                           ;п═п╣пЁп╦я│я┌я─ 15 
+        MOV     CURSOR_POS_L,AL   ;п║п╬я┘я─п╟п╫п╦я┌я▄ п╫п╦п╤п╫я▌я▌ п©п╬п╥п╦я├п╦я▌ п╨я┐я─я│п╬я─п╟ 
         MOV     AH,CURSOR_POS_H 
         TEST    CRT_MODE,2 
         JZ      R_15_2 
@@ -147,36 +147,36 @@ R_15_1:
 R_15_2: 
         MOV     CL,40 
         JMP     R_15_1 
-PORT_3D8:                         ;Порт 3D8 (порт режима) 
+PORT_3D8:                         ;п÷п╬я─я┌ 3D8 (п©п╬я─я┌ я─п╣п╤п╦п╪п╟) 
         AND     AL,1Fh            ;*** 
         JE      P_D8_RET 
         TEST    AL,8 
         JNZ     P_D8_RET 
-        TEST    AL,12h               ;Графика? 
-        JNZ     P_D8_3               ;Да 
+        TEST    AL,12h               ;п⌠я─п╟я└п╦п╨п╟? 
+        JNZ     P_D8_3               ;п■п╟ 
         XOR     AH,AH 
         TEST    AL,1                 ; 80X25 ? 
-        JZ      P_D8_1               ;Нет 
+        JZ      P_D8_1               ;п²п╣я┌ 
         MOV     AH,2 
 P_D8_1: 
-        TEST    AL,4                 ;Цветной? 
-        JNZ     P_D8_2               ;Нет 
+        TEST    AL,4                 ;п╕п╡п╣я┌п╫п╬п╧? 
+        JNZ     P_D8_2               ;п²п╣я┌ 
         INC     AH 
 P_D8_2: 
         XCHG    AL,AH 
         XOR     AH,AH 
         CMP     AL,CRT_MODE 
-        JE      P_D8_RET          ;Вызов обработки функций ВИДЕО 
+        JE      P_D8_RET          ;п▓я▀п╥п╬п╡ п╬п╠я─п╟п╠п╬я┌п╨п╦ я└я┐п╫п╨я├п╦п╧ п▓п≤п■п∙п· 
         INT     10h 
 P_D8_RET: 
         JMP     AX_NMI 
 P_D8_3: 
         MOV     AH,6 
         TEST    AL,10h                ; 640X200 ? 
-        JNZ     P_D8_2                ; Да 
+        JNZ     P_D8_2                ; п■п╟ 
         DEC     AH 
-        TEST    AL,4                  ;Цветной? 
-        JNZ     P_D8_2                ;Нет 
+        TEST    AL,4                  ;п╕п╡п╣я┌п╫п╬п╧? 
+        JNZ     P_D8_2                ;п²п╣я┌ 
         DEC     AH 
         JMP     P_D8_2 
  

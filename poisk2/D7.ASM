@@ -92,7 +92,7 @@ AD_1:
 ADAP_HELP ENDP
 
 ;--------------------------------------
-; πςογ. οβςαβοτλι PGUP
+; ΠΠ ΠΠ¦. ΠΠ‘Π ΠΠ‘ΠΠΆΠΠ PGUP
 ;--------------------------------------
 PG_UP  PROC  NEAR
 	SUB	BX,4
@@ -120,7 +120,7 @@ PG_UP ENDP
 
 
 ;--------------------------------------
-; πςογ. οβςαβοτλι PGUP
+; ΠΠ ΠΠ¦. ΠΠ‘Π ΠΠ‘ΠΠΆΠΠ PGUP
 ;--------------------------------------
 PG_UP_1  PROC  NEAR
 	SUB	BX,4
@@ -152,7 +152,7 @@ PG_UP_1 ENDP
 
 
 ;--------------------------------------
-; πςογ. οβςαβοτλι PGDN
+; ΠΠ ΠΠ¦. ΠΠ‘Π ΠΠ‘ΠΠΆΠΠ PGDN
 ;--------------------------------------
 PG_DN_1  PROC  NEAR
 	SUB	BX,4
@@ -186,7 +186,7 @@ PG_DN_1   ENDP
 
 
 ;--------------------------------------
-; πςογ. οβςαβοτλι PGDN
+; ΠΠ ΠΠ¦. ΠΠ‘Π ΠΠ‘ΠΠΆΠΠ PGDN
 ;--------------------------------------
 PG_DN  PROC  NEAR
 	SUB	BX,4
@@ -226,25 +226,25 @@ STOLB	ENDP
 SUMMM	PROC	NEAR
 
   xor	bx,bx
-  MOV	 CL,CMOS_BEGIN		;υσταξοχιτψ ξαώαμο CMOS
-  MOV	 CH,CMOS_END		;υσταξοχιτψ λοξεγ CMOS
+  MOV	 CL,CMOS_BEGIN		;Π£Π΅ΠΆΠΠΠΠ’ΠΠΆΠ¬ ΠΠΠ§ΠΠ›Π CMOS
+  MOV	 CH,CMOS_END		;Π£Π΅ΠΆΠΠΠΠ’ΠΠΆΠ¬ ΠΠΠΠ•Π¦ CMOS
 CMOS_2:
   MOV	 AL,CL
-  OUT	 CMOS_PORT,AL		;ξαώαμψξωκ αδςεσ
-  JMP	 SHORT $+2		;ϊαδεςφλα
+  OUT	 CMOS_PORT,AL		;ΠΠΠ§ΠΠ›Π¬ΠΠ«Π™ ΠΠ”Π Π•Π΅
+  JMP	 SHORT $+2		;Π—ΠΠ”Π•Π Π–ΠΠ
   IN	 AL,CMOS_PORT+1
-  SUB	 AH,AH			;ηαςαξτιρ AH=0
-  ADC	 BX,AX			;δοβαχιτψ λ τελυύενυ ϊξαώεξιΰ
-  INC	 CL			;υλαϊατεμψ ξα σμεδυΰύεε σμοχο
-  CMP	 CH,CL			;ϊαλοξώιτψ ?
-  JNZ	 CMOS_2		;πεςεθοδ εσμι ξετ
+  SUB	 AH,AH			;Π“ΠΠ ΠΠΠΆΠΠ― AH=0
+  ADC	 BX,AX			;Π”ΠΠ‘ΠΠ’ΠΠΆΠ¬ Π ΠΆΠ•ΠΠ£Π©Π•ΠΠ£ Π—ΠΠΠ§Π•ΠΠΠ®
+  INC	 CL			;Π£ΠΠΠ—ΠΠΆΠ•Π›Π¬ ΠΠ Π΅Π›Π•Π”Π£Π®Π©Π•Π• Π΅Π›ΠΠ’Π
+  CMP	 CH,CL			;Π—ΠΠΠΠΠ§ΠΠΆΠ¬ ?
+  JNZ	 CMOS_2		;ΠΠ•Π Π•Π¥ΠΠ” Π•Π΅Π›Π ΠΠ•ΠΆ
   MOV	AL,2eh
-  OUT	 CMOS_PORT,AL		;ξαώαμψξωκ αδςεσ
-  JMP	 SHORT $+2		;ϊαδεςφλα
+  OUT	 CMOS_PORT,AL		;ΠΠΠ§ΠΠ›Π¬ΠΠ«Π™ ΠΠ”Π Π•Π΅
+  JMP	 SHORT $+2		;Π—ΠΠ”Π•Π Π–ΠΠ
   MOV	AL,BH
   OUT	CMOS_PORT+1,AL
   MOV	AL,2fh
-  OUT	 CMOS_PORT,AL		;ξαώαμψξωκ αδςεσ
+  OUT	 CMOS_PORT,AL		;ΠΠΠ§ΠΠ›Π¬ΠΠ«Π™ ΠΠ”Π Π•Π΅
   MOV	AL,BL
   OUT	CMOS_PORT+1,AL
   RET
@@ -252,9 +252,9 @@ SUMMM	ENDP
 
 ADAPTER	PROC	NEAR
 ;---------------------------------------------------------------------------
-; πςοχεςλα τιπα χιδεο αδαπτεςα
-; CMOS ρώεκλα 14H BIT 5,4
-; 0 0 ξειϊχεστξωκ ιμι EGA
+; ΠΠ ΠΠ’Π•Π ΠΠ ΠΆΠΠΠ Π’ΠΠ”Π•Π ΠΠ”ΠΠΠΆΠ•Π Π
+; CMOS Π―Π§Π•Π™ΠΠ 14H BIT 5,4
+; 0 0 ΠΠ•ΠΠ—Π’Π•Π΅ΠΆΠΠ«Π™ ΠΠ›Π EGA
 ; 0 1 40 CLM  CGA
 ; 1 0 80 CLM  CGA
 ; 1 1 TTL MONOXROME
@@ -322,7 +322,7 @@ SUCCESS_SETUP:
 	INT	16H
 	CMP	AH,53H
 	JNE	KONFIG2
-;-----υσταξοχλα ώασοχ
+;-----Π£Π΅ΠΆΠΠΠΠ’ΠΠ Π§ΠΠ΅ΠΠ’
 ERROR_SETUP:
 	MOV	AL,0AH
 	OUT	CMOS_PORT,AL
@@ -332,7 +332,7 @@ ERROR_SETUP:
 	OUT	CMOS_PORT,AL
 	MOV	AL,00100001B
 	OUT	CMOS_PORT+1,AL
-;------υσταξοχλα ςαϊνεςα πανρτι χ λνοπ
+;------Π£Π΅ΠΆΠΠΠΠ’ΠΠ Π ΠΠ—ΠΠ•Π Π ΠΠΠΠ―ΠΆΠ Π’ ΠΠΠΠ
 	CALL	DDS
         MOV     BX,EDGE_CNT
         MOV     AL,16H
@@ -343,7 +343,7 @@ ERROR_SETUP:
         OUT     CMOS_PORT,AL
         XCHG    AL,BL
         OUT     CMOS_PORT+1,AL
-;-----πςοχεςλα αδαπτεςα
+;-----ΠΠ ΠΠ’Π•Π ΠΠ ΠΠ”ΠΠΠΆΠ•Π Π
         MOV     BX,0B000H
 	MOV	AX,EQUIP_FLAG
 	AND	AX,0110000B
@@ -361,8 +361,8 @@ KONFIG2:
 SET_UP_N ENDP
 
 ;----------------------
-;διαηξοστιλα λνοπ
-;πςι οϋιβλε υσταξοχμεξ ZF
+;Π”ΠΠΠ“ΠΠΠ΅ΠΆΠΠΠ ΠΠΠΠ
+;ΠΠ Π ΠΠ¨ΠΠ‘ΠΠ• Π£Π΅ΠΆΠΠΠΠ’Π›Π•Π ZF
 ;----------------------
 CMOS_DIAG1 PROC  NEAR
 	MOV	AL,DIAG_STATUS
@@ -388,19 +388,19 @@ SETUP_BAD DB  0AH,0AH,0DH,'CMOS CHEKSUM ERROR !'
 SETUP_BAD1 EQU $ - OFFSET SETUP_BAD
 
 K_ONFIG PROC NEAR
-	CALL	CMOS_DIAG1                      ;πςοχεςλα λνοπ
+	CALL	CMOS_DIAG1                      ;ΠΠ ΠΠ’Π•Π ΠΠ ΠΠΠΠ
 	JZ	M_OK
-	JMP	SHORT BAD_MOS			;πεςεθοδ ξα νιξιναμψξυΰ λοξζιηυςαγιΰ
+	JMP	SHORT BAD_MOS			;ΠΠ•Π Π•Π¥ΠΠ” ΠΠ ΠΠΠΠΠΠΠ›Π¬ΠΠ£Π® ΠΠΠΠ¤ΠΠ“Π£Π ΠΠ¦ΠΠ®
 M_OK:
        MOV	AL,14H
        OUT	CMOS_PORT,AL
-       IN	AL,CMOS_PORT+1                  ; βακτ οβοςυδοχαξιρ
+       IN	AL,CMOS_PORT+1                  ; Π‘ΠΠ™ΠΆ ΠΠ‘ΠΠ Π£Π”ΠΠ’ΠΠΠΠ―
        MOV	BX,0100010000001110b
        OR	BL,AL
-       MOV      word ptr EQUIP_FLAG,BX         ;υσταξοχλα EQUIP_FLAG
+       MOV      word ptr EQUIP_FLAG,BX         ;Π£Π΅ΠΆΠΠΠΠ’ΠΠ EQUIP_FLAG
        JMP      SHORT G_MOS
 ;----------------------------------------------------------
-; ϊαηςυϊλα πο νιξιναμψξοκ λοξζιηυςαγιι
+; Π—ΠΠ“Π Π£Π—ΠΠ ΠΠ ΠΠΠΠΠΠΠ›Π¬ΠΠΠ™ ΠΠΠΠ¤ΠΠ“Π£Π ΠΠ¦ΠΠ
 ;----------------------------------------------------------
 BAD_MOS:
 	MOV	EQUIP_FLAG,442FH

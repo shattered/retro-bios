@@ -3,12 +3,12 @@
 IVK_TITLE:
         INT	19H			; Boot from DISK
 CMOS_SET        PROC    NEAR
-        ;---χ AH ξονες πμοθοκ ρώεκλι
+        ;---Π’ AH ΠΠΠΠ•Π  ΠΠ›ΠΠ¥ΠΠ™ Π―Π§Π•Π™ΠΠ
         PUSH    CX
         PUSH    AX
         PUSH    DX
         PUSH	BX
-        MOV     AL,AH   ; δυβμιςοχαξιε
+        MOV     AL,AH   ; Π”Π£Π‘Π›ΠΠ ΠΠ’ΠΠΠΠ•
         MOV     CL,3
         SHR     AL,CL
         ADD     AL,19H
@@ -42,13 +42,13 @@ TEST_1SEG       PROC    NEAR
         push	di
 TST_ESC_PRESSED:
 	MOV	AH,1
-	INT	16H			; ξαφατα μΰβαρ λμαχιϋα ?
-	JZ	TST_CONT		; ξετ
+	INT	16H			; ΠΠΠ–ΠΠΆΠ Π›Π®Π‘ΠΠ― ΠΠ›ΠΠ’ΠΠ¨Π ?
+	JZ	TST_CONT		; ΠΠ•ΠΆ
 	XOR	AX,AX
 	INT	16H
 	CMP	AL,1BH			; ESC ?
-	JNE	TST_esc_PRESSED         ; ξετ
-	MOV	DL,11			; υσταξοχλα βωστςοηο τεστα
+	JNE	TST_esc_PRESSED         ; ΠΠ•ΠΆ
+	MOV	DL,11			; Π£Π΅ΠΆΠΠΠΠ’ΠΠ Π‘Π«Π΅ΠΆΠ ΠΠ“Π ΠΆΠ•Π΅ΠΆΠ
 TST_CONT:
         MOV     CX,1FFFH
         XOR	BX,BX
@@ -56,7 +56,7 @@ TST_CONT:
         JNE     GOD_1
         MOV     CX,24
 GOD_1:
-	;----τεστ αδςεσοχ
+	;----ΠΆΠ•Π΅ΠΆ ΠΠ”Π Π•Π΅ΠΠ’
 	IN	AL,0F0H
 	CMP	AL,DS:[BX]
 	JNE	BAD_1
@@ -77,7 +77,7 @@ GOOD_1N:
 	jmp	god_ex
 continue_p:	
 	cld        
-;----ΠΕÒΕΞΟΣ Ι ΣÒΑΧΞΕΞΙΕ Σ BIOS
+;----ΠΏΠµΡ€ΠµΠ½ΠΎΡ ΠΈ ΡΡ€Π°Π²Π½ΠµΠ½ΠΈΠµ Ρ BIOS
 	push	ds
 	push	si
 	mov	di,0fc00h
@@ -106,7 +106,7 @@ BAD_1:	pop	di
 	POP	BX
 	POP	AX
         POP     CX
-        STC             ; υσταξοχλα ζμαηα ERROR!
+        STC             ; Π£Π΅ΠΆΠΠΠΠ’ΠΠ Π¤Π›ΠΠ“Π ERROR!
         RET
 skan0:	
 god_ex:
@@ -115,12 +115,12 @@ god_ex:
         POP	BX
         POP	AX
         POP     CX
-        CLC             ; σβςοσ ζμαηα O.K!
+        CLC             ; Π΅Π‘Π ΠΠ΅ Π¤Π›ΠΠ“Π O.K!
         RET
 
 TEST_1SEG       ENDP
 	
-;--πςογεδυςα οτςαβοτλι παυϊω  δμιτεμψξοστψ χ CX
+;--ΠΠ ΠΠ¦Π•Π”Π£Π Π ΠΠΆΠ ΠΠ‘ΠΠΆΠΠ ΠΠΠ£Π—Π«  Π”Π›ΠΠΆΠ•Π›Π¬ΠΠΠ΅ΠΆΠ¬ Π’ CX
 pauza	proc	near
 pauz_1:	push	cx
 	mov	cx,0ffffh
@@ -198,8 +198,8 @@ MAJOR_C:
 REPID_1:	
 	TEST	AH,BH
 	JNZ	BAD_CELL
-;-------θοςοϋαρ ρώεκλα
-	;---χωώισμρεν εε ξονες
+;-------Π¥ΠΠ ΠΠ¨ΠΠ― Π―Π§Π•Π™ΠΠ
+	;---Π’Π«Π§ΠΠ΅Π›Π―Π•Π Π•Π• ΠΠΠΠ•Π 
 	PUSH	AX
 	PUSH	BX
 	MOV	BX,SI
@@ -232,9 +232,9 @@ CMOP_0SEG       PROC NEAR
 	MOV	DH,19H
 	SHR	AL,CL
 	CMP	AL,0
-	JE	POIN_1	; χ AH ώισμο δμρ χτοςοηο γιλμα
+	JE	POIN_1	; Π’ AH Π§ΠΠ΅Π›Π Π”Π›Π― Π’ΠΆΠΠ ΠΠ“Π Π¦ΠΠΠ›Π
 	MOV	CL,AL
-	MOV	BX,AX	; σοθςαξεξιε AX
+	MOV	BX,AX	; Π΅ΠΠ¥Π ΠΠΠ•ΠΠΠ• AX
 	MOV	AL,MAP_BEGIN
 POIN_2:
 	OUT	CMOS_PORT,AL
@@ -244,18 +244,18 @@ POIN_2:
 	XCHG	AH,AL
 	INC	AL
 	LOOP	POIN_2
-	MOV	DH,AL	; χ DH υλαϊατεμψ ξα σμεδυΰύυΰ ρώεκλυ MAP
-	MOV	AX,BX	; BOCCταξοχμεξιε AX
+	MOV	DH,AL	; Π’ DH Π£ΠΠΠ—ΠΠΆΠ•Π›Π¬ ΠΠ Π΅Π›Π•Π”Π£Π®Π©Π£Π® Π―Π§Π•Π™ΠΠ£ MAP
+	MOV	AX,BX	; BOCCΠΆΠΠΠΠ’Π›Π•ΠΠΠ• AX
 	MOV	CL,3
 	SHL	AL,CL
-	SUB	AH,AL	; πομυώεξιε οστατλα
+	SUB	AH,AL	; ΠΠΠ›Π£Π§Π•ΠΠΠ• ΠΠ΅ΠΆΠΠΆΠΠ
 POIN_1:
 	CMP	AH,0
 	JE	POIN_3
 	XOR	BX,BX
 	MOV	DL,1
-	MOV	CL,AH	; σώετώιλ γιλμοχ
-	MOV	AL,DH	; AL - υλαϊατεμψ ξα σμεδυΰύυΰ ρώεκλυ
+	MOV	CL,AH	; Π΅Π§Π•ΠΆΠ§ΠΠ Π¦ΠΠΠ›ΠΠ’
+	MOV	AL,DH	; AL - Π£ΠΠΠ—ΠΠΆΠ•Π›Π¬ ΠΠ Π΅Π›Π•Π”Π£Π®Π©Π£Π® Π―Π§Π•Π™ΠΠ£
 	OUT	CMOS_PORT,AL
 POIN_4:
 	OR	BH,DL
@@ -318,7 +318,7 @@ END_MEM_TST:
         MOV     AX,DATA
         MOV     DS,AX
 	MOV     MEMORY_SIZE,BX    	;SAVE MEMORY SIZE
-        MOV     EDGE_CNT,BX             ;σοθςαξρεν ιστιξξωκ ςαϊνες δμρ SETUP
+        MOV     EDGE_CNT,BX             ;Π΅ΠΠ¥Π ΠΠΠ―Π•Π ΠΠ΅ΠΆΠΠΠΠ«Π™ Π ΠΠ—ΠΠ•Π  Π”Π›Π― SETUP
         RET
 DEFINE_MEM ENDP
 
@@ -376,8 +376,8 @@ TIME_SAVE ENDP
 
 
 ;------------------------------------
-;χωχοδ στςολι
-;χ SI offset    χ BX-νεστο υσταξοχλι
+;Π’Π«Π’ΠΠ” Π΅ΠΆΠ ΠΠΠ
+;Π’ SI offset    Π’ BX-ΠΠ•Π΅ΠΆΠ Π£Π΅ΠΆΠΠΠΠ’ΠΠ
 ;------------------------------------
 STR_SHOW PROC	NEAR
 SCHIT:	MOV	AL,byte ptr DS:[SI]
@@ -391,14 +391,14 @@ SCHIT:	MOV	AL,byte ptr DS:[SI]
 RET_1:	RET
 STR_SHOW ENDP
 
-; πεςελοδιςοχλα ι χωχοδ
-PRO	PROC			;πεςελοδιςοχλα 00-0F χ ASCII σινχομω
-  ADD	 AL,90H 		;δοβαχιτψ πεςχωκ λοδιςοχοώξωκ λοόζζιγιεξτ
-  DAA				;πεςεχοδ χ αμζαχιτξο γιζςοχοκ διαπαϊοξ
+; ΠΠ•Π Π•ΠΠΠ”ΠΠ ΠΠ’ΠΠ Π Π’Π«Π’ΠΠ”
+PRO	PROC			;ΠΠ•Π Π•ΠΠΠ”ΠΠ ΠΠ’ΠΠ 00-0F Π’ ASCII Π΅ΠΠΠ’ΠΠ›Π«
+  ADD	 AL,90H 		;Π”ΠΠ‘ΠΠ’ΠΠΆΠ¬ ΠΠ•Π Π’Π«Π™ ΠΠΠ”ΠΠ ΠΠ’ΠΠ§ΠΠ«Π™ ΠΠΠ­Π¤Π¤ΠΠ¦ΠΠ•ΠΠΆ
+  DAA				;ΠΠ•Π Π•Π’ΠΠ” Π’ ΠΠ›Π¤ΠΠ’ΠΠΆΠΠ Π¦ΠΠ¤Π ΠΠ’ΠΠ™ Π”ΠΠΠΠΠ—ΠΠ
   ADC	 AL,40H 		;ADD CONVERSION AND ADJUST LOW NIBBLE
   DAA				;ADJUST HIGH NIBBLE TO ASCII RANGE
-  MOV	 byte ptr ES:[BX],AL    ;ϊαπισατψ χ νοξο βυζες
-  INC	 BX			;υλαϊατεμψ ξα σμεδυΰύυΰ ποϊιγιΰ
+  MOV	 byte ptr ES:[BX],AL    ;Π—ΠΠΠΠ΅ΠΠΆΠ¬ Π’ ΠΠΠΠ Π‘Π£Π¤Π•Π 
+  INC	 BX			;Π£ΠΠΠ—ΠΠΆΠ•Π›Π¬ ΠΠ Π΅Π›Π•Π”Π£Π®Π©Π£Π® ΠΠΠ—ΠΠ¦ΠΠ®
   INC	 BX
   RET
 PRO	ENDP
@@ -422,7 +422,7 @@ RASP	ENDP
 
 
 RAZR	PROC	NEAR
-;---ÒΑΪÒΕΫΕΞΙΕ ΪΑΠΙΣΙ
+;---Ρ€Π°Π·Ρ€ΠµΡΠµΠ½ΠΈΠµ Π·Π°ΠΏΠΈΡΠΈ
 	push	ax
 	mov	al,0bh
 	out	70h,al
@@ -565,7 +565,7 @@ PROC_1	ENDP
 
 
 ;--------------------------------
-;ΠÒΟΓΕΔΥÒΑ ΧΩΧΟΔΑ ΣΤÒΟΛΙ
+;ΠΏΡ€ΠΎΡ†ΠµΠ΄ΡƒΡ€Π° Π²Ρ‹Π²ΠΎΠ΄Π° ΡΡ‚Ρ€ΠΎΠΊΠΈ
 ;--------------------------------
 STROK   PROC	NEAR
         MOV	byte ptr ES:[BX],DL        ;205
@@ -659,9 +659,9 @@ sd_9:	mov	byte ptr es:[bx],0
 	inc	bx
 	loop	sd_9
 
-;----χωχοδ οβύεκ ταβμιγω
+;----Π’Π«Π’ΠΠ” ΠΠ‘Π©Π•Π™ ΠΆΠΠ‘Π›ΠΠ¦Π«
 
-;χωχοδ ςανλι
+;Π’Π«Π’ΠΠ” Π ΠΠΠΠ
         XOR	BX,BX
         MOV	CX,50
         MOV	DL,205
@@ -698,7 +698,7 @@ sd_9:	mov	byte ptr es:[bx],0
         MOV	SI,offset SOOB_2
         MOV	BX,4*2
         CALL	STR_SHOW
-;ΧΩΧΟΔ ΣΟΟΒέΕΞΙΚ
+;Π²Ρ‹Π²ΠΎΠ΄ ΡΠΎΠΎΠ±Ρ‰ΠµΠ½ΠΈΠΉ
 	MOV	SI,offset T_IME
 	MOV	BX,160*2+3*2
 	CALL	STR_SHOW
@@ -738,10 +738,10 @@ D2:	MOV	byte ptr ES:[BX],58
 	ADD	BX,160
 	LOOP	D2
 	MOV	byte ptr ES:[160*5+11*2],0
-;χωχοδ ρώεελ
+;Π’Π«Π’ΠΠ” Π―Π§Π•Π•Π
 	CALL VVVV
 
-;υσταξοχλα πςεςωχαξικ τακνεςα
+;Π£Π΅ΠΆΠΠΠΠ’ΠΠ ΠΠ Π•Π Π«Π’ΠΠΠΠ™ ΠΆΠΠ™ΠΠ•Π Π
 	PUSH	DS
 	xor	ax,ax
 	mov	ds,ax
@@ -751,12 +751,12 @@ D2:	MOV	byte ptr ES:[BX],58
 	mov	word ptr ds:[1ch*4+2],ax
 	POP	DS
 
-;ιξχεςσιρ ιϊοβςαφεξικ
-    ;ΙΞΧΕÒΣΙΡ ΠΕÒΧΟΚ ΡήΕΚΛΙ
+;ΠΠΠ’Π•Π Π΅ΠΠ― ΠΠ—ΠΠ‘Π ΠΠ–Π•ΠΠΠ™
+    ;ΠΈΠ½Π²ΠµΡ€ΡΠΈΡ ΠΏΠµΡ€Π²ΠΎΠΉ ΡΡ‡ΠµΠΉΠΊΠΈ
 	MOV	BX,160*2+13*2
 	MOV	AL,70H
 	CALL	INVER
-    ;ΠÒΟΓΕΔΥÒΑ ΠΕÒΕΔΧΙΦΕΞΙΡ ΛΥÒΣΟÒΑ Ι ΙΞΧΕÒΣΙΙ
+    ;ΠΏΡ€ΠΎΡ†ΠµΠ΄ΡƒΡ€Π° ΠΏΠµΡ€ΠµΠ΄Π²ΠΈΠ¶ΠµΠ½ΠΈΡ ΠΊΡƒΡ€ΡΠΎΡ€Π° ΠΈ ΠΈΠ½Π²ΠµΡ€ΡΠΈΠΈ
     	CALL	PEREDV
     	CALL	SUMMM
 	RET
@@ -785,9 +785,9 @@ TERM_SHOW ENDP
 
 
 ;-------------------------------------
-;CX-ΛΟΜΙήΕΣΤΧΟ ΙΞΧΕÒΤΙÒΥΕΝΩΘ ΣΙΝΧΟΜΟΧ
-;al-ΑΤÒΙΒΥΤ
-;bx-ΞΑήΑΜΨΞΑΡ ΠΟΪΙΓΙΡ
+;CX-ΠΊΠΎΠ»ΠΈΡ‡ΠµΡΡ‚Π²ΠΎ ΠΈΠ½Π²ΠµΡ€Ρ‚ΠΈΡ€ΡƒΠµΠΌΡ‹Ρ… ΡΠΈΠΌΠ²ΠΎΠ»ΠΎΠ²
+;al-Π°Ρ‚Ρ€ΠΈΠ±ΡƒΡ‚
+;bx-Π½Π°Ρ‡Π°Π»ΡΠ½Π°Ρ ΠΏΠΎΠ·ΠΈΡ†ΠΈΡ
 ;-------------------------------------
 INVER	PROC  NEAR
 	MOV	CX,2
@@ -799,7 +799,7 @@ INVER	ENDP
 
 
 
-;χωχοδ HELP
+;Π’Π«Π’ΠΠ” HELP
 VVV_1	PROC NEAR
 ;adapter
 	MOV	AL,byte ptr ES:[160*9+14*2]
@@ -822,7 +822,7 @@ VVV_1	ENDP
 
 VVVV	PROC	NEAR
         sti
-;σελυξδω
+;Π΅Π•ΠΠ£ΠΠ”Π«
 	MOV	AL,0
 	MOV	BX,160*2+19*2
 	MOV	CX,2
@@ -831,7 +831,7 @@ L_OP1:	PUSH	AX
 	CALL	TERM_SHOW
 	MOV	byte ptr ES:[BX-2],58
 	POP	AX
-;νιξυτω
+;ΠΠΠΠ£ΠΆΠ«
 	INC	AL
 	INC	AL
 	PUSH	AX
@@ -840,7 +840,7 @@ L_OP1:	PUSH	AX
 	CALL	TERM_SHOW
 	MOV	byte ptr ES:[BX-2],58
 	POP	AX
-;ώασω
+;Π§ΠΠ΅Π«
 	INC	AL
 	INC	AL
 	SUB	BX,6
@@ -849,19 +849,19 @@ L_OP1:	PUSH	AX
 	MOV	AL,1
 	MOV	BX,160*4+19*2
 	LOOP	L_OP1
-;ηοδ
+;Π“ΠΠ”
 	MOV	AL,9
 	MOV	BX,160*3+19*2
 	MOV	byte ptr ES:[BX-2],58
 	CALL	CMOS_READ
 	CALL	TERM_SHOW
-;νεσργ
+;ΠΠ•Π΅Π―Π¦
 	MOV	AL,8
 	MOV	BX,160*3+16*2
 	MOV	byte ptr ES:[BX-2],58
 	CALL	CMOS_READ
 	CALL	TERM_SHOW
-;ώισμο
+;Π§ΠΠ΅Π›Π
 	MOV	AL,7
 	MOV	BX,160*3+13*2
 	CALL	CMOS_READ
