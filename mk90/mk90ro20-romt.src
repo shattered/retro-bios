@@ -1,0 +1,832 @@
+; Elektronika MK-90 expansion ROM disassembly, BASIC V2.0
+
+; LCD test
+4000:	jsr	pc,E05E
+4004:	clr	05D4
+4008:	clr	@#C50
+400C:	clr	@#D46
+4010:	jsr	pc,@#A3F0
+4014:	mov	#4124,r1
+4018:	bis	#21,@#D5C
+401E:	jsr	pc,E0FA		;display the string pointed to by r1
+4022:	bic	#1,@#D5C
+4028:	mov	#413A,r1
+402C:	jsr	pc,E0FA		;display the string pointed to by r1
+4030:	jsr	pc,@#BF3A	;wait for a key
+4034:	jsr	pc,@#A01C
+4038:	cmp	#37,r2		;key '7' pressed?
+403C:	bne	4042
+403E:	jmp	4114		;exit the LCD test
+4042:	cmp	#38,r2		;key '8' pressed?
+4046:	bne	4056
+4048:	inc	05D4
+404C:	mov	#1,r5
+4050:	jsr	pc,46C2
+4054:	br	4066
+4056:	mov	r2,r5
+4058:	sub	#30,r5
+405C:	cmp	#6,r5
+4060:	blt	4000
+4062:	tst	r5
+4064:	ble	4000
+4066:	dec	r5
+4068:	add	r5,r5
+406A:	mov	@#D02,r3
+406E:	jsr	pc,@4118(r5)
+4072:	tst	05D4
+4076:	beq	4098
+4078:	jsr	pc,4BF6
+407C:	jsr	pc,4BF6
+4080:	add	#2,r5
+4084:	cmp	#C,r5
+4088:	bne	406A
+408A:	dec	05D8
+408E:	beq	4114
+4090:	jsr	pc,40BA		;clear screen
+4094:	clr	r5
+4096:	br	4068
+4098:	jsr	pc,@#BF3A	;wait for a key
+409C:	cmp	#37,r2		;key '7' pressed?
+40A0:	beq	4114		;exit the LCD test
+40A2:	jsr	pc,40BA		;clear screen
+40A6:	br	4008
+
+; test pattern 1 (all pixels dark)
+40A8:	mov	#FFFF,r2
+40AC:	mov	@#D02,r3
+40B0:	mov	#1E0,r4
+40B4:	mov	r2,(r3)+
+40B6:	sob	r4,40B4
+40B8:	rts	pc
+
+; test pattern 2 (blank), can be also used to clear the screen
+40BA:	clr	r2
+40BC:	br	40AC
+
+; test pattern 3
+40BE:	mov	#FFFF,r2
+40C2:	mov	r5,-(sp)
+40C4:	mov	#8,r5
+40C8:	mov	@#D02,r3
+40CC:	mov	r3,r4
+40CE:	mov	#4,r1
+40D2:	mov	#F,r0
+40D6:	mov	r2,(r4)+
+40D8:	com	r2
+40DA:	sob	r0,40D6
+40DC:	add	#D2,r4
+40E0:	sob	r1,40D2
+40E2:	add	#1E,r3
+40E6:	sob	r5,40CC
+40E8:	mov	(sp)+,r5
+40EA:	rts	pc
+
+; test pattern 4
+40EC:	clr	r2
+40EE:	jsr	pc,40C2
+40F2:	rts	pc
+
+; test pattern 5
+40F4:	mov	#AAAA,r2
+40F8:	jsr	pc,40AC
+40FC:	rts	pc
+
+; test pattern 6
+40FE:	mov	#FFFF,r2
+4102:	mov	#20,r1
+4106:	mov	#F,r4
+410A:	mov	r2,(r3)+
+410C:	sob	r4,410A
+410E:	com	r2
+4110:	sob	r1,4106
+4112:	rts	pc
+4114:	jmp	@#E054		;self-test menu
+
+; addresses of the LCD test procedures
+4118:	.word	40A8, 40BA, 40BE, 40EC, 40F4, 40FE
+
+4124:                0E 20 20 20  20 74 45 53  54 20 76 6B  t@~@.    tEST vk
+4130:	69 20 20 20  20 20 20 20  20 00 31 3A  5C 4B 52 41  i        .1:\KRA
+4140:	4E 20 5A 41  56 56 45 4E  0D 0A 32 3A  5C 4B 52 41  N ZAVVEN..2:\KRA
+4150:	4E 20 50 4F  47 41 5B 45  4E 0D 0A 33  3A 5B 41 48  N POGA[EN..3:[AH
+4160:	4D 41 54 4E  59 4A 20 52  49 53 55 4E  4F 4B 31 34  MATNYJ RISUNOK14
+4170:	3A 5B 41 48  4D 41 54 4E  59 4A 20 52  49 53 55 4E  :[AHMATNYJ RISUN
+4180:	4F 4B 32 35  3A 50 4F 4C  4F 53 59 31  2C 36 3A 50  OK25:POLOSY1,6:P
+4190:	4F 4C 4F 53  59 32 20 37  3A 57 59 48  4F 44 2C 38  OLOSY2 7:WYHOD,8
+41A0:	3A 5A 41 43  49 4B 2D 4E  49 45 20 0E  7A 41 44 41  :ZACIK-NIE .zADA
+41B0:	4A 54 45 20  4E 4F 4D 45  52 3F 0F 00  F7 09 9E 9E  JTE NOMER?..w...
+
+; keyboard test
+41BC:	jsr	pc,E05E
+41C0:	clr	@#C50
+41C4:	clr	@#D46
+41C8:	mov	#44EC,r1
+41CC:	bis	#21,@#D5C
+41D2:	jsr	pc,E0FA		;display the string pointed to by r1
+41D6:	bic	#1,@#D5C
+41DC:	mov	#4502,r1
+41E0:	jsr	pc,E0FA		;display the string pointed to by r1
+41E4:	jsr	pc,@#BF3A	;wait for a key
+41E8:	bis	#20,@#D5C
+41EE:	cmp	#D,r2
+41F2:	bne	41E4
+41F4:	jsr	pc,E05E
+41F8:	mov	#8,@#C50
+41FE:	clr	@#D46
+4202:	mov	#4587,r1
+4206:	jsr	pc,E0FA		;display the string pointed to by r1
+420A:	clr	05C0
+420E:	clr	r3
+4210:	cmp	r3,#8
+4214:	bgt	421C
+4216:	mov	#38,r4
+421A:	br	4220
+421C:	mov	#30,r4
+4220:	jsr	pc,4226
+4224:	br	426C
+4226:	mov	#2,0C56
+422C:	mov	#8,r5
+4230:	cmp	#38,r3
+4234:	bne	424E
+4236:	cmp	#48,r4
+423A:	bne	4242
+423C:	mov	#45B6,r0
+4240:	br	4252
+4242:	cmp	#50,r4
+4246:	bne	424E
+4248:	mov	#45BE,r0
+424C:	br	4252
+424E:	mov	#45AE,r0
+4252:	mov	r3,r2
+4254:	mov	r2,@#C50
+4258:	mov	r4,@#D46
+425C:	movb	(r0)+,r1
+425E:	swab	r1
+4260:	jsr	pc,@#A31E
+4264:	inc	r2
+4266:	dec	r5
+4268:	bne	4254
+426A:	rts	pc
+426C:	add	#8,r4
+4270:	cmp	#70,r4
+4274:	bne	4220
+4276:	add	#8,r3
+427A:	cmp	#40,r3
+427E:	bne	4210
+4280:	bic	#20,@#D5C
+4286:	clr	0D86
+428A:	clr	05CC
+428E:	tstb	0D86
+4292:	beq	428E
+4294:	bis	#20,@#D5C
+429A:	cmpb	#FB,0D86
+42A0:	bne	42AE
+42A2:	cmpb	#FB,05CA
+42A8:	bne	42AE
+42AA:	jmp	@#E054		;self-test menu
+42AE:	tst	05CC
+42B2:	beq	42DC
+42B4:	jsr	pc,44C2
+42B8:	jsr	pc,4226
+42BC:	cmp	#38,r3
+42C0:	bne	42DC
+42C2:	cmp	#48,r4
+42C6:	bne	42CE
+42C8:	add	#8,r4
+42CC:	br	42D8
+42CE:	cmp	#50,r4
+42D2:	bne	42DC
+42D4:	sub	#8,r4
+42D8:	jsr	pc,4226
+42DC:	mov	0D86,r0
+42E0:	bic	#FFE3,r0
+42E4:	asl	r0
+42E6:	mov	r0,r3
+42E8:	mov	0D86,r0
+42EC:	bic	#FF1F,r0
+42F0:	asr	r0
+42F2:	asr	r0
+42F4:	add	#30,r0
+42F8:	mov	r0,r4
+42FA:	clr	r5
+42FC:	mov	r4,-(sp)
+42FE:	jsr	pc,44C2
+4302:	cmp	#1,r5
+4306:	beq	432A
+4308:	cmp	r3,#38
+430C:	bne	432A
+430E:	cmp	#48,r4
+4312:	bne	431C
+4314:	add	#8,r4
+4318:	inc	r5
+431A:	br	42FE
+431C:	cmp	#50,r4
+4320:	bne	432A
+4322:	sub	#8,r4
+4326:	inc	r5
+4328:	br	42FE
+432A:	mov	(sp)+,r4
+432C:	mov	r3,r2
+432E:	dec	r2
+4330:	mov	#2,0C56
+4336:	mov	#45A4,r0
+433A:	mov	#9,r5
+433E:	movb	(r0)+,r1
+4340:	swab	r1
+4342:	mov	r2,0C50
+4346:	mov	r4,0D46
+434A:	jsr	pc,@#A31E
+434E:	inc	r2
+4350:	sob	r5,433E
+4352:	bis	#1,0D5C
+4358:	mov	r3,0C50
+435C:	mov	r4,0D46
+4360:	inc	0D46
+4364:	cmp	r3,#30
+4368:	blo	4438
+436A:	mov	0C48,05CC
+4370:	mov	#F3C8,0C48
+4376:	mov	0D86,r2
+437A:	bic	#FF00,r2
+437E:	ash	#FFFB,r2
+4382:	cmp	#30,r3
+4386:	beq	438C
+4388:	add	#8,r2
+438C:	add	#40,r2
+4390:	mov	#1,0C56
+4396:	movb	0D86,05CA
+439C:	cmpb	#1B,0D86
+43A2:	beq	43AC
+43A4:	cmpb	#DF,0D86
+43AA:	bne	43BA
+43AC:	clr	0D86
+43B0:	clr	0E6E
+43B4:	clr	0E70
+43B8:	br	4402
+43BA:	cmpb	#FF,0D86
+43C0:	bne	43C6
+43C2:	inc	05C0
+43C6:	bit	#1,05C0
+43CC:	bne	43E0
+43CE:	cmpb	#7B,0D86
+43D4:	beq	43F2
+43D6:	cmpb	#9B,0D86
+43DC:	beq	43F2
+43DE:	br	4402
+43E0:	cmpb	#5F,0D86
+43E6:	beq	43F8
+43E8:	cmpb	#BF,0D86
+43EE:	beq	43FE
+43F0:	br	4402
+43F2:	add	#D,r2
+43F6:	br	4402
+43F8:	add	#8,r2
+43FC:	br	4402
+43FE:	add	#6,r2
+4402:	jsr	pc,@#A06E
+4406:	mov	05CC,0C48
+440C:	bic	#20,@#D5C
+4412:	jsr	pc,@#BF50
+4416:	bis	#20,@#D5C
+441C:	cmpb	#E,r2
+4420:	bne	442A
+4422:	mov	#FB76,0C48
+4428:	br	4460
+442A:	cmpb	#F,r2
+442E:	bne	4460
+4430:	mov	#FA5C,0C48
+4436:	br	4460
+4438:	mov	0D86,05CA
+443E:	bic	#20,@#D5C
+4444:	jsr	pc,@#BF50
+4448:	bis	#20,@#D5C
+444E:	mov	#1,0C56
+4454:	clr	@#D5E
+4458:	jsr	pc,@#A01C
+445C:	inc	@#D5E
+4460:	bic	#1,0D5C
+4466:	mov	r2,r0
+4468:	mov	#30,0C50
+446E:	jsr	pc,448C
+4472:	mov	05CA,r0
+4476:	mov	#18,0C50
+447C:	jsr	pc,448C
+4480:	inc	05CC
+4484:	clr	0D86
+4488:	jmp	428E
+448C:	mov	#6,r5
+4490:	bic	#FF00,r0
+4494:	mov	r0,r2
+4496:	jsr	pc,C438
+449A:	mov	r4,-(sp)
+449C:	mov	#3,r4
+44A0:	mov	r2,r1
+44A2:	jsr	pc,801A
+44A6:	mov	(sp)+,r4
+44A8:	mov	#1,0C56
+44AE:	mov	r5,0D46
+44B2:	movb	(r0)+,r2
+44B4:	beq	44C0
+44B6:	jsr	pc,@#A01C
+44BA:	add	#6,r5
+44BE:	br	44AE
+44C0:	rts	pc
+44C2:	mov	r3,@#C50
+44C6:	mov	r4,@#D46
+44CA:	dec	@#C50
+44CE:	mov	#FF00,0D64
+44D4:	mov	#9,r2
+44D8:	mov	#1,0C56
+44DE:	clr	r1
+44E0:	jsr	pc,@#A31E
+44E4:	inc	0C50
+44E8:	sob	r2,44D8
+44EA:	rts	pc
+
+44E0:	DF 09 1E A3  B7 0A 68 C7  89 7E 87 00  0E 20 20 20  _..#7.hG.~...   
+44F0:	74 45 53 54  20 4B 4C 41  57 49 41 54  55 52 59 20  tEST KLAWIATURY 
+4500:	20 00 0D 0A  20 20 64 4C  51 20 5A 41  50 55 53 4B   ...  dLQ ZAPUSK
+4510:	41 20 54 45  53 54 41 20  4E 41 56 4D  49 54 45 20  A TESTA NAVMITE 
+4520:	4B 4C 41 57  49 5B 55 20  22 77 6B 22  49 20 4E 41  KLAWI[U "wk"I NA
+4530:	56 49 4D 41  4A 54 45 20  4B 4C 41 57  49 5B 49 2C  VIMAJTE KLAWI[I,
+4540:	4B 4F 54 4F  52 59 45 20  50 52 4F 57  45 52 51 45  KOTORYE PROWERQE
+4550:	54 45 2E 20  64 4C 51 20  57 59 48 4F  44 41 20 49  TE. dLQ WYHODA I
+4560:	5A 20 54 45  53 54 41 20  4E 41 56 4D  49 54 45 20  Z TESTA NAVMITE 
+4570:	32 20 52 41  5A 41 0D 0A  4B 4C 41 57  49 5B 55 20  2 RAZA..KLAWI[U 
+4580:	22 77 6B 22  2E 0F 00 0E  4D 41 5B 49  4E 4E 59 4A  "wk"....MA[INNYJ
+4590:	0D 0A 20 20  4B 4F 44 0D  0A 0A 0A 0F  20 41 53 43  ..  KOD..... ASC
+45A0:	49 49 00 FF  FE 80 80 80  80 80 80 80  80 FF 00 FE  II..~..........~
+45B0:	82 82 82 FE  00 00 00 FF  80 80 80 FF  00 00 00 FE  ...~...........~
+45C0:	02 02 02 FE  00 00 F7 09  94 9A DF 15  08 00 50 0C  ...~..w..._...P.
+
+; test of the memory module
+45C6:	jsr	pc,E05E
+45CA:	mov	#8,@#C50
+45D0:	clr	@#D46
+45D4:	jsr	pc,@#A3F0
+45D8:	mov	#4C68,r1
+45DC:	jsr	pc,E0FA		;display the string pointed to by r1
+45E0:	jsr	pc,@#BF3A	;wait for a key
+45E4:	jsr	pc,@#A01C
+45E8:	cmp	r2,#30
+45EC:	beq	45F4
+45EE:	cmp	r2,#31
+45F2:	bne	45CA
+45F4:	mov	r2,-(sp)
+45F6:	mov	#4C90,r1
+45FA:	jsr	pc,E0FA		;display the string pointed to by r1
+45FE:	mov	#5E0,r4
+4602:	jsr	pc,4674
+4606:	tst	05CA
+460A:	beq	45F6
+460C:	cmp	#6,05CA
+4612:	blt	45F6
+4614:	mov	#5E0,r3
+4618:	mov	#5C4,r4
+461C:	jsr	pc,46A0
+4620:	cmp	05C4,#27FF
+4626:	bgt	45F6
+4628:	mov	#4CAD,r1
+462C:	jsr	pc,E0FA		;display the string pointed to by r1
+4630:	mov	#5E0,r4
+4634:	jsr	pc,4674
+4638:	tst	05CA
+463C:	beq	4628
+463E:	cmp	#6,05CA
+4644:	blt	4628
+4646:	mov	#5E0,r3
+464A:	mov	#5C6,r4
+464E:	jsr	pc,46A0
+4652:	cmp	05C6,#27FF
+4658:	bgt	466A
+465A:	mov	05C6,r4
+465E:	sub	05C4,r4
+4662:	cmp	r4,#0
+4666:	bge	46BC
+4668:	br	45F6
+466A:	mov	#4CC9,r1
+466E:	jsr	pc,E0FA		;display the string pointed to by r1
+4672:	br	4628
+4674:	clr	05CA
+4678:	jsr	pc,@#BF3A	;wait for a key
+467C:	cmp	r2,#D
+4680:	beq	4692
+4682:	cmp	r2,#30
+4686:	blt	4678
+4688:	cmp	r2,#37
+468C:	bgt	4678
+468E:	inc	05CA
+4692:	jsr	pc,@#A01C
+4696:	movb	r2,(r4)+
+4698:	cmp	r2,#D
+469C:	bne	4678
+469E:	rts	pc
+46A0:	clr	r1
+46A2:	movb	(r3)+,r2
+46A4:	bic	#FFF8,r2
+46A8:	add	r2,r1
+46AA:	cmpb	(r3),#D
+46AE:	beq	46B8
+46B0:	asl	r1
+46B2:	asl	r1
+46B4:	asl	r1
+46B6:	br	46A2
+46B8:	mov	r1,(r4)
+46BA:	rts	pc
+46BC:	jsr	pc,46C2
+46C0:	br	46EE
+46C2:	mov	#4CE2,r1
+46C6:	jsr	pc,E0FA		;display the string pointed to by r1
+46CA:	mov	#5E0,r4
+46CE:	jsr	pc,4674
+46D2:	tst	05CA
+46D6:	beq	46C2
+46D8:	cmp	#3,05CA
+46DE:	blt	46C2
+46E0:	mov	#5E0,r3
+46E4:	mov	#5D8,r4
+46E8:	jsr	pc,46A0
+46EC:	rts	pc
+46EE:	movb	#F8,05C0
+46F4:	mov	05C4,05C8
+46FA:	mov	(sp)+,r1
+46FC:	bicb	#FE,r1
+4700:	bisb	r1,05C0
+4704:	clr	05DA
+4708:	jsr	pc,A774
+470C:	mov	#1,0C56
+4712:	clr	0D46
+4716:	clr	0D46
+471A:	mov	#4D5E,r1
+471E:	bis	#21,@#D5C
+4724:	jsr	pc,E0FA		;display the string pointed to by r1
+4728:	bic	#21,@#D5C
+472E:	mov	#1,05C2
+4734:	mov	#9,@#E812
+473A:	mov	05C0,@#E814
+4740:	mov	#AA,r1
+4744:	clr	r2
+4746:	mov	05C4,r0
+474A:	mov	05C4,r3
+474E:	jsr	pc,@#A04C
+4752:	mov	05C2,05E0
+4758:	add	#30,05E0
+475E:	mov	#5E0,r1
+4762:	clr	0C50
+4766:	mov	#3C,0D46
+476C:	bis	#21,@#D5C
+4772:	jsr	pc,E0FA		;display the string pointed to by r1
+4776:	bic	#21,@#D5C
+477C:	mov	05C4,-(sp)
+4780:	mov	#31,05E0
+4786:	sub	#800,05C4
+478C:	blt	4794
+478E:	inc	05E0
+4792:	br	4786
+4794:	mov	(sp)+,05C4
+4798:	mov	#5E0,r1
+479C:	mov	#72,0D46
+47A2:	clr	0C50
+47A6:	bis	#21,@#D5C
+47AC:	jsr	pc,E0FA		;display the string pointed to by r1
+47B0:	bic	#21,@#D5C
+47B6:	jsr	pc,@#A060
+47BA:	clr	0D46
+47BE:	mov	#8,0C50
+47C4:	jsr	pc,4C24
+47C8:	mov	#C,05DC
+47CE:	mov	#5A,05DE
+47D4:	mov	05C4,05CA
+47DA:	bic	#F800,05CA
+47E0:	cmp	05CA,#40
+47E6:	blt	480C
+47E8:	sub	#40,05CA
+47EE:	cmp	#6C,05DE
+47F4:	bne	4804
+47F6:	add	#6,05DC
+47FC:	mov	#5A,05DE
+4802:	br	47E0
+4804:	add	#6,05DE
+480A:	br	47E0
+480C:	mov	05CA,05D6
+4812:	jsr	pc,4BBC
+4816:	mov	#C0,@#E816
+481C:	jsr	pc,4BB4
+4820:	cmp	#1,05C2
+4826:	beq	4846
+4828:	cmp	#2,05C2
+482E:	beq	4846
+4830:	cmp	r0,r3
+4832:	beq	4846
+4834:	movb	r2,@#E810
+4838:	jsr	pc,4BB4
+483C:	cmp	05C6,r3
+4840:	beq	4860
+4842:	inc	r3
+4844:	br	4830
+4846:	movb	r1,@#E810
+484A:	jsr	pc,4BB4
+484E:	cmp	#1,05C2
+4854:	beq	4860
+4856:	cmp	#2,05C2
+485C:	beq	4860
+485E:	br	483C
+4860:	tst	@#E816
+4864:	jsr	pc,4BB4
+4868:	cmp	#1,05C2
+486E:	beq	487C
+4870:	cmp	#2,05C2
+4876:	beq	487C
+4878:	mov	05C4,r3
+487C:	jsr	pc,4BBC
+4880:	mov	#D0,@#E816
+4886:	jsr	pc,4BB4
+488A:	bicb	#8,05C0
+4890:	mov	05C0,@#E814
+4896:	jsr	pc,4BB4
+489A:	mov	@#E810,r4
+489E:	bic	#FF00,r4
+48A2:	jsr	pc,4BB4
+48A6:	cmp	r0,r3
+48A8:	beq	48B0
+48AA:	cmpb	r4,r2
+48AC:	bne	48B6
+48AE:	br	48BC
+48B0:	cmpb	r4,r1
+48B2:	bne	48B6
+48B4:	br	48BC
+48B6:	jsr	pc,48EC
+48BA:	br	48C4
+48BC:	jsr	pc,48F2
+48C0:	jmp	4A64
+48C4:	tst	@#E816
+48C8:	jsr	pc,4BB4
+48CC:	mov	#3,05D2
+48D2:	mov	r2,-(sp)
+48D4:	mov	r1,r5
+48D6:	mov	#4D02,r1
+48DA:	clr	0D46
+48DE:	mov	#8,0C50
+48E4:	jsr	pc,E0FA		;display the string pointed to by r1
+48E8:	mov	r5,r1
+48EA:	br	4956
+48EC:	mov	#1,05DA
+48F2:	inc	05D6
+48F6:	jsr	pc,A04C
+48FA:	cmp	05D6,#40
+4900:	bne	4950
+4902:	cmp	#1,05DA
+4908:	beq	492C
+490A:	mov	#6,r5
+490E:	mov	#4D7E,r0
+4912:	mov	05DC,r2
+4916:	mov	r2,0C50
+491A:	mov	05DE,0D46
+4920:	movb	(r0)+,r1
+4922:	swab	r1
+4924:	jsr	pc,A31E
+4928:	inc	r2
+492A:	sob	r5,4916
+492C:	cmp	#6C,05DE
+4932:	bne	4942
+4934:	add	#6,05DC
+493A:	mov	#5A,05DE
+4940:	br	4948
+4942:	add	#6,05DE
+4948:	clr	05D6
+494C:	clr	05DA
+4950:	jsr	pc,A060
+4954:	rts	pc
+4956:	mov	r1,r5
+4958:	mov	#4D11,r1
+495C:	clr	0D46
+4960:	mov	#10,0C50
+4966:	jsr	pc,E0FA		;display the string pointed to by r1
+496A:	mov	#4D20,r1
+496E:	clr	0D46
+4972:	mov	#18,0C50
+4978:	jsr	pc,E0FA		;display the string pointed to by r1
+497C:	mov	r5,r1
+497E:	mov	r3,05CA
+4982:	mov	#5,05CE
+4988:	mov	#24,0D46
+498E:	mov	#18,0C50
+4994:	mov	#6,05CE
+499A:	mov	r0,-(sp)
+499C:	jsr	pc,C438
+49A0:	mov	r4,-(sp)
+49A2:	mov	r1,r5
+49A4:	mov	05CE,r4
+49A8:	mov	05CA,r1
+49AC:	jsr	pc,801A
+49B0:	mov	(sp)+,r4
+49B2:	mov	r0,r1
+49B4:	jsr	pc,E0FA		;display the string pointed to by r1
+49B8:	mov	r5,r1
+49BA:	mov	(sp)+,r0
+49BC:	dec	05D2
+49C0:	cmp	#2,05D2
+49C6:	bne	4A16
+49C8:	mov	r1,r5
+49CA:	mov	#4D29,r1
+49CE:	clr	0D46
+49D2:	mov	#20,0C50
+49D8:	jsr	pc,E0FA		;display the string pointed to by r1
+49DC:	mov	#4D36,r1
+49E0:	clr	0D46
+49E4:	mov	#28,0C50
+49EA:	jsr	pc,E0FA		;display the string pointed to by r1
+49EE:	mov	r5,r1
+49F0:	cmp	r0,r3
+49F2:	beq	49FC
+49F4:	mov	(sp),r2
+49F6:	mov	r2,05CA
+49FA:	br	4A00
+49FC:	mov	r1,05CA
+4A00:	mov	#3,05CE
+4A06:	mov	#42,0D46
+4A0C:	mov	#28,0C50
+4A12:	jmp	499A
+4A16:	tst	05D2
+4A1A:	beq	4A5E
+4A1C:	mov	r1,r5
+4A1E:	mov	#4D44,r1
+4A22:	clr	0D46
+4A26:	mov	#30,0C50
+4A2C:	jsr	pc,E0FA		;display the string pointed to by r1
+4A30:	mov	#4D50,r1
+4A34:	clr	0D46
+4A38:	mov	#38,0C50
+4A3E:	jsr	pc,E0FA		;display the string pointed to by r1
+4A42:	mov	r5,r1
+4A44:	mov	r4,05CA
+4A48:	mov	#3,05CE
+4A4E:	mov	#42,0D46
+4A54:	mov	#38,0C50
+4A5A:	jmp	499A
+4A5E:	mov	(sp)+,r2
+4A60:	jmp	4BF0
+4A64:	cmp	05C6,r3
+4A68:	beq	4B1C
+4A6A:	cmp	#1,05C2
+4A70:	beq	4A8A
+4A72:	cmp	#2,05C2
+4A78:	beq	4A8A
+4A7A:	inc	r3
+4A7C:	mov	r0,-(sp)
+4A7E:	mov	r3,r0
+4A80:	jsr	pc,4A9E
+4A84:	mov	(sp)+,r0
+4A86:	jmp	489A
+4A8A:	tst	@#E816
+4A8E:	jsr	pc,4BB4
+4A92:	inc	r0
+4A94:	inc	r3
+4A96:	jsr	pc,4A9E
+4A9A:	jmp	4812
+4A9E:	mov	r2,-(sp)
+4AA0:	cmp	r0,#800
+4AA4:	beq	4ABA
+4AA6:	cmp	r0,#1000
+4AAA:	beq	4AC2
+4AAC:	cmp	r0,#1800
+4AB0:	beq	4ACA
+4AB2:	cmp	r0,#2000
+4AB6:	beq	4AD2
+4AB8:	br	4B0E
+4ABA:	mov	#32,05E0
+4AC0:	br	4AD8
+4AC2:	mov	#33,05E0
+4AC8:	br	4AD8
+4ACA:	mov	#34,05E0
+4AD0:	br	4AD8
+4AD2:	mov	#35,05E0
+4AD8:	mov	r1,r5
+4ADA:	mov	#5E0,r1
+4ADE:	mov	#72,0D46
+4AE4:	clr	0C50
+4AE8:	bis	#21,@#D5C
+4AEE:	jsr	pc,E0FA		;display the string pointed to by r1
+4AF2:	bic	#21,@#D5C
+4AF8:	mov	r5,r1
+4AFA:	jsr	pc,4C24
+4AFE:	mov	#C,05DC
+4B04:	mov	#5A,05DE
+4B0A:	clr	05D6
+4B0E:	mov	(sp)+,r2
+4B10:	clr	0D46
+4B14:	mov	#8,0C50
+4B1A:	rts	pc
+4B1C:	tst	@#E816
+4B20:	jsr	pc,4BB4
+4B24:	cmp	#3,05C2
+4B2A:	beq	4B36
+4B2C:	cmp	#4,05C2
+4B32:	beq	4B44
+4B34:	br	4B52
+4B36:	dec	05CC
+4B3A:	beq	4B52
+4B3C:	clc
+4B3E:	rorb	r1
+4B40:	jmp	474A
+4B44:	dec	05CC
+4B48:	beq	4B52
+4B4A:	nop
+4B4C:	rorb	r1
+4B4E:	jmp	474A
+4B52:	inc	05C2
+4B56:	cmp	#2,05C2
+4B5C:	bne	4B6C
+4B5E:	mov	#55,r1
+4B62:	mov	05C8,05C4
+4B68:	jmp	4746
+4B6C:	cmp	#3,05C2
+4B72:	bne	4B88
+4B74:	mov	05C8,05C4
+4B7A:	mov	#80,r1
+4B7E:	mov	#8,05CC
+4B84:	jmp	4746
+4B88:	cmp	#4,05C2
+4B8E:	beq	4BA0
+4B90:	dec	05D8
+4B94:	beq	4C20
+4B96:	mov	05C8,05C4
+4B9C:	jmp	4704
+4BA0:	mov	#7F,r1
+4BA4:	mov	#8,05CC
+4BAA:	mov	05C8,05C4
+4BB0:	jmp	4746
+4BB4:	tstb	@#E814
+4BB8:	bpl	4BB4
+4BBA:	rts	pc
+4BBC:	bisb	#8,05C0
+4BC2:	mov	05C0,@#E814
+4BC8:	mov	#A0,@#E816
+4BCE:	jsr	pc,4BB4
+4BD2:	swab	r3
+4BD4:	movb	r3,@#E810
+4BD8:	jsr	pc,4BB4
+4BDC:	swab	r3
+4BDE:	movb	r3,@#E810
+4BE2:	jsr	pc,4BB4
+4BE6:	tst	@#E816
+4BEA:	jsr	pc,4BB4
+4BEE:	rts	pc
+4BF0:	jsr	pc,4BF6
+4BF4:	br	4C04
+4BF6:	clr	-(sp)
+4BF8:	inc	(sp)
+4BFA:	cmp	#3000,(sp)
+4BFE:	bge	4BF8
+4C00:	tst	(sp)+
+4C02:	rts	pc
+4C04:	cmp	r3,05C6
+4C08:	beq	4C18
+4C0A:	inc	r3
+4C0C:	cmp	#2,05C2
+4C12:	blo	4C1C
+4C14:	jmp	4812
+4C18:	jmp	4B24
+4C1C:	jmp	487C
+4C20:	jmp	@#E054		;self-test menu
+4C24:	jsr	pc,A04C
+4C28:	mov	#C,r3
+4C2C:	mov	#5A,r4
+4C30:	mov	#A,r5
+4C34:	mov	#4D74,r0
+4C38:	mov	r3,r2
+4C3A:	mov	r2,@#C50
+4C3E:	mov	r4,@#D46
+4C42:	movb	(r0)+,r1
+4C44:	swab	r1
+4C46:	jsr	pc,@#A31E
+4C4A:	inc	r2
+4C4C:	sob	r5,4C3A
+4C4E:	add	#6,r4
+4C52:	cmp	#72,r4
+4C56:	bne	4C30
+4C58:	add	#6,r3
+4C5C:	cmp	#3C,r3
+4C60:	bne	4C2C
+4C62:	jsr	pc,A060
+4C66:	rts	pc
+
+4C60:	E5 02 F7 09  FA 53 87 00  0E 0D 0A 74  45 53 54 20  e.w.zS.....tEST 
+4C70:	73 6D 70 0D  0A 77 57 45  44 49 54 45  20 4E 4F 4D  smp..wWEDITE NOM
+4C80:	45 52 0A 0D  55 53 54 52  4F 4A 53 54  57 41 0F 00  ER..USTROJSTWA..
+4C90:	0E 0D 0A 7A  41 44 41 4A  54 45 20 4E  41 5E 41 4C  ...zADAJTE NA^AL
+4CA0:	58 4E 59 4A  0A 0D 41 44  52 45 53 0F  00 0E 0D 0A  XNYJ..ADRES.....
+4CB0:	7A 41 44 41  4A 54 45 20  4B 4F 4E 45  5E 4E 59 4A  zADAJTE KONE^NYJ
+4CC0:	0A 0D 41 44  52 45 53 0F  00 0E 0D 0A  77 59 48 4F  ..ADRES.....wYHO
+4CD0:	44 20 5A 41  20 47 52 41  4E 49 43 59  20 73 6D 70  D ZA GRANICY smp
+4CE0:	0F 00 0E 0D  0A 57 57 45  44 49 54 45  20 4B 4F 4C  .....WWEDITE KOL
+4CF0:	49 5E 45 53  54 57 4F 20  50 52 4F 48  4F 44 4F 57  I^ESTWO PROHODOW
+4D00:	0F 00 0E 6F  5B 49 42 4B  41 2C 41 44  52 45 53 0F  ...o[IBKA,ADRES.
+4D10:	00 0E 4E 45  49 53 50 52  41 57 4E 4F  47 4F 0F 00  ..NEISPRAWNOGO..
+4D20:	0E 42 41 4A  54 41 3A 0F  00 0E 7A 41  50 49 53 41  .BAJTA:...zAPISA
+4D30:	4E 4E 41 51  0F 00 0E 49  4E 46 4F 52  4D 41 43 49  NNAQ...INFORMACI
+4D40:	51 3A 0F 00  0E 73 5E 49  54 41 4E 4E  41 51 0F 00  Q:...s^ITANNAQ..
+4D50:	0E 49 4E 46  4F 52 4D 41  43 49 51 3A  0F 00 0E 54  .INFORMACIQ:...T
+4D60:	45 53 54 20  53 4D 50 20  23 20 20 4D  49 4B 2D 4D  EST SMP #  MIK-M
+4D70:	41 20 0F 00  FE 82 82 82  82 FE 00 00  00 00 FE FE  A ..~....~....~~
+4D80:	FE FE FE FE  FF FF FF FF  FF FF FF FF  FF FF FF FF  ~~~~............
