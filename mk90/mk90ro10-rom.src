@@ -1,0 +1,7296 @@
+; Elektronika MK-90 ROM disassembly, BASIC V1.0
+; all numbers are hexadecimal unless stated otherwise
+
+0000:
+0004:				;odd address when accessing word size data,
+				;accessing nonexisting memory,
+				;HALT in the user mode,
+				;JMP/JSR with a register as the destination
+0008:				;unimplemented instruction
+000C:				;vector BPT
+0010:				;vector IOT
+0014:				;vector POK (power supply)
+0018:				;vector EMT
+001C:	.word	806A		;vector TRAP
+0078:				;INT0 interrupt vector
+007C:				;INT1 interrupt vector
+00B8:				;INT2 interrupt vector
+00BC:				;INT3 interrupt vector
+00C8:	.word	B14C, 0000	;keyboard controller interrupt vector
+
+2F3E:				;end of the stack area
+3000:	.blkb	03C0		;display RAM
+33C0:				;USRBUF
+37C2:	.word	0007		;height of a character in pixels
+37C4:	.word	0005		;width of a character in pixels
+37C6:	.word	0023		;number of bits to store each character in
+				;the font table
+3810:	.word	2F3E		;initial SP value
+3812:	.word	3000		;address of the display RAM
+383A:	.blkw	1		;print mode
+				;bit 0 set - inverted print mode
+3864:	.blkw	1		;key scan code
+3872:	.blkw	1		;SU keyboard mode if not zero
+3898:	.blkb	0050		;input line buffer (up to 80 characters)
+
+8000:	87 1A 7D 47 FB 7F
+
+; default system error handler routine
+8006:	mov	(sp)+,r1
+8008:	tst	(sp)+
+800A:	mov	#37F5,r0
+800E:	mov	#6,r4
+8012:	jsr	pc,8020
+8016:	mov	#37E2,r0
+801A:	trap	36		;print a string pointed to by r0
+801C:	jmp	862E
+
+; convert the word in r1 to octal ASCII, number of digits in r4
+; for values > 7FFF the result is incorrect (first digit = 7 instead of 1)
+8020:	mov	r1,r2
+8022:	bic	#FFF8,r2
+8026:	bis	#30,r2		;'0'
+802A:	movb	r2,-(r0)
+802C:	asr	r1		;should be CLC, ROR R1
+802E:	asr	r1
+8030:	asr	r1
+8032:	sob	r4,8020		;next digit
+8034:	rts	pc
+
+; trap 6C
+8036:	mov	3812,r1		;address of the display RAM
+803A:	mov	#01E0,r2	;size of the display RAM (03C0 bytes)
+803E:	clr	(r1)+
+8040:	sob	r2,803E
+8042:	mov	3812,@#E800	;address of the display RAM
+8048:	mov	#88C6,@#E802
+804E:	mov	#B14C,@#C8	;keyboard controller interrupt vector
+8054:	clr	@#CA
+8058:	mov	#200,@#E812
+805E:	mov	#E2,@#E814
+8064:	jsr	pc,B53E
+8068:	rts	pc
+
+; TRAP handler routine
+806A:	mov	(sp),0002(sp)
+806E:	sub	#2,(sp)
+8072:	mov	@(sp)+,-(sp)
+8074:	asr	(sp)
+8076:	blo	8080
+; even traps = system function calls
+8078:	asl	(sp)
+807A:	add	#F7CC,(sp)	;F7CC + TRAP_0_opcode = 80CC
+807E:	mov	@(sp)+,pc
+; odd traps = error_codes * 2 + 1
+8080:	bic	#FF80,(sp)
+8084:	mov	(sp)+,r2
+8086:	cmp	r2,#40
+808A:	bgt	809E		;recoverable errors (error code > 64)
+; unrecoverable errors (error code <= 64)
+808C:	clr	38F6
+8090:	mov	#1,380C
+8096:	mov	3810,sp
+809A:	mov	#8912,-(sp)
+809E:	mov	r1,-(sp)
+80A0:	mov	37CE,-(sp)
+80A4:	jsr	pc,A512
+80A8:	mov	r2,r1
+80AA:	mov	#37FA,r0	;address of the error code as an ASCII string
+80AE:	mov	r1,-(sp)	;error code
+80B0:	trap	0A		;ITOA
+80B2:	trap	02		;print CR, LF
+80B4:	mov	#37F7,r0	;string 'error X in line X'
+80B8:	trap	36		;print a string pointed to by r0
+80BA:	trap	04		;display the line number 38EA
+80BC:	trap	02		;print CR, LF
+80BE:	tst	(sp)+
+80C0:	bne	80C4
+80C2:	trap	4E
+80C4:	mov	(sp)+,37CE
+80C8:	mov	(sp)+,r1
+80CA:	rts	pc
+
+; TRAP vectors
+80CC:	.word	8160, 818C, 8476, 9148		;trap 00, 02, 04, 06
+80D4:	.word	942C, 9452, 9482, 94F6		;trap 08, 0A, 0C, 0E
+80DC:	.word	959A, 962E, 964C, 9674		;trap 10, 12, 14, 16
+80E4:	.word	970A, 97D4, 97E0, 9782		;trap 18, 1A, 1C, 1E
+80EC:	.word	984A, 9844, 9A74, 9AB2		;trap 20, 22, 24, 26
+80F4:	.word	9A84, 9A2C, 97F8, 9A80		;trap 28, 2A, 2C, 2E
+80FC:	.word	9CDC, 950A, 952A, 8196		;trap 30, 32, 34, 36
+8104:	.word	813A, 826C, 8386, 8368		;trap 38, 3A, 3C, 3E
+810C:	.word	81B2, 837E, 8408, 83E0		;trap 40, 42, 44, 46
+8114:	.word	8276, 82B8, 82F6, 8286		;trap 48, 4A, 4C, 4E
+811C:	.word	8360, 8336, 83D2, 83AC		;trap 50, 52, 54, 56
+8124:	.word	8492, 8416, 849E, 8A42		;trap 58, 5A, 5C, 5E
+812C:	.word	84AC, 84B8, 8D0C, 829A		;trap 60, 62, 64, 66
+8134:	.word	82AA, 0000, 8036		;trap 68, 6A, 6C
+
+; trap 38 - test if r2 is a digit
+; returns V set if r2 is not a digit
+; returns Z set if r2 is a decimal digit '0'..'9'
+; returns V cleared if r2 is a hex digit 'A'..'F'
+813A:	cmp	r2,#30		;'0'
+813E:	blt	815A
+8140:	cmp	r2,#39		;'9'
+8144:	bgt	814A
+8146:	set	z		;decimal digit: Z=1, V=0
+8148:	rts	pc
+814A:	cmp	r2,#41		;'A'
+814E:	blt	815A
+8150:	cmp	r2,#5A		;'Z'
+8154:	bgt	815A
+8156:	clear	cvzn		;hexadecimal digit: Z=0, V=0
+8158:	rts	pc
+815A:	clear	cvzn
+815C:	set	v		;not a digit: Z=0, V=1
+815E:	rts	pc
+
+; trap 00 - print character r2
+8160:	mov	r1,-(sp)
+8162:	tst	38F8
+8166:	beq	816E
+8168:	jsr	pc,BE10
+816C:	br	8188
+816E:	tst	3902		;screen or printer?
+8172:	beq	817A		;branch if screen
+8174:	jsr	pc,D66E		;print character r2 on the printer
+8178:	br	8188
+817A:	tst	380C
+817E:	beq	8188
+8180:	inc	380E
+8184:	jsr	pc,9D62		;display character r2
+8188:	mov	(sp)+,r1
+818A:	rts	pc
+
+; trap 02 - print CR, LF
+818C:	mov	#FFFE,38F4
+8192:	mov	#88F9,r0
+
+; trap 36 - print a zero terminated string pointed to by r0
+8196:	movb	(r0)+,r2
+8198:	beq	818A
+819A:	trap	00		;print character r2
+819C:	br	8196
+
+819E:	jsr	pc,A1B8
+81A2:	tst	38F6
+81A6:	bne	81B6
+81A8:	cmp	#3898,r3
+81AC:	bhis	81B2
+81AE:	dec	r3
+81B0:	br	81B6
+
+; trap 40 - input a line from the keyboard
+81B2:	mov	#3898,r3	;input line buffer
+81B6:	tst	38F6
+81BA:	beq	81C6
+81BC:	clr	380C
+81C0:	jsr	pc,BD6A
+81C4:	br	81D0
+81C6:	inc	380E
+81CA:	jsr	pc,B250		;wait for a key
+81CE:	beq	81B6
+81D0:	bic	#FF80,r2
+81D4:	cmpb	r2,#10
+81D8:	beq	8222
+81DA:	cmpb	#D,r2
+81DE:	bne	81E8
+81E0:	trap	02		;print CR, LF
+81E2:	mov	#A,r2
+81E6:	br	81F6
+81E8:	cmpb	#7F,r2
+81EC:	beq	819E
+81EE:	cmpb	#15,r2
+81F2:	beq	8212
+81F4:	trap	00		;print character r2
+81F6:	movb	r2,(r3)+
+81F8:	cmpb	r2,#A
+81FC:	beq	8206
+81FE:	cmp	r3,#38E9
+8202:	blo	81B6
+8204:	trap	19		;error 12 - input line too long
+8206:	mov	#3898,r1
+820A:	mov	#1,380C
+8210:	rts	pc
+8212:	movb	#5E,r2
+8216:	trap	00		;print character r2
+8218:	movb	#55,r2
+821C:	trap	00		;print character r2
+821E:	trap	02		;print CR, LF
+8220:	br	81B2
+8222:	clr	-(sp)
+8224:	mov	#8638,-(sp)
+8228:	mov	r2,-(sp)
+822A:	br	8242
+822C:	trap	07		;error 3 - illegal character
+822E:	mov	r2,-(sp)
+8230:	jsr	pc,B250		;wait for a key
+8234:	bic	#FF80,r2
+8238:	cmpb	r2,#10
+823C:	beq	8242
+823E:	mov	(sp)+,r2
+8240:	rti
+8242:	mov	380C,-(sp)
+8246:	jsr	pc,A512
+824A:	clr	3902		;select the LCD as the output device
+824E:	mov	#1,380C
+8254:	mov	#5E,r2
+8258:	trap	00		;print character r2
+825A:	mov	#50,r2
+825E:	trap	00		;print character r2
+8260:	mov	(sp)+,380C
+8264:	mov	#1,38FA
+826A:	br	823E
+
+; trap 3A - GETNSC, get a character other than space
+826C:	movb	(r1)+,r2
+826E:	cmp	#20,r2
+8272:	beq	826C
+8274:	rts	pc
+
+; trap 48
+8276:	cmpb	(r1),#3A
+827A:	beq	8284
+827C:	cmpb	(r1)+,#A
+8280:	bne	8276
+8282:	dec	r1
+8284:	rts	pc
+
+; trap 4E
+8286:	clr	38F2
+828A:	tst	38F0
+828E:	beq	8298
+8290:	mov	38F0,r5
+8294:	clr	38F0
+8298:	rts	pc
+
+; trap 66
+829A:	trap	4A
+829C:	clr	r0
+829E:	trap	4A
+82A0:	mov	r5,r0
+82A2:	trap	4A
+82A4:	trap	4A
+82A6:	trap	4A
+82A8:	rts	pc
+
+; trap 68
+82AA:	mov	r2,r0
+82AC:	trap	4A
+82AE:	mov	r3,r0
+82B0:	trap	4A
+82B2:	mov	r4,r0
+82B4:	trap	4A
+82B6:	rts	pc
+
+; trap 4A
+82B8:	mov	r4,-(sp)
+82BA:	mov	r5,r4
+82BC:	add	#14,r4
+82C0:	cmp	r4,sp
+82C2:	bhis	82DC
+82C4:	tst	38F0
+82C8:	bne	82D6
+82CA:	mov	r5,38F0
+82CE:	inc	r5
+82D0:	asr	r5
+82D2:	clc
+82D4:	asl	r5
+82D6:	mov	r0,(r5)+
+82D8:	mov	(sp)+,r4
+82DA:	rts	pc
+82DC:	trap	01		;error 0 - out of memory
+82DE:	mov	(r3),r0
+82E0:	bic	(sp),r0
+82E2:	cmp	r0,r4
+82E4:	beq	830C
+82E6:	bic	#1FFF,r0
+82EA:	cmp	#4000,r0
+82EE:	bne	8314
+82F0:	add	#10,r3
+82F4:	br	8302
+
+; trap 4C
+82F6:	tst	r3
+82F8:	beq	8312
+82FA:	cmp	r5,sp
+82FC:	bhis	82DC
+82FE:	mov	r1,-(sp)
+8300:	mov	r0,-(sp)
+8302:	cmp	r3,sp
+8304:	bhis	82DC
+8306:	cmp	r3,r5
+8308:	blo	82DE
+830A:	clr	r3
+830C:	mov	(sp)+,r0
+830E:	mov	(sp)+,r1
+8310:	tst	r3
+8312:	rts	pc
+8314:	bgt	8320
+8316:	add	#2,r3
+831A:	add	#4,r3
+831E:	br	8302
+8320:	tst	r0
+8322:	beq	8328
+8324:	tst	(r3)+
+8326:	br	8302
+8328:	movb	0002(r3),r0
+832C:	movb	0003(r3),r1
+8330:	trap	52
+8332:	add	r0,r3
+8334:	br	831A
+
+; trap 52
+8336:	bic	#FF00,r0
+833A:	bic	#FF00,r1
+833E:	inc	r0
+8340:	inc	r1
+8342:	mov	r4,-(sp)
+8344:	mov	r3,-(sp)
+8346:	trap	0E		;IMUL
+8348:	mov	(sp)+,r3
+834A:	mov	(sp)+,r4
+834C:	tst	r1
+834E:	bne	835C
+8350:	cmp	r0,#2400
+8354:	bhis	835C
+8356:	trap	58		;multiply r0 by 6
+8358:	clear	cvzn
+835A:	rts	pc
+835C:	set	v
+835E:	rts	pc
+
+; trap 50
+8360:	mov	r3,r1
+8362:	mov	r1,r2
+8364:	add	r4,r1
+8366:	br	8370
+
+; trap 3E
+8368:	trap	4E
+836A:	mov	r1,r3
+836C:	mov	r1,r2
+836E:	trap	42		;move the pointer r1 to the end of the line
+8370:	cmp	r1,r5
+8372:	bhis	8378
+8374:	movb	(r1)+,(r3)+
+8376:	br	8370
+8378:	mov	r3,r5
+837A:	mov	r2,r1
+837C:	rts	pc
+
+; trap 42 - move the pointer r1 to the end of the line
+837E:	cmpb	(r1)+,#A
+8382:	bne	837E
+8384:	rts	pc
+
+; trap 3C
+8386:	mov	38EC,r1
+838A:	trap	42		;move the pointer r1 to the end of the line
+838C:	cmp	r1,r5
+838E:	bhis	83A6
+8390:	mov	r0,-(sp)
+8392:	mov	r1,-(sp)
+8394:	trap	08		;ATOI
+8396:	mov	(sp)+,r1
+8398:	mov	r0,r2
+839A:	mov	(sp)+,r0
+839C:	cmp	r0,r2
+839E:	bgt	838A
+83A0:	beq	83A4
+83A2:	clear	cvzn
+83A4:	rts	pc
+83A6:	clear	cvzn
+83A8:	set	v
+83AA:	rts	pc
+
+; trap 56 - get a variable name (single letter or a letter followed by
+; a single digit)
+; returned values:
+; r1 - pointer to the parsed string
+; r2 - first unprocessed character other than space
+; r4 - letter code in bits 11-6, digit in ASCII format in bits 5-0
+; V flag cleared if name found
+83AC:	trap	3A		;get a character other than space to r2
+83AE:	trap	38		;is r2 a digit?
+83B0:	beq	83CE		;branch if yes
+83B2:	bvs	83CE
+83B4:	bic	#FFC0,r2
+83B8:	mov	r2,r4
+83BA:	swab	r4
+83BC:	asr	r4
+83BE:	asr	r4
+83C0:	trap	3A		;get a character other than space to r2
+83C2:	trap	38		;is r2 a digit?
+83C4:	bne	83CA		;branch if not
+83C6:	bis	r2,r4
+83C8:	trap	3A		;get a character other than space to r2
+83CA:	clear	cvzn
+83CC:	rts	pc
+83CE:	set	v
+83D0:	rts	pc
+
+; trap 54
+83D2:	tst	r0
+83D4:	blt	83A2
+83D6:	cmp	r0,#FF
+83DA:	bgt	83A2
+83DC:	set	z
+83DE:	rts	pc
+
+; trap 46 - get a pair of integer numbers separated by a comma
+; on entry r1 points to the parsed string
+; returned values:
+; r3 <- first number
+; r4 <- second number
+; r2 <- separator between numbers
+83E0:	trap	3A		;get a character other than space to r2
+83E2:	trap	38		;is r2 a digit?
+83E4:	bne	8400
+83E6:	dec	r1
+83E8:	trap	08		;ATOI
+83EA:	mov	r0,-(sp)
+83EC:	trap	3A		;get a character other than space to r2
+83EE:	cmp	#2C,r2
+83F2:	bne	8404
+83F4:	trap	08		;ATOI
+83F6:	tst	r0
+83F8:	beq	8404
+83FA:	mov	r0,r4
+83FC:	mov	(sp)+,r3
+83FE:	rts	pc
+8400:	clr	-(sp)
+8402:	br	83EE
+8404:	clr	r4
+8406:	br	83FC
+
+; trap 44 - check the available stack space
+8408:	mov	r5,r4
+840A:	add	r0,r4
+840C:	mov	sp,r3
+840E:	sub	#38,r3
+8412:	cmp	r3,r4
+8414:	rts	pc
+
+; trap 5A
+8416:	mov	r3,-(sp)
+8418:	trap	5E		;evaluate an arithmetical expression
+841A:	bvs	845A
+841C:	cmpb	(r1),#2C
+8420:	bne	8460
+8422:	jsr	pc,8464
+8426:	trap	3A		;get a character other than space to r2
+8428:	mov	r0,-(sp)
+842A:	trap	5E		;evaluate an arithmetical expression
+842C:	bvc	8460
+842E:	trap	20		;FIX
+8430:	bmi	8462
+8432:	mov	(sp)+,r2
+8434:	mov	@0000(sp),r4
+8438:	bic	#FF00,r4
+843C:	cmp	r0,r4
+843E:	bgt	8462
+8440:	mov	r1,-(sp)
+8442:	mov	r2,r1
+8444:	mov	r0,-(sp)
+8446:	mov	r4,r0
+8448:	inc	r0
+844A:	trap	0E		;IMUL
+844C:	add	(sp)+,r0
+844E:	mov	(sp)+,r1
+8450:	trap	58		;multiply r0 by 6
+8452:	mov	(sp)+,r3
+8454:	add	r3,r0
+8456:	tst	(r0)+
+8458:	rts	pc
+845A:	jsr	pc,8464
+845E:	br	8450
+8460:	trap	0B		;error 5 - incorrect index
+8462:	trap	0D		;error 6 - index out of range
+8464:	trap	20		;FIX
+8466:	bmi	8462
+8468:	mov	@0002(sp),r4
+846C:	clrb	r4
+846E:	swab	r4
+8470:	cmp	r0,r4
+8472:	bgt	8462
+8474:	rts	pc
+
+; trap 04 - display the line number 38EA
+8476:	sub	#8,sp
+847A:	mov	sp,r0
+847C:	mov	38EA,r1
+8480:	trap	0A		;ITOA
+8482:	mov	sp,r0
+8484:	tst	(r0)+
+8486:	clrb	0007(sp)
+848A:	trap	36		;print a string pointed to by r0
+848C:	add	#8,sp
+8490:	rts	pc
+
+; trap 58 - multiply r0 by 6
+8492:	clc
+8494:	asl	r0
+8496:	mov	r0,-(sp)
+8498:	asl	r0
+849A:	add	(sp)+,r0
+849C:	rts	pc
+
+; trap 5C - pointer to the beginning of the variable table
+849E:	mov	38F0,r3
+; align r3 to a word boundary
+84A2:	inc	r3
+84A4:	asr	r3
+84A6:	clc
+84A8:	asl	r3
+84AA:	rts	pc
+
+; trap 60 - get a pair of characters other than space to r4
+84AC:	trap	3A		;get a character other than space to r2
+84AE:	mov	r2,r4
+84B0:	swab	r4
+84B2:	trap	3A		;get a character other than space to r2
+84B4:	bis	r2,r4
+84B6:	rts	pc
+
+; trap 62 - MOVSTK, push r4,r3,r2 on the stack
+84B8:	mov	r3,-(sp)
+84BA:	mov	r2,-(sp)
+84BC:	mov	0004(sp),-(sp)	;push the return address on the stack
+84C0:	mov	r4,0006(sp)
+84C4:	cmp	r5,sp
+84C6:	bhis	84CA
+84C8:	rts	pc
+84CA:	trap	01		;error 0 - out of memory
+
+; command LIST
+84CC:	inc	386C
+84D0:	clr	386E
+84D4:	clr	3920
+84D8:	trap	3A		;get a character other than space to r2
+84DA:	cmpb	r2,#2A
+84DE:	bne	84E6
+84E0:	inc	3920
+84E4:	br	84E8
+84E6:	dec	r1
+84E8:	trap	4E
+84EA:	trap	46		;get a pair of integer numbers
+84EC:	mov	r3,r0
+84EE:	bne	8586
+84F0:	mov	38EC,r3
+84F4:	tst	r4
+84F6:	bne	859A
+84F8:	mov	r5,r4
+84FA:	tst	38FA
+84FE:	bne	85BA
+8500:	movb	(r3)+,r2
+8502:	nop
+8504:	nop
+8506:	bpl	8536
+8508:	bic	#FF80,r2
+850C:	mov	#87C0,r0
+8510:	mov	r2,r1
+8512:	dec	r1
+8514:	blt	851E
+8516:	cmpb	(r0)+,#24
+851A:	bne	8516
+851C:	br	8512
+851E:	movb	(r0)+,r2
+8520:	cmpb	r2,#24
+8524:	beq	84FA
+8526:	tst	3920
+852A:	beq	8532
+852C:	cmpb	r2,#27
+8530:	beq	851E
+8532:	trap	00		;print character r2
+8534:	br	851E
+8536:	cmpb	r2,#A
+853A:	beq	8540
+853C:	trap	00		;print character r2
+853E:	br	84FA
+8540:	trap	02		;print CR, LF
+8542:	inc	386E
+8546:	cmp	386E,#7
+854C:	blt	855E
+854E:	tst	38F8
+8552:	bne	855E
+8554:	jsr	pc,B250		;wait for a key
+8558:	cmp	r2,#D
+855C:	bne	8554
+855E:	cmp	r3,r4
+8560:	bhis	8570
+8562:	tst	3920
+8566:	beq	84FA
+8568:	mov	r3,r1
+856A:	trap	08		;ATOI
+856C:	mov	r1,r3
+856E:	br	84FA
+8570:	clr	3902		;select the LCD as the output device
+8574:	tst	38F8
+8578:	beq	857E
+857A:	jsr	pc,BE36
+857E:	clr	386C
+8582:	jmp	8650
+8586:	mov	r4,-(sp)
+8588:	trap	3C
+858A:	mov	(sp)+,r4
+858C:	cmp	r1,r5
+858E:	bhis	84F0
+8590:	tst	3920
+8594:	beq	8598
+8596:	dec	r1
+8598:	mov	r1,r3
+859A:	cmp	r4,r0
+859C:	ble	85AC
+859E:	mov	r4,r0
+85A0:	mov	r3,-(sp)
+85A2:	trap	3C
+85A4:	bne	85B2
+85A6:	mov	(sp)+,r3
+85A8:	cmp	r1,r5
+85AA:	bhi	84F8
+85AC:	trap	42		;move the pointer r1 to the end of the line
+85AE:	mov	r1,r4
+85B0:	br	84FA
+85B2:	mov	(sp)+,r3
+85B4:	cmp	r1,r5
+85B6:	bhi	84F8
+85B8:	br	85AE
+85BA:	clr	386C
+85BE:	jmp	8638
+
+; command DELETE
+85C2:	trap	4E
+85C4:	trap	46		;get a pair of integer numbers
+85C6:	mov	38EC,r1
+85CA:	tst	r4
+85CC:	bne	85D0
+85CE:	mov	r3,r4
+85D0:	mov	r4,-(sp)
+85D2:	mov	r3,-(sp)
+85D4:	trap	42		;move the pointer r1 to the end of the line
+85D6:	cmp	r1,r5
+85D8:	bhis	85EE
+85DA:	mov	r1,-(sp)
+85DC:	trap	08		;ATOI
+85DE:	mov	(sp)+,r1
+85E0:	cmp	r0,(sp)
+85E2:	blt	85D4
+85E4:	cmp	r0,0002(sp)
+85E8:	bgt	85EE
+85EA:	trap	3E
+85EC:	br	85D6
+85EE:	cmp	(sp)+,(sp)+
+85F0:	br	8654
+85F2:	trap	4E
+85F4:	trap	3C
+85F6:	bne	860E
+85F8:	trap	3E
+85FA:	br	860E
+85FC:	jsr	pc,826C		;get a character other than space
+8600:	cmpb	#3A,r2
+8604:	beq	86C0
+8606:	cmpb	#A,r2
+860A:	beq	860E
+860C:	trap	07		;error 3 - illegal character
+860E:	tst	38EE
+8612:	beq	8668
+8614:	tst	38F0
+8618:	beq	8620
+861A:	cmp	r1,38F0
+861E:	br	8622
+8620:	cmp	r1,r5
+8622:	bhis	86D6
+8624:	jsr	pc,942C		;ATOI
+8628:	mov	r0,38EA
+862C:	br	86C0
+
+862E:	mov	38EC,r5
+8632:	inc	r5
+8634:	clr	38F0
+8638:	mov	3810,sp
+863C:	clr	38F6
+8640:	clr	38FA
+8644:	clr	38EA
+8648:	mov	#1,380C
+864E:	trap	02		;print CR, LF
+8650:	clr	38F8
+8654:	clr	38EE
+8658:	mov	37CE,-(sp)
+865C:	mov	#88F0,r0	;string 'Gotov' (Ready)
+8660:	trap	36		;print a string pointed to by r0
+8662:	mov	(sp)+,37CE
+8666:	trap	02		;print CR, LF
+8668:	clr	38FA
+866C:	tst	384E
+8670:	beq	867C
+8672:	jsr	pc,A28C
+8676:	jsr	pc,81B6
+867A:	br	867E
+867C:	trap	40		;input a line from the keyboard
+867E:	trap	3A		;get a character other than space to r2
+8680:	cmp	r2,#A
+8684:	beq	8668
+8686:	mov	#3898,r1
+868A:	trap	08		;ATOI
+868C:	cmpb	(r1),#A
+8690:	beq	85F2
+8692:	mov	r1,r3
+8694:	mov	#87C0,r0
+8698:	clr	r2
+869A:	cmpb	(r3)+,#20
+869E:	beq	869A
+86A0:	cmpb	-(r3),(r0)+
+86A2:	bne	86AE
+86A4:	inc	r3
+86A6:	cmpb	(r0),#24
+86AA:	beq	86DC
+86AC:	br	869A
+86AE:	cmpb	(r0)+,#24
+86B2:	bne	86AE
+86B4:	cmpb	(r0),#24
+86B8:	beq	86DA
+86BA:	mov	r1,r3
+86BC:	inc	r2
+86BE:	br	869A
+86C0:	tst	38FA
+86C4:	bne	8638
+86C6:	jsr	pc,826C		;get a character other than space
+86CA:	bmi	86DA
+86CC:	bic	#FF80,r2
+86D0:	asl	r2
+86D2:	jmp	@889C(r2)
+86D6:	jmp	8906		;command STOP, END
+86DA:	trap	03		;error 1 - unknown operator
+86DC:	add	#80,r2
+86E0:	movb	r2,(r1)+
+86E2:	mov	r1,r4
+86E4:	movb	(r3),(r1)+
+86E6:	cmpb	(r3)+,#A
+86EA:	bne	86E4
+86EC:	cmpb	r2,#83
+86F0:	beq	8762
+86F2:	cmpb	r2,#A3
+86F6:	beq	8762
+86F8:	cmp	r2,#8D
+86FC:	bne	8738
+86FE:	mov	r4,r1
+8700:	trap	3A		;get a character other than space to r2
+8702:	cmpb	r2,#54		;'T'
+8706:	bne	872C
+8708:	trap	3A		;get a character other than space to r2
+870A:	cmpb	r2,#48		;'H'
+870E:	bne	8702
+8710:	trap	3A		;get a character other than space to r2
+8712:	cmpb	r2,#45		;'E'
+8716:	bne	8702
+8718:	trap	3A		;get a character other than space to r2
+871A:	cmpb	r2,#4E		;'N'
+871E:	bne	8702
+8720:	trap	3A		;get a character other than space to r2
+8722:	dec	r1
+8724:	mov	r1,r4
+8726:	trap	38		;is r2 a digit?
+8728:	beq	8738
+872A:	br	8692
+872C:	cmpb	r2,#A
+8730:	beq	8762
+8732:	cmpb	r2,#3A
+8736:	bne	8700
+8738:	mov	r4,r1
+873A:	cmpb	(r1),#22
+873E:	beq	8750
+8740:	cmpb	(r1)+,#3A
+8744:	beq	8720
+8746:	cmpb	-(r1),#A
+874A:	beq	8760
+874C:	inc	r1
+874E:	br	873A
+8750:	inc	r1
+8752:	cmpb	(r1),#22
+8756:	beq	874C
+8758:	cmpb	(r1),#A
+875C:	bne	8750
+875E:	trap	33		;error 25 - mismatched quotation marks
+8760:	inc	r1
+8762:	mov	r1,r3
+8764:	mov	#3898,r1
+8768:	trap	3A		;get a character other than space to r2
+876A:	trap	38		;is r2 a digit?
+876C:	beq	8772
+876E:	dec	r1
+8770:	br	86C0
+8772:	trap	4E
+8774:	mov	#3898,r1
+8778:	sub	r1,r3
+877A:	mov	r3,-(sp)
+877C:	trap	08		;ATOI
+877E:	tst	r0
+8780:	beq	87BE
+8782:	cmp	r0,#1FFF
+8786:	bgt	87BE
+8788:	trap	3C
+878A:	bne	878E
+878C:	trap	3E
+878E:	mov	(sp)+,r3
+8790:	trap	4E
+8792:	mov	r3,r0
+8794:	trap	44		;check the available stack space
+8796:	bhis	879E
+8798:	trap	01		;error 0 - out of memory
+879A:	add	r0,r5
+879C:	br	87AE
+879E:	cmp	r1,r5
+87A0:	bhis	879A
+87A2:	mov	r5,r2
+87A4:	add	r0,r5
+87A6:	mov	r5,r4
+87A8:	movb	-(r2),-(r4)
+87AA:	cmp	r1,r2
+87AC:	blos	87A8
+87AE:	mov	#3898,r2
+87B2:	movb	(r2),(r1)+
+87B4:	cmpb	(r2)+,#A
+87B8:	bne	87B2
+87BA:	jmp	860E
+87BE:	trap	21		;error 16 - wrong line number or dimension
+
+; keyword table
+87C0:	.ascii	'LIST$', 'LET$', 'READ$', 'REM$'
+87D2:	.ascii	'RUN$', 'RESTORE$', 'RETURN$', 'DATA$'
+87EA:	.ascii	'DIM$', 'DELETE$', 'PRINT$', 'GOSUB$'
+8801:	.ascii	'GOTO$', 'IF$', 'FOR$', 'NEXT$'
+8812:	.ascii	'INPUT$', 'SAVE$', 'STOP$', 'END$'
+8826:	.ascii	'DEF$', 'LOAD$', 'RANDOMIZE$', 'INIT$'
+883E:	.ascii	'KILL$', 'DRAW$', 'DIS$', 'CLS$'
+8850:	.ascii	'LOCATE$', 'WAIT$', 'PLAY$', 'AUTO$'
+8866:	.ascii	'NAME$', 'FILES$', 'HELP$', 27,'$'
+8878:	.ascii	'LLIST$', 'LPRINT$', 'LFILES$', 'DEV$'
+8890:	.ascii	'EDIT$', 'MEM$', '$'
+889A:	.byte	00
+889B:	.even
+
+; addresses of corresponding procedures
+889C:	.word	84CC, 8D3C, 8F80, 8DD8
+88A4:	.word	8928, 8966, 896C, 8DD8
+88AC:	.word	89A0, 85C2, 8E1C, 8944
+88B4:	.word	894E, 8D64, 8FDA, 90A6
+88BC:	.word	8EC8, BDD4, 8906, 8906
+88C4:	.word	8A02, BD10, 9138, BE46
+88CC:	.word	BCFC, A612, A388, A3A0
+88D4:	.word	A3C8, A2C4, A2D8, A268
+88DC:	.word	BDA4, BE82, C14C, 8DD8
+88E4:	.word	D664, D67A, D684, C130
+88EC:	.word	AA30, D68E
+
+88F0:	0E 67 4F 54 4F 57 0F 00				.gOTOW..
+88F8:	00 0D 0A 00 FF FF FF FF FF FF FF 0A 00 00
+
+; command STOP, END
+8906:	trap	02		;print CR, LF
+8908:	mov	#891A,r0
+890C:	trap	36		;print a string pointed to by r0
+890E:	trap	04		;display the line number 38EA
+8910:	trap	02		;print CR, LF
+8912:	clr	38EA
+8916:	jmp	8654
+
+891A:	4F 43 54 20 42 20 43 54 50 4F 4B 45 20 00	}OCT B CTPOKE .
+
+; command RUN
+8928:	trap	4E
+892A:	clr	38EA
+892E:	mov	38EC,r1
+8932:	inc	r1
+8934:	mov	#1747,3808
+893A:	mov	#1,38EE
+8940:	jmp	860E
+
+; command GOSUB
+8944:	mov	38EA,r0
+8948:	bis	#2000,r0
+894C:	trap	4A
+
+; command GOTO
+894E:	trap	3A		;get a character other than space to r2
+8950:	dec	r1
+8952:	trap	5E		;evaluate an arithmetical expression
+8954:	trap	20		;FIX
+8956:	trap	3C
+8958:	bne	8964
+895A:	mov	#1,38EE
+8960:	jmp	8624
+8964:	trap	05		;error 2 - illegal GOTO or GOSUB operator
+
+; command RESTORE
+8966:	clr	38F2
+896A:	br	89FA
+
+; command RETURN
+896C:	clr	-(sp)
+896E:	mov	#2000,r4
+8972:	trap	5C		;r3 = pointer to the variable table
+8974:	beq	899E
+8976:	mov	#1FFF,r0
+897A:	trap	4C
+897C:	beq	8984
+897E:	mov	r3,(sp)
+8980:	tst	(r3)+
+8982:	br	897A
+8984:	mov	(sp)+,r3
+8986:	beq	899E
+8988:	mov	(r3),r0
+898A:	bic	r4,r0
+898C:	inc	r0
+898E:	mov	#2,r4
+8992:	trap	50
+8994:	cmp	r0,#1
+8998:	beq	8912
+899A:	trap	3C
+899C:	br	895A
+899E:	trap	09		;error 4 - RETURN without GOSUB
+
+; command DIM
+89A0:	trap	64		;search for a variable
+89A2:	bvs	89D2		;error if invalid variable name
+89A4:	bne	8A00		;error if the variable already exists
+89A6:	mov	r4,-(sp)	;encoded variable name
+89A8:	trap	3A		;get a character other than space to r2
+89AA:	cmp	r2,#28
+89AE:	bne	89D2
+89B0:	trap	08		;ATOI
+89B2:	trap	54
+89B4:	bne	89D2
+89B6:	mov	r0,-(sp)
+89B8:	swab	(sp)
+89BA:	trap	3A		;get a character other than space to r2
+89BC:	cmpb	r2,#2C
+89C0:	bne	89CC
+89C2:	trap	08		;ATOI
+89C4:	trap	54
+89C6:	bne	89D2
+89C8:	bis	r0,(sp)
+89CA:	trap	3A		;get a character other than space to r2
+89CC:	cmp	r2,#29
+89D0:	beq	89D4
+89D2:	trap	1B		;error 13 - wrong size in the DIM operator
+89D4:	mov	(sp)+,r2
+89D6:	mov	(sp)+,r0
+89D8:	mov	r1,-(sp)
+89DA:	trap	4A
+89DC:	mov	r2,r0
+89DE:	trap	4A
+89E0:	mov	r2,r1
+89E2:	swab	r1
+89E4:	trap	52
+89E6:	bvs	89FE
+89E8:	trap	44		;check the available stack space
+89EA:	blo	89FE
+89EC:	add	r0,r5
+89EE:	mov	(sp)+,r1
+89F0:	trap	3A		;get a character other than space to r2
+89F2:	cmp	r2,#2C
+89F6:	beq	89A0
+89F8:	dec	r1
+89FA:	jmp	85FC
+89FE:	trap	1D		;error 14 - not enough memory for the array
+8A00:	trap	23		;error 17 - array of this name already defined
+
+; command DEF
+8A02:	trap	60		;get a pair of characters to r4
+8A04:	cmp	r4,#464E
+8A08:	bne	8A40
+8A0A:	trap	3A		;get a character other than space to r2
+8A0C:	trap	38		;is r2 a digit?
+8A0E:	beq	8A40
+8A10:	bvs	8A40
+8A12:	bis	#6000,r2
+8A16:	mov	r2,r0
+8A18:	trap	4A
+8A1A:	trap	3A		;get a character other than space to r2
+8A1C:	cmp	r2,#28		;'('
+8A20:	bne	8A40
+8A22:	trap	56		;get a variable name to r4
+8A24:	bvs	8A40		;branch if name not found
+8A26:	mov	r4,r0
+8A28:	trap	4A
+8A2A:	cmp	r2,#29
+8A2E:	bne	8A40
+8A30:	trap	3A		;get a character other than space to r2
+8A32:	cmp	r2,#3D
+8A36:	bne	8A40
+8A38:	mov	r1,r0
+8A3A:	trap	4A
+8A3C:	trap	48
+8A3E:	br	89FA
+8A40:	trap	1F		;error 15 - wrong DEF syntax
+
+
+; Original labels and comments copied from equivalent FOCAL-11 functions.
+
+; trap 5E - EVAL, evaluate an arithmetical expression pointed to by r1.
+; On exit r2,r3,r4 will contain the numeric value of the expression, r1 will
+; contain the address where the scan failed. If the scan fails on any
+; character other than a right parenthesis, r1 will point to the character
+; where the failure occurred. If the scan ended on a right parenthesis, r1
+; will point to the character following the prenthesis and the V bit will be
+; set. If the V bit is set on any parameter other than the last or is cleared
+; on the last parameter, a mismatching perenthesis error has occurred.
+8A42:	clr	r0
+8A44:	trap	4A
+8A46:	mov	#FFFF,-(sp)	;push null (-1) on the stack
+; EVAL02:
+8A4A:	trap	44		;check the available stack space
+8A4C:	blo	8B30
+8A4E:	trap	3A		;get a character other than space to r2
+8A50:	cmp	r2,#2B		;is it a '+'?
+8A54:	beq	8A66
+8A56:	cmp	r2,#2D		;is it a '-'?
+8A5A:	bne	8A68
+8A5C:	mov	r2,r0		;set operand2 = 0
+8A5E:	clr	r2
+8A60:	clr	r3
+8A62:	clr	r4
+8A64:	br	8A76
+; EVAL03:
+8A66:	trap	3A		;get a character other than space to r2
+; EVAL01
+8A68:	cmp	r2,#28		;is it an opening parenthesis?
+8A6C:	bne	8A7C		;no
+8A6E:	clr	-(sp)		;push a zero on the stack
+8A70:	inc	FFFE(r5)	;increment the parentheses count
+8A74:	br	8A4A
+; EVAL05:
+8A76:	trap	62		;push operand r4,r3,r2 on the stack
+8A78:	mov	r0,-(sp)	;push operator on the stack
+8A7A:	br	8A66
+; EVAL04:
+8A7C:	dec	r1		;move the character pointer back one
+8A7E:	mov	-(r5),-(sp)	;store the parentheses count
+8A80:	jsr	pc,8B46		;get an operand
+8A84:	mov	(sp)+,(r5)+	;restore the parentheses count
+; EVAL12:
+;
+; GTOPR - get an operator to r0. Look for +,-,*,/,^, and ).
+8A86:	mov	r2,-(sp)	;save the character
+8A88:	trap	3A		;get a character other than space to r2
+8A8A:	mov	#8B39,r0	;get address of list #EVAL07+7
+; GTPR01:
+8A8E:	cmpb	-(r0),r2	;is character a legal operator?
+8A90:	beq	8AA0		;yes
+8A92:	cmp	r0,#8B33	;has search failed?
+8A96:	bhi	8A8E		;no
+8A98:	clr	r0		;yes, set r0=0 and backup
+8A9A:	dec	r1		;pointer to point of failure
+; GTPR03:
+8A9C:	mov	(sp)+,r2	;restore the character
+8A9E:	br	8AA4
+; GTPR02:
+8AA0:	mov	r2,r0		;put the character in r0
+8AA2:	br	8A9C
+; end of the GTOPR module
+;
+8AA4:	tst	(sp)		;is the stack null?
+8AA6:	ble	8B06		;yes
+; EVAL06:
+8AA8:	mov	r1,-(sp)	;save the text pointer
+8AAA:	mov	#8B39,r1	;get the table address #EVAL07+7
+; EVAL08:
+8AAE:	cmpb	-(r1),r0	;find the operator
+8AB0:	bne	8AAE		;it must be found
+8AB2:	asr	r1		;clear the low order bit
+8AB4:	mov	r1,(r5)+
+8AB6:	mov	#8B39,r1	;get the table address #EVAL07+7
+; EVAL09:
+8ABA:	cmpb	-(r1),0002(sp)	;find the operator
+8ABE:	bne	8ABA		;it must be found
+8AC0:	asr	r1		;clear the low order bit
+8AC2:	mov	r1,(r5)+	;save it for now
+8AC4:	mov	(sp)+,r1	;restore the text pointer
+8AC6:	cmp	-(r5),-(r5)	;is priority of operator1 > operator2?
+8AC8:	blt	8A76		;no
+8ACA:	mov	r0,(r5)+	;yes, save operator2
+8ACC:	mov	#8B39,r0	;get table address
+; EVAL10:
+8AD0:	cmpb	-(r0),(sp)	;find the operator
+8AD2:	bne	8AD0		;it must be found
+8AD4:	sub	#8B34,r0	;get the displacement, #EVAL07+2
+8AD8:	asl	r0
+8ADA:	add	#8B3A,r0	;get routine address
+8ADE:	mov	r0,(r5)+	;save it
+8AE0:	tst	(sp)+		;discard old operator
+8AE2:	mov	sp,r0		;get destination address
+8AE4:	trap	62		;push the source r4,r3,r2 on the stack
+8AE6:	mov	r1,-(sp)	;save the text pointer
+8AE8:	mov	sp,r1
+8AEA:	tst	(r1)+		;get source address
+8AEC:	mov	-(r5),r2	;get routine address
+8AEE:	mov	-(r5),-(sp)	;save operator2
+8AF0:	jsr	pc,@0000(r2)	;go compute value
+8AF4:	mov	(sp)+,r0	;restore operator2
+8AF6:	mov	(sp)+,r1	;restore text pointer
+8AF8:	add	#6,sp		;discard source
+8AFC:	mov	(sp)+,r2	;place result in operand2
+8AFE:	mov	(sp)+,r3
+8B00:	mov	(sp)+,r4
+8B02:	tst	(sp)		;is stack null?
+8B04:	bgt	8AA8		;no, take care of the rest of the stack
+; EVAL17:
+8B06:	cmp	r0,#29		;is operator a closing parenthesis?
+8B0A:	beq	8B1C		;yes
+8B0C:	tst	r0		;no, is it a null?
+8B0E:	bgt	8A76		;no
+8B10:	tst	-(r5)		;yes, pop null
+8B12:	bne	8B1A
+8B14:	tst	(sp)+
+8B16:	clear	cvzn
+8B18:	rts	pc		;return with result in r2,r3,r4
+; EVAL13:
+8B1A:	trap	0F		;error 7 - mismatched parentheses
+; EVAL14:
+8B1C:	tst	-(r5)		;is parentheneses count zero?
+8B1E:	bne	8B26		;no
+; EVAL16:
+8B20:	tst	(sp)+		;pop null
+8B22:	set	v		;error
+8B24:	rts	pc
+; EVAL15:
+8B26:	tst	(sp)
+8B28:	blt	8B20		;jump if stack = -1
+8B2A:	tst	(sp)+		;pop null off stack
+8B2C:	dec	(r5)+		;decrease the parenteneses count by one
+8B2E:	br	8A86
+
+8B30:	trap	01		;error 0 - out of memory
+
+; EVAL07:
+8B32:	.byte	00, 29			;closing parenthesis
+8B34:	.byte	2B, 2D, 2A, 2F, 5E	;arithmetical operators +-*/^
+8B39:	.even
+; EVAL11:
+8B3A:	.word	959A, 962E, 970A, 9674, 989A	;corresponding procedures
+
+; GETOP - get an operand.
+; Upon entry r1 points to the start of an operand.
+; Upon exit r2,r3,r4 contain the value of the operand.
+8B46:	mov	r1,-(sp)	;save the text pointer
+8B48:	trap	3A		;get a character other than space to r2
+8B4A:	trap	38		;is r2 a digit?
+8B4C:	bvs	8B6C		;the character is a terminator
+8B4E:	bne	8B74
+; GTP18:
+; the character is a numeric
+8B50:	mov	(sp)+,r1	;restore the text pointer
+8B52:	sub	#6,sp		;reserve space for the number
+8B56:	mov	sp,r0		;move address for the number to r0
+8B58:	trap	06		;ATOF
+8B5A:	bvs	8B44
+8B5C:	mov	(sp)+,r2	;place the number in r2,r3,r4
+8B5E:	mov	(sp)+,r3
+8B60:	mov	(sp)+,r4
+8B62:	rts	pc
+;
+8B64:	mov	(r0)+,r2
+8B66:	mov	(r0)+,r3
+8B68:	mov	(r0)+,r4
+8B6A:	rts	pc
+;
+; GTP15:
+; the character is a terminator
+8B6C:	cmp	r2,#2E		;does the number begin with a decimal point?
+8B70:	beq	8B50		;yes
+8B72:	br	8C2C		;no
+;
+8B74:	cmp	r2,#46		;'F'
+8B78:	beq	8C2E
+8B7A:	mov	#FFC0,-(sp)
+8B7E:	bic	(sp),r2
+8B80:	mov	r2,r0
+8B82:	trap	58		;multiply r0 by 6
+8B84:	trap	58		;multiply r0 by 6
+8B86:	trap	3A		;get a character other than space to r2
+8B88:	trap	38		;is r2 a digit?
+8B8A:	bvs	8C2A
+8B8C:	beq	8C2A
+8B8E:	bic	(sp),r2
+8B90:	add	r2,r0
+8B92:	trap	58		;multiply r0 by 6
+8B94:	trap	58		;multiply r0 by 6
+8B96:	cmp	r0,#5244	;encoded keyword "PI"
+8B9A:	bne	8BAC
+; function PI
+8B9C:	mov	#9B78,r0	;PI/2
+8BA0:	mov	(r0)+,r2
+8BA2:	mov	(r0)+,r3
+8BA4:	mov	(r0)+,r4
+8BA6:	inc	r4		;r2-r4 <- PI
+8BA8:	tst	(sp)+
+8BAA:	br	8B20
+8BAC:	trap	3A		;get a character other than space to r2
+8BAE:	trap	38		;is r2 a digit?
+8BB0:	bvs	8C2A
+8BB2:	beq	8C2A
+8BB4:	bic	(sp)+,r2
+8BB6:	add	r2,r0
+8BB8:	cmp	r0,#2F8B	;encoded keyword "INC"
+8BBC:	bne	8BC0
+8BBE:	br	8C02		;function INC
+8BC0:	mov	#8CE0,r3
+8BC4:	cmp	(r3)+,r0
+8BC6:	beq	8BD0
+8BC8:	cmp	r3,#8CF6
+8BCC:	blo	8BC4
+8BCE:	br	8CC4
+8BD0:	trap	3A		;get a character other than space to r2
+8BD2:	cmp	r2,#28
+8BD6:	bne	8CC4
+8BD8:	mov	0014(r3),-(sp)
+8BDC:	trap	5E		;evaluate an arithmetical expression
+8BDE:	bvc	8C68
+8BE0:	mov	(sp)+,r0
+8BE2:	trap	62		;push r4,r3,r2 on the stack
+8BE4:	mov	r0,r2
+8BE6:	mov	sp,r0
+8BE8:	mov	r1,-(sp)
+8BEA:	mov	r0,r1
+8BEC:	sub	#6,sp
+8BF0:	mov	sp,r0
+8BF2:	jsr	pc,(r2)
+8BF4:	mov	(sp)+,r2
+8BF6:	mov	(sp)+,r3
+8BF8:	mov	(sp)+,r4
+8BFA:	mov	(sp)+,r1
+8BFC:	add	#8,sp
+8C00:	rts	pc
+
+; function INC
+8C02:	cmpb	#DF,3864	;key FK ?
+8C08:	bne	8C0E
+8C0A:	clr	3864
+8C0E:	mov	r1,-(sp)
+8C10:	jsr	pc,B258		;get the ASCII code of the pressed key in r2
+8C14:	sub	#6,sp
+8C18:	mov	sp,r0
+8C1A:	mov	r2,r1
+8C1C:	trap	1E		;FLT, convert integer R1 to float
+8C1E:	mov	(sp)+,r2
+8C20:	mov	(sp)+,r3
+8C22:	mov	(sp)+,r4
+8C24:	mov	(sp)+,r1
+8C26:	jmp	8B20
+
+8C2A:	tst	(sp)+
+8C2C:	br	8CC4
+8C2E:	trap	3A		;get a character other than space to r2
+8C30:	cmp	r2,#4E
+8C34:	bne	8CC4
+8C36:	trap	3A		;get a character other than space to r2
+8C38:	trap	38		;is r2 a digit?
+8C3A:	bvs	8CC4
+8C3C:	beq	8CC4
+8C3E:	trap	5C		;r3 = pointer to the variable table
+8C40:	beq	8CD0
+8C42:	clr	r0
+8C44:	bis	#6000,r2
+8C48:	mov	r2,r4
+8C4A:	trap	4C
+8C4C:	beq	8CC4
+8C4E:	tst	(r3)+
+8C50:	mov	(r3)+,r4
+8C52:	mov	(r3)+,-(sp)
+8C54:	trap	5C		;r3 = pointer to the variable table
+8C56:	trap	4C
+8C58:	bne	8C88
+8C5A:	trap	3A		;get a character other than space to r2
+8C5C:	cmp	r2,#28
+8C60:	bne	8C2A
+8C62:	mov	r4,-(sp)
+8C64:	trap	5E		;evaluate an arithmetical expression
+8C66:	bvs	8C6A
+8C68:	trap	0F		;error 7 - mismatched parentheses
+8C6A:	mov	(sp)+,r0
+8C6C:	mov	r5,-(sp)
+8C6E:	trap	4A
+8C70:	clr	r0
+8C72:	trap	4A
+8C74:	trap	68
+8C76:	mov	r1,-(sp)
+8C78:	mov	0004(sp),r1
+8C7C:	trap	5E		;evaluate an arithmetical expression
+8C7E:	bvs	8C68
+8C80:	mov	(sp)+,r1
+8C82:	mov	(sp)+,r5
+8C84:	cmp	(sp)+,(sp)+
+8C86:	rts	pc
+8C88:	cmp	(r3)+,(r3)+
+8C8A:	mov	(sp)+,r0
+8C8C:	mov	(r3)+,-(sp)
+8C8E:	mov	(r3)+,-(sp)
+8C90:	mov	(r3)+,-(sp)
+8C92:	mov	r3,-(sp)
+8C94:	mov	r0,-(sp)
+8C96:	trap	3A		;get a character other than space to r2
+8C98:	cmp	r2,#28
+8C9C:	bne	8CDA
+8C9E:	trap	5E		;evaluate an arithmetical expression
+8CA0:	bvc	8C68
+8CA2:	mov	r1,r0
+8CA4:	mov	0002(sp),r1
+8CA8:	mov	r4,-(r1)
+8CAA:	mov	r3,-(r1)
+8CAC:	mov	r2,-(r1)
+8CAE:	mov	(sp)+,r1
+8CB0:	mov	r0,-(sp)
+8CB2:	trap	5E		;evaluate an arithmetical expression
+8CB4:	bvs	8C68
+8CB6:	mov	(sp)+,r1
+8CB8:	mov	(sp)+,r0
+8CBA:	mov	(sp)+,-(r0)
+8CBC:	mov	(sp)+,-(r0)
+8CBE:	mov	(sp)+,-(r0)
+8CC0:	tst	(sp)+
+8CC2:	rts	pc
+8CC4:	mov	(sp)+,r1
+8CC6:	trap	64
+8CC8:	bvs	8CD0
+8CCA:	beq	8CD0
+8CCC:	jmp	8B64
+8CD0:	trap	F7		;error 123 - variable doesn't exist
+8CD2:	clr	r2
+8CD4:	clr	r3
+8CD6:	clr	r4
+8CD8:	rts	pc
+8CDA:	add	#A,sp
+8CDE:	br	8CC4
+
+; keywords stored in a format similar to Radix-50, but with a subset of 36
+; characters instead of 40
+8CE0:	.word	6182, 115F, 07EE, 1CC0	;SIN, COS, ATN, EXP
+8CE8:	.word	3EE3, 056B, 62A6, 2F9C	;LOG, ABS, SQR, INT
+8CF0:	.word	5D1C, 613A  0000	;RND, SGN
+
+; addresses of corresponding procedures
+8CF6:	.word	9ADE, 9B40, 9B7E, 997E
+8CFE:	.word	98C2, 9644, 9C70, 9806
+8D06:	.word	9114, 965E, 0000
+
+; trap 64 - search for a variable of a name pointed to by r1
+; returned values:
+; r0 - pointer to the value
+; r1 - pointer to the parsed string
+; r2 - first unprocessed character other than space
+; r4 - encoded variable name: letter in bits 11-6, digit in bits 5-0
+; V flag set if invalid variable name
+; Z flag set if the variable doesn't exist
+8D0C:	trap	56		;get a variable name to r4
+8D0E:	bvs	8D34		;return with V set if name not found
+8D10:	dec	r1
+8D12:	clr	r0
+8D14:	trap	5C		;r3 = pointer to the variable table
+8D16:	beq	8D32
+8D18:	trap	4C
+8D1A:	beq	8D32
+8D1C:	cmp	(sp),#8E0
+8D20:	beq	8D38
+8D22:	tst	(r3)+
+8D24:	cmpb	(r1),#28
+8D28:	bne	8D36
+8D2A:	inc	r1
+8D2C:	mov	r4,-(sp)
+8D2E:	trap	5A
+8D30:	mov	(sp)+,r4
+8D32:	tst	r0
+8D34:	rts	pc
+8D36:	tst	(r3)+
+8D38:	mov	r3,r0
+8D3A:	rts	pc
+
+; command LET
+8D3C:	trap	64		;search for a variable
+8D3E:	bvs	8D60		;invalid variable name
+8D40:	bne	8D46		;skip if variable already exists
+8D42:	mov	r4,r0		;encoded variable name
+8D44:	trap	66		;create the variable
+8D46:	mov	r0,-(sp)
+8D48:	trap	3A		;get a character other than space to r2
+8D4A:	cmp	r2,#3D
+8D4E:	bne	8D60
+8D50:	trap	5E		;evaluate an arithmetical expression
+8D52:	bvs	8D62
+8D54:	mov	(sp)+,r0
+8D56:	mov	r2,(r0)+
+8D58:	mov	r3,(r0)+
+8D5A:	mov	r4,(r0)+
+8D5C:	jmp	85FC
+8D60:	trap	11		;error 8 - illegal LET operator
+8D62:	trap	0F		;error 7 - mismatched parentheses
+
+; command IF
+8D64:	trap	5E		;evaluate an arithmetical expression
+8D66:	bvs	8D62
+8D68:	trap	62		;push r4,r3,r2 on the stack
+8D6A:	trap	60		;get a pair of characters to r4
+8D6C:	cmp	r2,#3E
+8D70:	beq	8D7C
+8D72:	cmp	r2,#3D
+8D76:	beq	8D7C
+8D78:	dec	r1
+8D7A:	clrb	r4
+8D7C:	mov	#8DAC,r2
+8D80:	cmp	r4,(r2)+
+8D82:	beq	8D8C
+8D84:	cmp	r2,#8DB8
+8D88:	blo	8D80
+8D8A:	trap	13		;error 9 - illegal relation operator
+8D8C:	sub	#8DAE,r2
+8D90:	asl	r2
+8D92:	add	#8DB8,r2
+8D96:	mov	r2,-(sp)
+8D98:	trap	5E		;evaluate an arithmetical expression
+8D9A:	bvs	8D62
+8D9C:	mov	r1,-(sp)
+8D9E:	mov	sp,r1
+8DA0:	cmp	(r1)+,(r1)+
+8DA2:	trap	62		;push r4,r3,r2 on the stack
+8DA4:	mov	sp,r0
+8DA6:	trap	1C		;CMPF
+8DA8:	jmp	@0008(sp)
+
+8DAC:	3E 3C 3D 3C  00 3C 3D 3E  00 3E 00 3D	><=<.<=>.>.=
+
+8DB8:	bne	8DE0
+8DBA:	br	8DCE
+8DBC:	ble	8DE0
+8DBE:	br	8DCE
+8DC0:	blt	8DE0
+8DC2:	br	8DCE
+8DC4:	bge	8DE0
+8DC6:	br	8DCE
+8DC8:	bgt	8DE0
+8DCA:	br	8DCE
+8DCC:	beq	8DE0
+8DCE:	add	#6,sp
+8DD2:	mov	(sp)+,r1
+8DD4:	add	#8,sp
+;
+; commands REM, DATA
+8DD8:	trap	42		;move the pointer r1 to the end of the line
+8DDA:	dec	r1
+8DDC:	jmp	85FC
+8DE0:	add	#6,sp
+8DE4:	mov	(sp)+,r1
+8DE6:	add	#8,sp
+8DEA:	trap	60		;get a pair of characters to r4
+8DEC:	cmp	r4,#5448
+8DF0:	bne	8E0C
+8DF2:	trap	60		;get a pair of characters to r4
+8DF4:	cmp	r4,#454E
+8DF8:	bne	8E1A
+8DFA:	trap	3A		;get a character other than space to r2
+8DFC:	dec	r1
+8DFE:	trap	38		;is r2 a digit?
+8E00:	bvs	8E08
+8E02:	bne	8E1A
+8E04:	jmp	894E		;command GOTO
+8E08:	jmp	86C0
+8E0C:	cmp	r4,#474F
+8E10:	bne	8E1A
+8E12:	trap	60		;get a pair of characters to r4
+8E14:	cmp	r4,#544F
+8E18:	beq	8E04
+8E1A:	trap	15		;error 10 - illegal IF operator
+
+; command PRINT
+8E1C:	clr	-(sp)
+8E1E:	mov	#1C,r0
+8E22:	trap	44		;check the available stack space
+8E24:	blo	8EC6
+8E26:	trap	3A		;get a character other than space to r2
+8E28:	cmpb	r2,#3C
+8E2C:	bne	8E34
+8E2E:	jsr	pc,A4D0
+8E32:	br	8E26
+8E34:	cmpb	r2,#2C
+8E38:	beq	8E72
+8E3A:	cmpb	r2,#3B
+8E3E:	beq	8E94
+8E40:	cmpb	r2,#22
+8E44:	beq	8E9C
+8E46:	cmpb	r2,#3A
+8E4A:	beq	8EB2
+8E4C:	cmpb	r2,#A
+8E50:	beq	8EB2
+8E52:	tst	(sp)
+8E54:	blt	8E9A
+8E56:	dec	r1
+8E58:	trap	5E		;evaluate an arithmetical expression
+8E5A:	bvs	8E9A
+8E5C:	mov	r1,-(sp)
+8E5E:	jsr	pc,92DA		;floating point to ASCII conversion
+8E62:	mov	sp,r0
+8E64:	trap	36		;print a string pointed to by r0
+8E66:	add	#14,sp
+8E6A:	mov	(sp)+,r1
+8E6C:	mov	#FFFF,(sp)
+8E70:	br	8E1E
+8E72:	mov	38F4,r0
+8E76:	cmp	r0,#38
+8E7A:	blt	8E80
+8E7C:	trap	02		;print CR, LF
+8E7E:	br	8E94
+8E80:	neg	r0
+8E82:	bgt	8E8A
+8E84:	add	#E,r0
+8E88:	br	8E82
+8E8A:	movb	#20,r2
+8E8E:	trap	00		;print character r2
+8E90:	dec	r0
+8E92:	bgt	8E8E
+8E94:	mov	#1,(sp)
+8E98:	br	8E1E
+8E9A:	trap	17		;error 11 - illegal PRINT operator
+8E9C:	movb	(r1)+,r2
+8E9E:	trap	00		;print character r2
+8EA0:	cmpb	(r1),#A
+8EA4:	beq	8E9A
+8EA6:	cmpb	(r1),#22
+8EAA:	bne	8E9C
+8EAC:	inc	r1
+8EAE:	clr	(sp)
+8EB0:	br	8E1E
+8EB2:	tst	(sp)+
+8EB4:	bgt	8EB8
+8EB6:	trap	02		;print CR, LF
+8EB8:	jsr	pc,A512
+8EBC:	dec	r1
+8EBE:	clr	3902		;select the LCD as the output device
+8EC2:	jmp	85FC
+8EC6:	trap	01		;error 0 - out of memory
+
+; command INPUT
+8EC8:	clr	-(sp)
+8ECA:	jsr	pc,8F4E
+8ECE:	bvc	8ED2
+8ED0:	trap	25		;error 12 - input line too long (more than 80
+				;characters)
+8ED2:	clr	-(sp)
+8ED4:	mov	r1,-(sp)
+8ED6:	mov	#3F,r2
+8EDA:	trap	00		;print character r2
+8EDC:	trap	40		;input a line from the keyboard
+8EDE:	jsr	pc,8F0C
+8EE2:	bvs	8F08
+8EE4:	bgt	8F00
+8EE6:	blt	8F04
+8EE8:	mov	(sp)+,r1
+8EEA:	tst	(sp)+
+8EEC:	tst	(sp)+
+8EEE:	bne	8EEC
+8EF0:	dec	r1
+8EF2:	tst	38EE
+8EF6:	bne	8EFC
+8EF8:	movb	#A,(r1)
+8EFC:	jmp	85FC
+8F00:	trap	F5		;error 122 - too much data entered
+8F02:	br	8ED6
+8F04:	trap	F3		;error 121 - not enough data entered
+8F06:	br	8ED6
+8F08:	trap	F1		;error 120 - illegal characters entered
+8F0A:	br	8ED6
+8F0C:	mov	sp,r4
+8F0E:	cmp	(r4)+,(r4)+
+8F10:	tst	(r4)+
+8F12:	tst	(r4)+
+8F14:	bne	8F12
+8F16:	tst	-(r4)
+8F18:	mov	-(r4),r0
+8F1A:	beq	8F46
+8F1C:	mov	r4,-(sp)
+8F1E:	trap	06		;ATOF
+8F20:	bvs	8F4A
+8F22:	mov	(sp)+,r4
+8F24:	cmpb	(r1),#2C
+8F28:	beq	8F3A
+8F2A:	cmpb	(r1),#3A
+8F2E:	beq	8F3E
+8F30:	cmpb	(r1),#A
+8F34:	beq	8F3E
+8F36:	set	v
+8F38:	rts	pc
+8F3A:	inc	r1
+8F3C:	br	8F18
+8F3E:	mov	-(r4),r0
+8F40:	beq	8F38
+8F42:	set	n
+8F44:	rts	pc
+8F46:	clear	cvzn
+8F48:	rts	pc
+8F4A:	tst	(sp)+
+8F4C:	br	8F36
+8F4E:	trap	64
+8F50:	bvs	8F7A
+8F52:	bne	8F58
+8F54:	mov	r4,r0
+8F56:	trap	66
+8F58:	mov	(sp)+,r2
+8F5A:	mov	r0,-(sp)
+8F5C:	mov	#4,r0
+8F60:	trap	44		;check the available stack space
+8F62:	blo	8F7E
+8F64:	mov	r2,-(sp)
+8F66:	trap	3A		;get a character other than space to r2
+8F68:	cmpb	r2,#2C
+8F6C:	beq	8F4E
+8F6E:	cmpb	r2,#3A
+8F72:	beq	8F7C
+8F74:	cmpb	r2,#A
+8F78:	beq	8F7C
+8F7A:	set	v
+8F7C:	rts	pc
+8F7E:	trap	01		;error 0 - out of memory
+
+; command READ
+8F80:	mov	#1,-(sp)
+8F84:	clr	-(sp)
+8F86:	jsr	pc,8F4E
+8F8A:	bvc	8F8E
+8F8C:	trap	27		;error 19 - wrong variable in the READ operator
+8F8E:	clr	-(sp)
+8F90:	mov	r1,-(sp)
+8F92:	mov	38F2,r1
+8F96:	bne	8F9E
+8F98:	mov	38EC,r1
+8F9C:	br	8FCA
+8F9E:	cmpb	(r1),#A
+8FA2:	beq	8FCA
+8FA4:	jsr	pc,8F0C
+8FA8:	bvs	8FD8
+8FAA:	blt	8FC2
+8FAC:	mov	r1,38F2
+8FB0:	mov	(sp)+,r1
+8FB2:	tst	(sp)+
+8FB4:	tst	(sp)+
+8FB6:	bne	8FB4
+8FB8:	tst	(sp)+
+8FBA:	beq	8FB8
+8FBC:	dec	r1
+8FBE:	jmp	85FC
+8FC2:	tst	(r4)+
+8FC4:	clr	(r4)+
+8FC6:	tst	(r4)
+8FC8:	bne	8FC4
+8FCA:	trap	5C		;r3 = pointer to the variable table
+8FCC:	cmpb	#87,(r1)+
+8FD0:	beq	8F9E
+8FD2:	cmp	r1,r3
+8FD4:	blo	8FCC
+8FD6:	trap	29		;error 20 - not enough DATA to READ
+8FD8:	trap	2B		;error 21 - wrong DATA format
+
+; command FOR
+8FDA:	trap	56		;get a variable name to r4
+; missing test whether a variable name was found ???
+8FDC:	cmp	r2,#3D		;'='
+8FE0:	bne	907E
+8FE2:	clr	r0
+8FE4:	mov	r4,-(sp)
+8FE6:	trap	5C		;r3 = pointer to the variable table
+8FE8:	trap	4C
+8FEA:	bne	8FF2
+8FEC:	mov	r4,r0
+8FEE:	trap	66
+8FF0:	br	8FF6
+8FF2:	mov	r3,r0
+8FF4:	cmp	(r0)+,(r0)+
+8FF6:	mov	r0,-(sp)
+8FF8:	clr	r0
+8FFA:	trap	5C		;r3 = pointer to the variable table
+8FFC:	bis	#4000,r4
+9000:	trap	4C
+9002:	beq	9012
+9004:	mov	r4,-(sp)
+9006:	mov	r1,-(sp)
+9008:	mov	#10,r4
+900C:	trap	50
+900E:	mov	(sp)+,r1
+9010:	mov	(sp)+,r4
+9012:	mov	r4,r0
+9014:	trap	4A
+9016:	mov	r1,r0
+9018:	trap	4A
+901A:	trap	5E		;evaluate an arithmetical expression
+901C:	mov	(sp),r0
+901E:	mov	r2,(r0)+
+9020:	mov	r3,(r0)+
+9022:	mov	r4,(r0)+
+9024:	trap	60		;get a pair of characters to r4
+9026:	cmp	r4,#544F
+902A:	bne	907E
+902C:	trap	5E		;evaluate an arithmetical expression
+902E:	trap	68
+9030:	cmpb	(r1),#53
+9034:	bne	904C
+9036:	trap	60		;get a pair of characters to r4
+9038:	cmp	r4,#5354
+903C:	bne	907E
+903E:	trap	60		;get a pair of characters to r4
+9040:	cmp	r4,#4550
+9044:	bne	907E
+9046:	trap	5E		;evaluate an arithmetical expression
+9048:	trap	68
+904A:	br	9058
+904C:	clr	r2
+904E:	mov	#4000,r3
+9052:	mov	#8001,r4
+9056:	br	9048
+9058:	mov	(sp),r0
+905A:	mov	r1,-(sp)
+905C:	mov	r5,r1
+905E:	sub	#C,r1
+9062:	mov	r1,-(sp)
+9064:	trap	1C		;CMPF
+9066:	beq	9074
+9068:	blt	9080
+906A:	mov	(sp)+,r1
+906C:	tst	0008(r1)
+9070:	blt	9088
+9072:	br	9076
+9074:	tst	(sp)+
+9076:	mov	(sp)+,r1
+9078:	cmp	(sp)+,(sp)+
+907A:	jmp	85FC
+907E:	trap	2D		;error 22 - illegal FOR operator
+9080:	mov	(sp)+,r1
+9082:	tst	0008(r1)
+9086:	blt	9076
+9088:	mov	(sp)+,r1
+908A:	tst	(sp)+
+908C:	trap	5C		;r3 = pointer to the variable table
+908E:	cmpb	(r1)+,#8F
+9092:	beq	909A
+9094:	cmp	r1,r3
+9096:	blo	908E
+9098:	trap	2F		;error 23 - FOR without NEXT
+909A:	trap	56		;get a variable name to r4
+909C:	cmp	r4,(sp)
+909E:	bne	908E
+90A0:	tst	(sp)+
+90A2:	dec	r1
+90A4:	br	907A
+
+; command NEXT
+90A6:	clr	r0
+90A8:	trap	56		;get a variable name to r4
+90AA:	mov	r4,-(sp)
+90AC:	trap	5C		;r3 = pointer to the variable table
+90AE:	trap	4C
+90B0:	beq	90FE
+90B2:	mov	r3,-(sp)
+90B4:	bis	#4000,r4
+90B8:	trap	5C		;r3 = pointer to the variable table
+90BA:	trap	4C
+90BC:	beq	90FE
+90BE:	mov	r1,-(sp)
+90C0:	cmp	(r3)+,(r3)+
+90C2:	mov	r3,r1
+90C4:	add	#6,r1
+90C8:	mov	0002(sp),r0
+90CC:	mov	r3,-(sp)
+90CE:	cmp	(r0)+,(r0)+
+90D0:	mov	r0,-(sp)
+90D2:	trap	10		;ADDF
+90D4:	mov	(sp)+,r0
+90D6:	mov	(sp),r3
+90D8:	mov	r3,r1
+90DA:	tst	0008(r3)
+90DE:	bpl	90E6
+90E0:	trap	1C		;CMPF
+90E2:	bgt	9100
+90E4:	br	90EA
+90E6:	trap	1C		;CMPF
+90E8:	blt	9100
+90EA:	mov	(sp),r0
+90EC:	mov	-(r0),r1
+90EE:	trap	48
+90F0:	mov	r1,r4
+90F2:	mov	(sp)+,r1
+90F4:	tst	(sp)+
+90F6:	mov	(sp),r0
+90F8:	mov	r4,-(sp)
+90FA:	cmp	(r0)+,(r0)+
+90FC:	br	9062
+90FE:	trap	31		;error 24 - NEXT without FOR
+9100:	mov	(sp)+,r1
+9102:	add	#6,r1
+9106:	mov	0002(sp),r0
+910A:	cmp	(r0)+,(r0)+
+910C:	trap	12		;SUBF
+910E:	mov	(sp)+,r1
+9110:	cmp	(sp)+,(sp)+
+9112:	br	90A2
+
+; function RND
+9114:	mov	r0,-(sp)
+9116:	mov	3808,r0
+911A:	mov	380A,r1
+911E:	trap	0E		;IMUL
+9120:	bic	#8000,r0
+9124:	mov	r0,3808
+9128:	mov	r0,r1
+912A:	mov	(sp),r0
+912C:	trap	1E		;FLT, convert integer R1 to float
+912E:	mov	(sp)+,r0
+9130:	sub	#F,0004(r0)
+9136:	rts	pc
+
+; command RANDOMIZE
+9138:	mov	380E,3808
+913E:	bis	#1,3808
+9144:	jmp	85FC
+
+
+; The binary <-> ASCII number conversion routines are apparently based on the
+; floating point library of the RT-11 operating system. The original labels
+; and comments are preserved.
+
+; trap 06 - ATOF (documented), conversion of an ASCII string to a FP number
+; on entry r1 points to the string
+; on exit r1 points to the first invalid character,
+; result (3 words) stored at memory location pointed to by r0
+;
+; bit 0 - switch S
+; bit 1 - switch V, set if an overflow occurred
+; bit 2 - switch E, set if character 'E' encountered
+; bit 3 - switch D, set if a decimal point encountered
+; bit 4 - switch A
+; bit 5 - switch B
+; bit 6 - set if negative number
+; bit 7 - set if negative exponent
+; bit 8 - switch M
+9148:	mov	r5,-(sp)
+914A:	mov	r0,-(sp)
+914C:	clr	(r0)+
+914E:	clr	(r0)+
+9150:	clr	(r0)
+9152:	clr	-(sp)
+9154:	clr	-(sp)
+9156:	clr	-(sp)		;clear the switches
+; M.AFXN:
+9158:	trap	3A		;get a character other than space to r2
+915A:	cmpb	#45,r2		;'E'
+915E:	beq	91D8
+9160:	cmpb	#2D,r2		;'-'
+9164:	beq	91FA
+9166:	cmpb	#2B,r2		;'+'
+916A:	beq	91F4
+916C:	cmpb	#2E,r2		;decimal point
+9170:	beq	91E8
+9172:	trap	38		;is r2 a digit?
+9174:	bne	9220		;branch if r2 is not a decimal digit
+9176:	sub	#30,r2		;convert the digit to binary
+917A:	mov	r1,-(sp)
+917C:	bit	#0004,0002(sp)	;test the E switch
+9182:	bne	91BA		;branch if collecting exponent
+9184:	sub	#6,sp
+9188:	mov	sp,r0
+918A:	mov	r2,r1
+918C:	trap	1E		;FLT, convert integer R1 to float
+918E:	mov	000E(sp),r0
+9192:	mov	#92BC,r1	;floating point constant 10
+9196:	trap	18		;MULF, multiply by 10
+9198:	bvs	9246
+919A:	mov	000E(sp),r0
+919E:	mov	sp,r1
+91A0:	trap	10		;ADDF, add current digit
+91A2:	bit	#0008,0008(sp)	;test the D switch
+91A8:	beq	91AE		;if 0, don't touch EXP2
+91AA:	dec	000A(sp)	;decrement EXP2
+91AE:	add	#6,sp
+; M.AFSS:
+91B2:	mov	(sp)+,r1	;get digit SEFA
+91B4:	bis	#0001,(sp)	;set the S switch
+91B8:	br	9222		;go get another digit
+; M.AFXP
+91BA:	mov	r2,-(sp)
+91BC:	mov	0008(sp),r3
+91C0:	mov	#A,r5
+91C4:	clr	r2
+91C6:	clr	r4
+91C8:	cmp	r3,#03D4	;check for large exponent
+91CC:	bgt	924E
+91CE:	trap	32		;unsigned 32-bit integer multiplication
+91D0:	add	(sp)+,r3
+91D2:	mov	r3,0006(sp)	;save EXP1 back on stack
+91D6:	br	91B2		;set the S switch
+; M.AFE:
+91D8:	bit	#0004,(sp)	;first E?
+91DC:	bne	9240		;no error
+91DE:	bis	#0004,(sp)	;set the E switch
+91E2:	bic	#0001,(sp)	;have a fraction?
+91E6:	br	9222		;get next character
+; M.AFD:
+91E8:	bit	#000C,(sp)	;test the E and D switches
+91EC:	bne	9240		;either one is an error
+91EE:	bis	#0008,(sp)	;set the D switch
+91F2:	br	9222		;get next character
+; M.AFPL:
+91F4:	bic	#0100,(sp)	;clear the M switch
+91F8:	br	91FC
+; M.AFMI:
+91FA:	bis	#0100,(sp)	;set the M switch
+91FE:	bit	#0004,(sp)	;test the E switch
+9202:	bne	9224		;branch if sign of exponent
+9204:	bit	#0001,(sp)	;test the S switch
+9208:	bne	9220
+920A:	bit	#0018,(sp)	;test the A and D switches
+920E:	bne	9240		;error if any set
+9210:	bis	#0010,(sp)	;set the A switch
+9214:	bit	#0100,(sp)	;test the M switch
+9218:	beq	9222		;exit if plus
+921A:	bis	#0040,(sp)	;set minus sign
+921E:	br	9222		;PDP-11 branches don't reach more than 128...
+9220:	br	9252
+; M.AFXN:
+9222:	br	9158
+; M.AFSE:
+9224:	bit	#0001,(sp)	;test the S switch
+9228:	bne	9220
+922A:	bit	(sp),#0020	;test the B switch
+922E:	bne	9240
+9230:	bis	#0020,(sp)	;set the B switch
+9234:	bit	#0100,(sp)	;test the M switch
+9238:	beq	9222		;exit if plus
+923A:	bis	#0080,(sp)	;negative exponent
+923E:	br	9222
+; M.AFVS:
+9240:	bis	#0002,(sp)	;set the V switch
+9244:	br	9220
+9246:	add	#8,sp
+924A:	mov	(sp)+,r1
+924C:	br	9240
+; M.AFVU:
+924E:	cmp	(sp)+,(sp)+
+9250:	br	9240
+; M.AFX6:
+9252:	mov	r1,-(sp)
+9254:	bit	#0040,0002(sp)
+925A:	beq	9264		;number not negative
+925C:	mov	0008(sp),r0
+9260:	mov	r0,r1
+9262:	trap	14		;NEGF
+; M.AFX2:
+9264:	bit	#0080,0002(sp)	;negative exponent?
+926A:	beq	927A		;branch if not
+926C:	neg	0006(sp)
+9270:	bvc	927A		;branch if exponent valid
+9272:	bis	#0002,0002(sp)	;invalid exponent, set the V switch
+9278:	br	92A6
+; M.AFX3:
+927A:	add	0004(sp),0006(sp)
+9280:	beq	92A6		;branch if EXP1+EXP2=0
+9282:	blt	9296		;if less than 0 divide
+9284:	mov	0008(sp),r0
+9288:	mov	#92BC,r1	;floating point constant 10
+928C:	trap	18		;MULF
+928E:	dec	0006(sp)	;decrement and test
+9292:	bgt	9284		;loop
+9294:	br	92A6
+; M.AFDV:
+9296:	mov	0008(sp),r0
+929A:	mov	#92BC,r1	;floating point constant 10
+929E:	trap	16		;DIVF
+92A0:	inc	0006(sp)	;increment and test
+92A4:	blt	9296		;loop
+; M.AFX5:
+92A6:	mov	(sp)+,r1	;restore the character pointer
+92A8:	dec	r1
+92AA:	mov	(sp)+,r4	;save switches
+92AC:	add	#6,sp
+92B0:	mov	(sp)+,r5
+92B2:	bit	#0002,r4	;test the V switch
+92B6:	beq	92BA		;normal return
+; error return
+92B8:	set	v
+92BA:	rts	pc
+
+92BC:	.word	0000, 5000, 8004	;10
+92C2:	.word	0000, 4000, 8001	;1
+92C8:	.word	0000, 7A12, 8014	;1000000
+92CE:	.word	4000, 4C4B, 8018	;10000000
+92D4:	.word	0000, 4000, 8000	;0.5
+
+; FTOA - floating point to ASCII conversion
+; expects the floating point number in r2,r3,r4
+; r2 - lower word of the mantissa, r3 - upper word of the mantissa
+; r4 - biased exponent EXP1
+; returns the output string on the stack
+; typical calling sequence:
+; jsr	pc,92DA		;FTOA
+; mov	sp,r0		;pointer to the output string
+; trap	36		;print a string pointed to by r0
+; add	#14,sp		;reclaim the stack space
+92DA:	mov	#A,r0
+92DE:	clr	-(sp)
+92E0:	dec	r0
+92E2:	bgt	92DE
+92E4:	trap	62		;push r4,r3,r2 on the stack
+92E6:	mov	#3020,0008(sp)
+92EC:	movb	#20,000A(sp)
+92F2:	tst	r3		;upper word of the mantissa
+92F4:	beq	93C2		;skip if the number is equal 0
+92F6:	bgt	9304		;skip if the number is positive
+; negative number
+92F8:	mov	sp,r0
+92FA:	mov	r0,r1
+92FC:	trap	14		;NEGF
+92FE:	movb	#2D,0008(sp)	;'-'
+;
+; multiply or divide the number by 10 as many times as is needed to bring it
+; in the range 1e6 <= x < 1e7
+; compensate the multiplication or division by changing the exponent EXP2 with
+; base 10 (decimal)
+9304:	mov	#92C8,r1	;floating point constant 1000000
+9308:	mov	sp,r0
+930A:	trap	1C		;CMPF
+930C:	bgt	9326
+;
+930E:	mov	#92CE,r0	;floating point constant 10000000
+9312:	mov	sp,r1
+9314:	trap	1C		;CMPF
+9316:	blt	9334		;branch if in range
+9318:	mov	#92BC,r1	;floating point constant 10
+931C:	mov	sp,r0
+931E:	trap	16		;DIVF
+9320:	inc	0006(sp)	;increment exponent EXP2
+9324:	br	930E		;repeat range check
+;
+9326:	mov	#92BC,r1	;floating point constant 10
+932A:	mov	sp,r0
+932C:	trap	18		;MULF
+932E:	dec	0006(sp)	;decrement exponent EXP2
+9332:	br	9304		;repeat range check
+;
+; rounding
+9334:	mov	#92D4,r1	;floating point constant 0.5
+9338:	mov	sp,r0
+933A:	trap	10		;ADDF
+;
+; convert the number to unsigned 32-bit integer (get rid of the exponent EXP1)
+933C:	sub	#801F,0004(sp)
+9342:	asr	0002(sp)	;upper word of the mantissa
+9346:	ror	(sp)		;lower word of the mantissa
+9348:	inc	0004(sp)	;exponent EXP1 with base 2 (decimal)
+934C:	bne	9342
+;
+934E:	mov	sp,r0
+9350:	add	#E,r0
+9354:	mov	sp,r1
+9356:	mov	r0,-(sp)
+9358:	trap	0C		;JTOA, 32-bit integer to ASCII conversion
+935A:	mov	(sp)+,r0
+935C:	add	#3,r0		;skip first three spaces
+9360:	cmpb	#20,(r0)	;space?
+9364:	beq	936C		;branch if yes
+9366:	inc	0006(sp)	;exponent EXP2, move the decimal point
+936A:	br	936E
+; M.XA7:
+936C:	inc	r0		;fourth position
+936E:	add	#7,0006(sp)
+9374:	mov	#8,r1
+9378:	mov	r0,r2
+937A:	add	#7,r2
+937E:	dec	r1
+9380:	cmpb	#30,-(r2)
+9384:	beq	937E
+9386:	mov	sp,r4
+9388:	add	#9,r4
+938C:	cmp	#8,0006(sp)	;exponent EXP2
+9392:	ble	93E4		;scientific notation if exponent too large
+9394:	cmp	#-8,0006(sp)
+939A:	bge	93E4		;scientific notation if exponent too small
+;
+; standard decimal notation
+939C:	mov	r1,r3
+939E:	neg	r3
+93A0:	add	0006(sp),r3
+93A4:	add	#7,r3
+93A8:	blt	93E4
+93AA:	mov	0006(sp),r3
+93AE:	blt	93CA
+93B0:	bgt	93D8
+93B2:	movb	#2E,(r4)+
+93B6:	movb	(r0)+,(r4)+
+93B8:	cmp	r0,r2
+93BA:	blos	93B6
+93BC:	movb	#20,(r4)+
+93C0:	clrb	(r4)
+93C2:	add	#8,sp
+93C6:	mov	0012(sp),pc
+93CA:	movb	#2E,(r4)+	;decimal point
+93CE:	movb	#30,(r4)+
+93D2:	inc	r3
+93D4:	blt	93CE
+93D6:	br	93B6
+93D8:	movb	(r0)+,(r4)+
+93DA:	dec	r3
+93DC:	bgt	93D8
+93DE:	cmp	r0,r2
+93E0:	blos	93B2
+93E2:	br	93BC
+;
+; normalized scientific notation
+93E4:	movb	#2E,(r4)+
+93E8:	movb	(r0)+,(r4)+
+93EA:	cmp	r0,r2
+93EC:	blos	93E8
+93EE:	movb	#45,(r4)+
+93F2:	add	#6,sp
+93F6:	mov	(sp),r1
+93F8:	mov	sp,r0
+93FA:	add	#C,r0
+93FE:	mov	r0,-(sp)
+9400:	mov	r4,-(sp)
+9402:	trap	0A		;ITOA
+9404:	mov	(sp)+,r4
+9406:	mov	(sp)+,r0
+9408:	cmpb	(r0)+,#20
+940C:	beq	9408
+940E:	cmpb	-(r0),#2D
+9412:	beq	9418
+9414:	movb	#20,(r4)+
+9418:	movb	(r0)+,(r4)+
+941A:	cmpb	(r0),#20
+941E:	bne	9418
+9420:	movb	#20,(r4)+
+9424:	clrb	(r4)
+9426:	tst	(sp)+
+9428:	mov	0012(sp),pc
+
+; trap 08 - ATOI (documented), conversion of an ASCII string to an unsigned
+; integer
+; on entry r1 points to the string
+; on exit r1 points to the first invalid character,
+; result (1 word) stored in r0
+942C:	clr	r0
+942E:	jsr	pc,826C		;get a character other than space
+9432:	jsr	pc,813A		;test if r2 is a digit
+9436:	bne	944E		;branch if not
+9438:	sub	#30,r2		;create binary number from ASCII
+943C:	asl	r0		;multiply by 10 (decimal)
+943E:	add	r0,r2
+9440:	asl	r0
+9442:	asl	r0
+9444:	add	r2,r0
+9446:	bit	#E000,r0
+944A:	beq	942E
+944C:	trap	21		;error 16 - wrong line number or dimension
+944E:	dec	r1
+9450:	rts	pc
+
+; trap 0A - ITOA (documented), conversion of an 16-bit integer to ASCII string
+; on entry r1 contains the number and r0 points to the memory location where
+; the result should be stored
+9452:	mov	r0,-(sp)	;save DEFA
+9454:	clr	-(sp)		;clear high order of integer
+9456:	mov	r1,-(sp)	;get integer
+9458:	bge	945E		;skip if positive
+945A:	com	0002(sp)	;propagate sign through high order
+945E:	mov	sp,r1		;set SEFA
+9460:	sub	#C,sp		;expand stack
+9464:	mov	sp,r0
+9466:	trap	0C		;JTOA, 32-bit integer to ASCII conversion
+9468:	mov	sp,r1
+946A:	mov	0010(sp),r0	;users DEFA
+946E:	add	#5,r1		;first five are spaces
+9472:	mov	#7,r2		;seven digits
+9476:	movb	(r1)+,(r0)+
+9478:	dec	r2		;move ASCII string
+947A:	bgt	9476		;loop
+947C:	add	#12,sp		;remove junk
+9480:	rts	pc
+
+; trap 0C - JTOA, conversion of an 32-bit integer to ASCII string
+; on entry r1 points to the number and r0 points to the memory location where
+; the result should be stored
+9482:	mov	r5,-(sp)
+9484:	mov	r0,-(sp)
+9486:	clr	-(sp)		;sign control word
+9488:	mov	(r1)+,r3	;low order
+948A:	mov	(r1),r2		;high order
+948C:	bge	9496		;skip if positive
+; negative
+948E:	neg	r2
+9490:	neg	r3		;complement but...
+9492:	sbc	r2
+9494:	inc	(sp)		;...remember sign
+9496:	mov	#A,r5		;lower word of the dividend = 10 decimal
+949A:	clr	r4		;upper word of the dividend = 0
+949C:	mov	#-1,-(sp)	;flag
+; M.JA01:
+94A0:	clr	r0
+94A2:	clr	r1
+94A4:	trap	34		;unsigned 32-bit integer division
+94A6:	mov	r1,-(sp)	;push remainder
+94A8:	bis	r2,r0		;test the quotient r2,r3 for 0
+94AA:	bis	r3,r0
+94AC:	tst	r0		;superfluous?
+94AE:	bne	94A0		;loop
+94B0:	mov	sp,r5		;count the number of digits
+94B2:	inc	r4
+94B4:	tst	(r5)+		;check for flag
+94B6:	bge	94B2		;loop
+94B8:	dec	r4
+94BA:	mov	#B,r3
+94BE:	sub	r4,r3		;r3 <- number of leading spaces + sign
+94C0:	dec	r3
+94C2:	mov	0002(r5),r0
+; M.JA02:
+94C6:	tst	r3		;count exhausted?
+94C8:	ble	94D2		;branch if yes
+94CA:	movb	#20,(r0)+	;insert leading spaces
+94CE:	dec	r3
+94D0:	br	94C6		;loop
+; M.JA03:
+94D2:	tst	(r5)		;test for sign
+94D4:	beq	94DC
+94D6:	movb	#2D,(r0)+	;'-'
+94DA:	br	94E0
+; M.JA04:
+94DC:	movb	#20,(r0)+	;space
+; M.JA05:
+94E0:	add	#30,(sp)	;convert digits to ASCII
+94E4:	movb	(sp)+,(r0)+
+94E6:	tst	(sp)		;check flag
+94E8:	bge	94E0		;loop
+94EA:	movb	#20,(r0)	;trailing space
+94EE:	add	#6,sp
+94F2:	mov	(sp)+,r5
+94F4:	rts	pc
+
+; End of code borrowed from the RT-11 operating system.
+
+
+; trap 0E - IMUL (documented), unsigned 16-bit integer multiplication
+; r0 - multiplicand, r1 - multiplier, r0,r1 - product (the upper word in r0)
+94F6:	mov	r5,-(sp)
+94F8:	mov	r0,r3
+94FA:	mov	r1,r5
+94FC:	clr	r2
+94FE:	clr	r4
+9500:	trap	32		;unsigned 32-bit integer multiplication
+9502:	mov	r3,r0
+9504:	mov	r2,r1
+9506:	mov	(sp)+,r5
+9508:	rts	pc
+
+; trap 32 - unsigned 32-bit integer multiplication
+; r2,r3 - multiplier (the upper word in r2)
+; r4,r5 - multiplicand (the upper word in r4)
+; r0,r1,r2,r3 - product (the upper word in r0)
+950A:	clr	r0		;initial product = 0
+950C:	clr	r1
+950E:	mov	#21,-(sp)	;bit counter
+; multiplication loop
+9512:	ror	r0		;shift the product and multiplier one bit down
+9514:	ror	r1
+9516:	ror	r2
+9518:	ror	r3
+951A:	bhis	9522		;if least significant bit of multiplier is 1
+951C:	add	r5,r1		;... then add the multiplicand to the product
+951E:	adc	r0
+9520:	add	r4,r0
+9522:	dec	(sp)		;bit counter
+9524:	bne	9512		;loop
+9526:	tst	(sp)+
+9528:	rts	pc
+
+; trap 34 - unsigned 32-bit integer division
+; r0,r2,r2,r3 - dividend (the upper word in r0)
+; r4,r5 - divisor (the upper word in r4)
+; r2,r3 - quotient (the upper word in r2)
+; r0,r1 - remainder (the upper word in r0)
+952A:	mov	#20,-(sp)	;bit counter
+; negated divisor goes on the stack
+952E:	mov	r4,-(sp)
+9530:	mov	r5,-(sp)
+9532:	neg	0002(sp)
+9536:	neg	(sp)
+9538:	sbc	0002(sp)
+953C:	add	(sp),r1
+953E:	adc	r0
+9540:	add	0002(sp),r0
+9544:	blo	9590		;overflow
+9546:	clr	-(sp)
+; division loop
+9548:	rol	r3		;shift the dividend/quotient one bit up
+954A:	rol	r2
+954C:	rol	r1
+954E:	rol	r0
+9550:	tst	(sp)
+9552:	beq	9564
+; subtract the divisor from the dividend
+9554:	clr	(sp)
+9556:	add	0002(sp),r1
+955A:	adc	r0
+955C:	adc	(sp)
+955E:	add	0004(sp),r0
+9562:	br	956C
+; the dividend was less than the divisor, take back the subtraction
+9564:	add	r5,r1		;add the divisor to the dividend
+9566:	adc	r0
+9568:	adc	(sp)
+956A:	add	r4,r0
+956C:	adc	(sp)
+956E:	tst	(sp)
+9570:	beq	9574
+9572:	inc	r3		;increment the quotient
+9574:	dec	0006(sp)	;bit counter
+9578:	bgt	9548		;loop
+957A:	ror	r3
+957C:	blo	9586
+957E:	add	r5,r1
+9580:	adc	r0
+9582:	add	r4,r0
+9584:	clc
+9586:	rol	r3
+9588:	add	#8,sp
+958C:	clear	v
+958E:	rts	pc
+; overflow
+9590:	add	#6,sp
+9594:	trap	FB		;error 125 - multiplication/division overflow
+9596:	set	v
+9598:	rts	pc
+
+; trap 10 - ADDF (documented), floating point addition
+; addends pointed to by r0 and r1, sum pointed to by r0
+959A:	mov	r5,-(sp)
+959C:	mov	r0,-(sp)	;save the pointer to the sum
+; first addend
+959E:	mov	(r1)+,-(sp)	;lower word of the mantissa
+95A0:	mov	(r1)+,-(sp)	;upper word of the mantissa
+95A2:	mov	(r1),-(sp)	;exponent
+; second addend
+95A4:	mov	(r0)+,r2	;lower word of the mantissa
+95A6:	mov	(r0)+,r1	;upper word of the mantissa
+95A8:	mov	(r0),r0		;exponent
+95AA:	cmp	r0,(sp)		;compare exponents
+95AC:	blos	95C2
+; swap addends
+95AE:	mov	sp,r4
+95B0:	mov	r0,r3
+95B2:	mov	(r4),r0
+95B4:	mov	r3,(r4)+
+95B6:	mov	r1,r3
+95B8:	mov	(r4),r1
+95BA:	mov	r3,(r4)+
+95BC:	mov	r2,r3
+95BE:	mov	(r4),r2
+95C0:	mov	r3,(r4)+
+; larger addend is pointed to by SP
+; smaller addend: exponent in r0, mantissa in r1,r2
+95C2:	sub	(sp),r0		;difference between the exponents
+95C4:	beq	95F8		;no alignment required
+95C6:	bpl	95CE		;should never happen ???
+95C8:	cmp	r0,#-1F
+95CC:	bge	95D8
+; smaller addend is insignificant, the answer is the larger addend
+95CE:	mov	0002(sp),r5
+95D2:	mov	0004(sp),r3
+95D6:	br	9610
+; the mantissa of the smaller addend needs to be shifted until the exponents
+; are equal
+95D8:	cmp	r0,#-10		;difference between exponents
+95DC:	bgt	95EC
+; we can spare on shifts
+95DE:	add	#10,r0
+95E2:	mov	r1,r2		;upper word -> lower word
+95E4:	clr	r1		;0 -> upper word
+95E6:	tst	r2		;negative number?
+95E8:	bpl	95EC		;skip if not
+95EA:	com	r1		;FFFF -> upper word
+95EC:	tst	r0
+95EE:	beq	95F8
+; this loop shifts the mantissa of the smaller addend -r0 times
+95F0:	asr	r1		;upper word of the mantissa
+95F2:	ror	r2		;lower word of the mantissa
+95F4:	inc	r0
+95F6:	bne	95F0		;loop
+; perform the addition of both mantissas
+95F8:	mov	0002(sp),r5
+95FC:	mov	0004(sp),r3
+9600:	add	r2,r3
+9602:	adc	r5
+9604:	bvs	9628
+9606:	add	r1,r5
+9608:	bvc	9610
+; overflow
+960A:	ror	r5		;shift the mantissa right
+960C:	ror	r3
+960E:	inc	(sp)		;increment the exponent
+; save the result in the memory
+9610:	mov	0006(sp),r0	;pointer where the sum is to be stored
+9614:	mov	r0,r1		;save the pointer
+9616:	mov	r3,(r0)+	;lower word of the mantissa
+9618:	mov	r5,(r0)+	;upper word of the mantissa
+961A:	mov	(sp),(r0)+	;exponent
+961C:	mov	r1,r0		;restore the pointer
+961E:	add	#8,sp
+9622:	mov	(sp)+,r5
+9624:	jmp	978E		;normalisation
+;
+9628:	add	r1,r5
+962A:	blo	9610		;branch if negative
+962C:	br	960A
+
+; trap 12 - SUBF (documented), floating point subtraction
+; minuend pointed to by r0, subtrahend pointed to by r1,
+; remainder pointed to by r0
+962E:	mov	r0,r4
+9630:	sub	#6,sp
+9634:	mov	sp,r0
+9636:	trap	14		;NEGF
+9638:	mov	r4,r0
+963A:	mov	sp,r1
+963C:	trap	10		;ADDF
+963E:	add	#6,sp
+9642:	rts	pc
+
+; function ABS
+9644:	trap	1A		;MOVF
+9646:	tst	0002(r1)
+964A:	bge	965C
+
+; trap 14 - NEGF (documented), floating point negation
+; argument pointed to by r1, result pointed to by r0
+964C:	mov	(r1)+,r2
+964E:	mov	(r1)+,r3
+9650:	neg	r3
+9652:	neg	r2
+9654:	sbc	r3
+9656:	mov	r2,(r0)+
+9658:	mov	r3,(r0)+
+965A:	mov	(r1)+,(r0)+
+965C:	rts	pc
+
+; function SGN
+965E:	trap	1A		;MOVF
+9660:	mov	#92C2,r1	;floating point constant 1
+9664:	tst	0002(r0)
+9668:	bgt	9670
+966A:	beq	9672
+966C:	trap	14		;NEGF
+966E:	rts	pc
+9670:	trap	1A		;MOVF
+9672:	rts	pc
+
+; trap 16 - DIVF (documented), floating point division
+; dividend pointed to by r0, divisor pointed to by r1,
+; quotient pointed to by r0
+9674:	mov	r5,-(sp)
+9676:	mov	r0,-(sp)	;save the pointer to the quotient
+9678:	clr	-(sp)		;sign of the factor
+; divisor
+967A:	mov	(r1)+,r5	;lower word of the mantissa
+967C:	mov	(r1)+,r4	;upper word of the mantissa
+967E:	tst	r4
+9680:	beq	9700		;branch if division by 0 attempted
+9682:	bge	968C		;skip if positive
+; negative
+9684:	neg	r4
+9686:	neg	r5		;complement but...
+9688:	sbc	r4
+968A:	inc	(sp)		;...remember sign
+; dividend
+968C:	mov	(r0)+,r3	;lower word of the mantissa
+968E:	mov	(r0)+,r2	;upper word of the mantissa
+9690:	beq	9778		;branch if the dividend is equal 0
+9692:	bgt	969C		;skip if positive
+; negative
+9694:	neg	r2
+9696:	neg	r3		;complement but...
+9698:	sbc	r2
+969A:	dec	(sp)		;...remember sign
+; calculate the exponent of the quotient
+969C:	mov	(r1),r1		;exponent of the divisor
+969E:	neg	r1
+96A0:	add	(r0),r1		;subtract it from the exponent of the dividend
+96A2:	ror	r1
+96A4:	rol	r1
+96A6:	bvc	9700		;overflow
+96A8:	add	#8000,r1	;bias
+96AC:	mov	r1,-(sp)
+; divide the mantissas
+96AE:	mov	r3,r1
+96B0:	mov	r2,r0
+96B2:	clr	r2
+96B4:	clr	r3
+96B6:	ror	r0
+96B8:	ror	r1
+96BA:	ror	r2
+96BC:	trap	34		;unsigned 32-bit integer division
+96BE:	neg	r4
+96C0:	neg	r5
+96C2:	sbc	r4
+96C4:	asl	r1
+96C6:	rol	r0
+96C8:	add	r5,r1
+96CA:	adc	r0
+96CC:	add	r4,r0
+96CE:	blt	96D6
+96D0:	add	#1,r3
+96D4:	adc	r2
+96D6:	clc
+96D8:	ror	r2
+96DA:	ror	r3
+96DC:	inc	(sp)
+96DE:	tst	0002(sp)
+96E2:	beq	96EA
+96E4:	neg	r2
+96E6:	neg	r3
+96E8:	sbc	r2
+96EA:	mov	0004(sp),r0
+96EE:	mov	r3,(r0)+
+96F0:	mov	r2,(r0)+
+96F2:	mov	(sp)+,(r0)
+96F4:	cmp	(sp)+,(sp)+
+96F6:	mov	(sp)+,r5
+96F8:	cmp	-(r0),-(r0)
+96FA:	mov	r0,r1
+96FC:	jmp	978E		;normalisation
+9700:	cmp	(sp)+,(sp)+
+9702:	trap	FB		;error 125 - multiplication/division overflow
+9704:	mov	(sp)+,r5
+9706:	set	v
+9708:	rts	pc
+
+; trap 18 - MULF (documented), floating point multiplication
+; factors pointed to by r0 and r1, product pointed to by r0
+970A:	mov	r5,-(sp)
+970C:	mov	r0,-(sp)	;save the pointer to the product
+; second factor
+970E:	mov	(r1)+,r5	;lower word of the mantissa
+9710:	mov	(r1)+,r4	;upper word of the mantissa
+9712:	mov	(r1),r1		;exponent
+9714:	clr	-(sp)		;sign of the product
+9716:	tst	r4
+9718:	beq	9778		;branch if the factor is equal 0
+971A:	bpl	9724		;skip if positive
+; negative
+971C:	neg	r4
+971E:	neg	r5		;complement but...
+9720:	sbc	r4
+9722:	dec	(sp)		;...remember sign
+; first factor
+9724:	mov	(r0)+,r3	;lower word of the mantissa
+9726:	mov	(r0)+,r2	;upper word of the mantissa
+9728:	beq	9778		;branch if the factor is equal 0
+972A:	bpl	9734		;skip if positive
+; negative
+972C:	neg	r2
+972E:	neg	r3		;complement but...
+9730:	sbc	r2
+9732:	inc	(sp)		;...remember sign
+; calculate the exponent of the product
+9734:	add	(r0),r1		;sum of the exponents of the factors
+9736:	ror	r1
+9738:	rol	r1
+973A:	bvc	9700		;overflow
+973C:	add	#8000,r1	;bias
+9740:	mov	r1,-(sp)
+; multiply the mantissas
+9742:	trap	32		;unsigned 32-bit integer multiplication
+; normalisation
+9744:	inc	(sp)
+9746:	rol	r2
+9748:	rol	r1
+974A:	rol	r0		;shift the mantissa one bit left...
+974C:	bvs	9752		;...until first bit is not zero
+974E:	dec	(sp)		;exponent
+9750:	br	9746		;loop
+; rounding
+9752:	ror	r0
+9754:	ror	r1
+9756:	adc	r1
+9758:	adc	r0
+975A:	bvc	9760
+975C:	inc	(sp)
+975E:	br	9752
+9760:	mov	(sp)+,r2	;exponent
+; apply the sign
+9762:	tst	(sp)+
+9764:	beq	976C		;skip if positive
+; complement the mantissa
+9766:	neg	r0
+9768:	neg	r1
+976A:	sbc	r0
+; save the result in the memory
+976C:	mov	(sp)+,r3	;pointer where the result is to be stored
+976E:	mov	r1,(r3)+	;lower word of the mantissa
+9770:	mov	r0,(r3)+	;upper word of the mantissa
+9772:	mov	r2,(r3)		;exponent
+9774:	mov	(sp)+,r5
+9776:	rts	pc
+; result = 0
+9778:	clr	r0
+977A:	clr	r1
+977C:	clr	r2
+977E:	tst	(sp)+
+9780:	br	976C
+
+; trap 1E - FLT, convert an integer number to a floating point, expects the
+; argument in r1 and the pointer to memory location where the result should
+; be stored in r0
+9782:	clr	(r0)+
+9784:	mov	r1,(r0)+
+9786:	mov	#800F,(r0)
+978A:	cmp	-(r0),-(r0)
+978C:	mov	r0,r1
+978E:	mov	(r1)+,r4
+9790:	mov	(r1)+,r2
+9792:	mov	(r1)+,r3
+9794:	mov	r3,r1
+9796:	tst	r2
+9798:	bne	97A2
+979A:	tst	r4
+979C:	bne	97A2
+979E:	clr	r3
+97A0:	br	97C2
+97A2:	inc	r3
+97A4:	dec	r3
+97A6:	asl	r4
+97A8:	rol	r2
+97AA:	bvc	97A4
+97AC:	bhis	97BE
+97AE:	bne	97BE
+97B0:	tst	r4
+97B2:	bne	97BC
+97B4:	sec
+97B6:	ror	r2
+97B8:	inc	r3
+97BA:	inc	r1
+97BC:	sec
+97BE:	ror	r2
+97C0:	ror	r4
+97C2:	mov	r4,(r0)+
+97C4:	mov	r2,(r0)+
+97C6:	mov	r3,(r0)+
+97C8:	cmp	r3,r1
+97CA:	bhi	97D0
+97CC:	clear	v
+97CE:	rts	pc
+97D0:	set	v
+97D2:	rts	pc
+
+; trap 1A - MOVF
+97D4:	mov	r1,r2
+97D6:	mov	r0,r4
+97D8:	mov	(r2)+,(r4)+
+97DA:	mov	(r2)+,(r4)+
+97DC:	mov	(r2)+,(r4)+
+97DE:	rts	pc
+
+; trap 1C - CMPF (documented), floating point comparison
+; compared numbers pointed to by r0 and r1, sets flags as CMP
+97E0:	mov	r1,-(sp)
+97E2:	trap	2C		;push a number pointed to by R0 on the stack
+97E4:	mov	sp,r0
+97E6:	mov	0006(sp),r1
+97EA:	trap	12		;SUBF
+97EC:	mov	0002(sp),r1
+97F0:	add	#8,sp
+97F4:	neg	r1
+97F6:	rts	pc
+
+; trap 2C - push the floating point number pointed to by R0 on the stack
+97F8:	mov	(sp)+,r2
+97FA:	add	#6,r0
+97FE:	mov	-(r0),-(sp)
+9800:	mov	-(r0),-(sp)
+9802:	mov	-(r0),-(sp)
+9804:	mov	r2,pc
+
+; function INT
+9806:	mov	(r1)+,r3
+9808:	mov	(r1)+,r2
+980A:	mov	(r1),r4
+980C:	bpl	9830
+980E:	cmp	-(r1),-(r1)
+9810:	cmp	r4,#801F
+9814:	bhis	97D4		;CMPF
+9816:	sub	#801F,r4
+981A:	asr	r2
+981C:	ror	r3
+981E:	inc	r4
+9820:	blt	981A
+9822:	mov	r0,r1
+9824:	mov	r3,(r0)+
+9826:	mov	r2,(r0)+
+9828:	mov	#801F,(r0)
+982C:	mov	r1,r0
+982E:	br	978E		;normalisation
+9830:	tst	r2
+9832:	bpl	983C
+9834:	mov	#92C2,r1	;floating point constant 1
+9838:	jmp	964C
+983C:	clr	(r0)+
+983E:	clr	(r0)+
+9840:	clr	(r0)
+9842:	rts	pc
+
+; trap 22
+9844:	mov	(r1)+,r2
+9846:	mov	(r1)+,r3
+9848:	mov	(r1),r4
+
+; trap 20 - FIX (documented), convert a floating point number to an integer
+; r2, r3, r4 -> r0
+984A:	cmp	r4,#800F
+984E:	bhi	9866
+9850:	beq	9862
+9852:	cmp	r4,#8000
+9856:	blo	9868
+9858:	sub	#800F,r4
+985C:	asr	r3
+985E:	inc	r4
+9860:	bne	985C
+9862:	mov	r3,r0
+9864:	rts	pc
+9866:	trap	F9		;error 124 - number out of FIX operator range
+9868:	clr	r0
+986A:	rts	pc
+
+9860:	FD 02 C0 10  87 00 F9 89  00 0A 87 00  0F 42 41 53  }.@...y......BAS
+9870:	49 43 20 56  31 2E 30 20  28 63 29 20  31 39 38 36  IC V1.0 (c) 1986
+9880:	0D 0A 00 0E  6D 49 4E 53  4B 2E 20 70  6F 20 69 4E  ....mINSK. po iN
+9890:	54 45 47 52  41 4C 0F 0D  0A 00 66 10  26 10 C6 E5  TEGRAL....f.&.Fe
+
+; operator ^ (power)
+989A:	mov	r1,-(sp)
+989C:	mov	r0,-(sp)
+989E:	sub	#6,sp
+98A2:	mov	r0,r1
+98A4:	mov	sp,r0
+98A6:	jsr	pc,98C2		;function LOG
+98AA:	mov	0008(sp),r1
+98AE:	mov	sp,r0
+98B0:	trap	18		;MULF
+98B2:	mov	0006(sp),r0
+98B6:	mov	sp,r1
+98B8:	jsr	pc,997E		;function EXP
+98BC:	add	#A,sp
+98C0:	rts	pc
+
+
+; The routines for the trigonometric, exponential and square root functions
+; are apparently based on the floating point library of the RT-11 operating
+; system. The original labels and comments are preserved.
+
+; function LOG
+98C2:	trap	2E
+98C4:	tst	0002(r0)
+98C8:	bgt	98D2
+98CA:	trap	FF		;error 127 - exponent/logarithm overflow
+98CC:	add	#4,sp
+98D0:	rts	pc
+98D2:	mov	r0,r1
+98D4:	tst	(r1)+
+98D6:	bne	98F0
+98D8:	cmp	(r1)+,#4000
+98DC:	bne	98F0
+98DE:	cmp	(r1)+,#8001
+98E2:	bne	98F0
+98E4:	clr	(r0)+
+98E6:	clr	(r0)+
+98E8:	clr	(r0)+
+98EA:	add	#4,sp
+98EE:	rts	pc
+98F0:	mov	0004(r0),-(sp)
+98F4:	add	#8000,(sp)
+98F8:	mov	#8000,0004(r0)
+98FE:	mov	(sp),r1
+9900:	sub	#6,sp
+9904:	mov	sp,r0
+9906:	trap	1E		;FLT, convert integer R1 to float
+9908:	mov	0008(sp),r0
+990C:	trap	2C		;push a number pointed to by R0 on the stack
+990E:	mov	#995A,r1
+9912:	trap	12		;SUBF
+9914:	mov	sp,r0
+9916:	mov	#995A,r1
+991A:	trap	10		;ADDF
+991C:	mov	000E(sp),r0
+9920:	mov	sp,r1
+9922:	trap	16		;DIVF
+9924:	mov	#9966,r4
+9928:	mov	000E(sp),r0
+992C:	mov	#4,r3
+9930:	trap	28		;M.SETU
+9932:	trap	2A		;M.DOPO
+9934:	mov	000E(sp),r0
+9938:	mov	#9A14,r1
+993C:	trap	12		;SUBF
+993E:	add	#6,sp
+9942:	mov	sp,r0
+9944:	mov	#9960,r1
+9948:	trap	18		;MULF
+994A:	mov	sp,r1
+994C:	mov	0008(sp),r0
+9950:	trap	10		;ADDF
+9952:	add	#C,sp
+9956:	clear	v
+9958:	rts	pc
+
+995A:	.word	7996, 5A82, 8000	;0.7071067794 = SQR (0.5)
+9960:	.word	0BFE, 58B9, 8000	;0.6931471815 = LN (2)
+9966:	.word	AA4A, 4D0C, 7FFF	;0.3009745054
+996C:	.word	0F09, 6650, 7FFF	;0.3996590993
+9972:	.word	6CDB, 5555, 8000	;0.6666694707
+9978:	.word	FFFA, 7FFF, 8001	;1.9999999944
+
+; function EXP
+997E:	trap	2E
+9980:	cmp	0004(r0),#800E
+9986:	bhi	98CA
+9988:	mov	#9A0E,r1
+998C:	trap	26
+998E:	mov	0002(sp),r0
+9992:	mov	#9A14,r1
+9996:	trap	18		;MULF
+9998:	mov	0002(sp),r0
+999C:	trap	2C		;push a number pointed to by R0 on the stack
+999E:	trap	2C		;push a number pointed to by R0 on the stack
+99A0:	mov	sp,r0
+99A2:	mov	#9A1A,r1
+99A6:	trap	10		;ADDF
+99A8:	mov	sp,r0
+99AA:	mov	r0,r1
+99AC:	trap	14		;NEGF
+99AE:	inc	000A(sp)
+99B2:	mov	000E(sp),r0
+99B6:	mov	r0,r1
+99B8:	trap	18		;MULF
+99BA:	mov	000E(sp),r0
+99BE:	mov	#9A26,r1
+99C2:	trap	10		;ADDF
+99C4:	mov	#9A20,r0
+99C8:	trap	2C		;push a number pointed to by R0 on the stack
+99CA:	mov	sp,r0
+99CC:	mov	0014(sp),r1
+99D0:	trap	16		;DIVF
+99D2:	mov	sp,r0
+99D4:	mov	r0,r1
+99D6:	add	#6,r1
+99DA:	trap	10		;ADDF
+99DC:	mov	sp,r1
+99DE:	mov	r1,r0
+99E0:	add	#C,r0
+99E4:	trap	16		;DIVF
+99E6:	add	#C,sp
+99EA:	mov	sp,r0
+99EC:	mov	#92C2,r1	;floating point constant 1
+99F0:	trap	10		;ADDF
+99F2:	mov	sp,r0
+99F4:	mov	r0,r1
+99F6:	trap	18		;MULF
+99F8:	mov	sp,r1
+99FA:	mov	0008(sp),r0
+99FE:	trap	1A		;MOVF
+9A00:	mov	0008(sp),r0
+9A04:	add	0006(sp),0004(r0)
+9A0A:	jmp	9952
+
+9A0E:	.word	1D94, 5C55, 8001	;1.4426950402
+9A14:	.word	0BFE, 58B9, 7FFF	;0.3465735908
+9A1A:	.word	3EE7, 9FE1, 8004	;-12.015016742
+9A20:	.word	4375, B4C6, 800A	;-601.804265499
+9A26:	.word	2D78, 782E, 8006	;60.090190649
+
+; trap 2A - M.DOPO
+; evaluates a polynomial according to the parameters on the stack (see M.SETU)
+; 2(SP) = number of constants
+; A(SP) = starting address of constants
+9A2C:	sub	#2,0002(sp)	;subtract 2 from the counter
+9A32:	mov	0008(sp),r0
+9A36:	mov	000A(sp),r1	;address of the first constant
+9A3A:	mov	r0,-(sp)
+9A3C:	trap	18		;MULF
+; M.LOOP:
+9A3E:	add	#6,000C(sp)	;move to the next constant
+9A44:	mov	(sp),r0
+9A46:	mov	000C(sp),r1
+9A4A:	trap	10		;ADDF, DEST=DEST+constant
+9A4C:	tst	0004(sp)	;test the counter
+9A50:	beq	9A60		;branch if done
+9A52:	mov	(sp),r0
+9A54:	mov	0008(sp),r1
+9A58:	trap	18		;MULF, DEST=DEST*X^2
+9A5A:	dec	0004(sp)	;decrement the counter
+9A5E:	br	9A3E
+; M.HANK:
+9A60:	mov	(sp),r0
+9A62:	mov	0006(sp),r1
+9A66:	trap	18		;MULF
+9A68:	tst	(sp)+
+9A6A:	mov	(sp)+,r3
+9A6C:	add	#16,sp
+9A70:	mov	r3,-(sp)
+9A72:	rts	pc
+
+; trap 24 - M.INIT
+9A74:	mov	(sp)+,r3	;return address
+9A76:	clr	-(sp)		;clear a flag
+9A78:	mov	r1,-(sp)	;push SOURCE pointer
+9A7A:	mov	r0,-(sp)	;push DEST pointer
+9A7C:	trap	1A		;MOVF, move SOURCE to DEST
+9A7E:	mov	r3,pc
+
+; trap 2E
+9A80:	mov	(sp)+,r3
+9A82:	br	9A78
+
+; trap 28 - M.SETU
+9A84:	mov	(sp)+,r1
+9A86:	trap	2C		;push a number pointed to by R0 on the stack
+9A88:	mov	r1,-(sp)
+9A8A:	mov	r4,-(sp)
+9A8C:	mov	r3,-(sp)
+9A8E:	mov	r0,-(sp)
+9A90:	mov	r0,r1
+9A92:	trap	18		;MULF
+9A94:	mov	(sp)+,r0
+9A96:	mov	(sp)+,r3
+9A98:	mov	(sp)+,r4
+9A9A:	mov	(sp)+,r1
+9A9C:	trap	2C		;push a number pointed to by R0 on the stack
+9A9E:	mov	r4,-(sp)
+9AA0:	mov	r0,-(sp)
+9AA2:	mov	#6,-(sp)
+9AA6:	add	sp,(sp)
+9AA8:	mov	#E,-(sp)
+9AAC:	add	sp,(sp)
+9AAE:	mov	r3,-(sp)
+9AB0:	mov	r1,pc
+
+; trap 26
+9AB2:	mov	0002(sp),r0
+9AB6:	trap	18		;MULF
+9AB8:	mov	(sp)+,0002(sp)
+9ABC:	mov	(sp),r1
+9ABE:	trap	22
+9AC0:	mov	r0,-(sp)
+9AC2:	mov	(sp),r1
+9AC4:	sub	#6,sp
+9AC8:	mov	sp,r0
+9ACA:	trap	1E		;FLT, convert integer R1 to float
+9ACC:	mov	sp,r1
+9ACE:	mov	0008(sp),r0
+9AD2:	trap	12		;SUBF
+9AD4:	add	#6,sp
+9AD8:	mov	0004(sp),-(sp)
+9ADC:	rts	pc
+
+; function SIN
+9ADE:	trap	24		;M.INIT
+9AE0:	tst	0002(r0)
+9AE4:	bge	9AF0		;skip if the operand not negative
+; operand negative
+9AE6:	mov	r0,r1
+9AE8:	trap	14		;NEGF
+9AEA:	inc	0004(sp)	;set neg_flag
+9AEE:	br	9AF8
+; M.NOTN:
+9AF0:	bne	9AF8		;skip if the operand not equal 0
+; M.EXIT:
+9AF2:	add	#6,sp
+9AF6:	rts	pc
+; M.NOTE:
+9AF8:	mov	#9B54,r1	;2/PI
+9AFC:	trap	26
+9AFE:	mov	(sp)+,r2
+9B00:	bic	#FFFC,r2	;get two low order bits
+9B04:	asl	r2		;multiply by 2
+9B06:	add	#9B4C,r2	;address of the branch table
+9B0A:	mov	(r2),pc		;branch through the table
+
+; M.Q2:
+9B0C:	mov	#92C2,r1	;floating point constant 1
+9B10:	mov	(sp),r0
+9B12:	trap	12		;SUBF
+; M.Q3:
+9B14:	mov	(sp),r0
+9B16:	mov	r0,r1
+9B18:	trap	14		;NEGF
+9B1A:	br	9B24
+; M.Q4:
+9B1C:	mov	#92C2,r1	;floating point constant 1
+9B20:	mov	(sp),r0
+9B22:	trap	12		;SUBF
+; M.EVAL:
+9B24:	mov	(sp),r0
+9B26:	mov	#9B5A,r4
+9B2A:	mov	#6,r3
+9B2E:	trap	28		;M.SETU
+9B30:	trap	2A		;M.DOPO
+9B32:	tst	0004(sp)	;neg_flag set?
+9B36:	beq	9AF2		;branch if not
+; negate the result
+9B38:	mov	(sp),r0
+9B3A:	mov	r0,r1
+9B3C:	trap	14		;NEGF
+9B3E:	br	9AF2
+
+; function COS
+9B40:	trap	24		;M.INIT
+9B42:	mov	#9B78,r1
+9B46:	trap	10		;ADDF
+9B48:	mov	(sp),r0
+9B4A:	br	9AE0
+
+9B4C:	.word	9B24, 9B0C, 9B14, 9B1C	;M.EVAL, M.Q2, M.Q3, M.Q4
+
+9B54:	.word	C1B9, 517C, 8000	;0.6366197732 = 2/PI
+
+9B5A:	.word	1FBE, 8D4E, 7FEE	;-0.000003418172245
+9B60:	.word	FACE, 53FF, 7FF4	;0.00016021713395
+9B66:	.word	DC8C, B34B, 7FF9	;-0.004681620238
+9B6C:	.word	EEFE, 519A, 7FFD	;0.07969258714
+9B72:	.word	0C75, AD51, 8000	;-0.6459640912
+
+9B78:	.word	ED4E, 6487, 8001	;1.5707963239 = PI/2
+
+; function ATN
+9B7E:	clr	-(sp)
+9B80:	trap	24		;M.INIT
+9B82:	tst	0002(r0)	;is operand equal 0 ?
+9B86:	beq	9C38		;branch if yes
+9B88:	bge	9B92		;skip if the operand not negative
+; operand negative
+9B8A:	inc	0006(sp)	;set neg_flag
+9B8E:	mov	r0,r1
+9B90:	trap	14		;NEGF
+; M.P2:
+9B92:	mov	#92C2,r1	;floating point constant 1
+9B96:	mov	(sp),r0
+9B98:	trap	1C		;CMPF
+9B9A:	bge	9BBA
+9B9C:	inc	0004(sp)	;X is > 1, set a_flag
+9BA0:	mov	#92C2,r0	;floating point constant 1
+9BA4:	trap	2C		;push a number pointed to by R0 on the stack
+9BA6:	mov	sp,r0
+9BA8:	mov	0006(sp),r1
+9BAC:	trap	16		;DIVF, let X = 1/X
+9BAE:	mov	sp,r1
+9BB0:	mov	0006(sp),r0
+9BB4:	trap	1A		;MOVF
+9BB6:	add	#6,sp
+; M.P:
+9BBA:	mov	#9C40,r1	;floating point constant 2 - SQR (3)
+9BBE:	mov	(sp),r0
+9BC0:	trap	1C		;CMPF, is X < 2 - SQR (3)
+9BC2:	ble	9BCC
+9BC4:	clr	-(sp)		;it is, so let C = 0
+9BC6:	clr	-(sp)
+9BC8:	clr	-(sp)
+9BCA:	br	9BFC
+; let X=(X*SQR(3)-1)/(X+SQR(3))
+; let C=PI/6
+; M.BR4:
+9BCC:	mov	#9C4C,r0	;floating point constant PI/6
+9BD0:	trap	2C		;push a number pointed to by R0 on the stack
+9BD2:	mov	0006(sp),r0
+9BD6:	trap	2C		;push a number pointed to by R0 on the stack
+9BD8:	mov	#9C46,r1
+9BDC:	trap	18		;MULF
+9BDE:	mov	000C(sp),r0
+9BE2:	mov	#92C2,r1	;floating point constant 1
+9BE6:	trap	12		;SUBF
+9BE8:	mov	sp,r0
+9BEA:	mov	#9C46,r1
+9BEE:	trap	10		;ADDF
+9BF0:	mov	000C(sp),r0
+9BF4:	mov	sp,r1
+9BF6:	trap	16		;DIVF
+9BF8:	add	#6,sp
+9BFC:	mov	0006(sp),r0
+9C00:	mov	#9C52,r4
+9C04:	mov	#5,r3
+9C08:	trap	28		;M.SETU
+9C0A:	trap	2A		;M.DOPO
+9C0C:	mov	sp,r1
+9C0E:	mov	0006(sp),r0
+9C12:	trap	10		;ADDF
+9C14:	add	#6,sp
+9C18:	tst	0004(sp)
+9C1C:	beq	9C2C
+9C1E:	mov	(sp),r0
+9C20:	mov	#9B78,r1
+9C24:	trap	12		;SUBF
+9C26:	mov	(sp),r0
+9C28:	mov	r0,r1
+9C2A:	trap	14		;NEGF
+9C2C:	tst	0006(sp)
+9C30:	beq	9C38
+9C32:	mov	(sp),r0
+9C34:	mov	r0,r1
+9C36:	trap	14		;NEGF
+9C38:	add	#8,sp
+9C3C:	clear	v
+9C3E:	rts	pc
+
+9C40:	.word	517C, 4498, 7FFF	;0.2679491928 = 2 - SQR (3)
+9C46:	.word	EBA0, 6ED9, 8001	;1.7320508063 = SQR (3)
+9C4C:	.word	48DE, 4305, 8000	;0.5235987743 = PI/6
+9C52:	.word	9720, 6132, 7FFD	;0.09491954930
+9C58:	.word	8FCF, B76E, 7FFE	;-0.1417346058
+9C5E:	.word	DBA6, 6661, 7FFE	;0.1999653475
+9C64:	.word	B20A, AAAA, 7FFF	;-0.3333328939
+9C6A:	.word	FFFE, 7FFF, 8000	;0.9999999991
+
+; function SQR - radicand pointed to by r1, result pointed to by r0
+; algorithm: rough estimation followed by Newton's iteration
+9C70:	trap	24		;M.INIT
+9C72:	tst	0002(r0)	;test the high word of mantissa
+9C76:	beq	9CD4		;if zero, we have the answer
+9C78:	bge	9C82		;negative?
+9C7A:	inc	0004(sp)	;yes, set the neg_flag
+9C7E:	mov	r0,r1
+9C80:	trap	14		;NEGF
+9C82:	clr	0002(sp)	;clear odd_flag (exponent odd or even)
+9C86:	mov	(sp),r0		;pointer to the DEST
+9C88:	cmp	(r0)+,(r0)+	;= add #4,r0
+9C8A:	add	#8000,(r0)	;get rid of the bias of the DEST exponent
+9C8E:	asr	(r0)		;divide the DEST exponent by 2
+9C90:	adc	0002(sp)	;let odd_flag=Carry bit
+9C94:	mov	(r0),-(sp)	;save DEST exponent on the stack
+9C96:	mov	#8000,(r0)	;set DEST exponent=8000
+9C9A:	mov	0002(sp),r0	;pointer to the DEST
+9C9E:	trap	2C		;push a number pointed to by R0 on the stack
+; linear approximation SQR(X) = X*0.590+0.417 for X in range 0.5 to 1
+9CA0:	mov	#9D0C,r1	;constant 0.5901620695
+9CA4:	trap	18		;MULF
+9CA6:	mov	0008(sp),r0
+9CAA:	mov	#9D06,r1	;constant 0.4173075990
+9CAE:	trap	10		;ADDF
+; do three times the Newton's iteration
+9CB0:	trap	30
+9CB2:	trap	30
+9CB4:	trap	30
+9CB6:	add	6(sp),4(r0)	;add saved exponent to the DEST exponent
+9CBC:	add	#8,sp
+9CC0:	tst	0002(sp)	;was odd_flag set?
+9CC4:	beq	9CCC		;skip if not
+9CC6:	mov	#9D00,r1	;constant SQR(2)
+9CCA:	trap	18		;MULF, multiply DEST by SQR(2)
+9CCC:	tst	0004(sp)	;neg_flag set?
+9CD0:	beq	9CD4		;skip if not
+9CD2:	trap	FD		;error 126 - negative radicand
+9CD4:	add	#6,sp
+9CD8:	clear	v
+9CDA:	rts	pc
+
+; trap 30 - M.APPR, approximation of the form .5(Y0+X/Y0)
+9CDC:	mov	sp,r0
+9CDE:	tst	(r0)+
+9CE0:	trap	2C		;push a number pointed to by R0 on the stack
+9CE2:	mov	sp,r0
+9CE4:	mov	0010(sp),r1
+9CE8:	trap	16		;DIVF
+9CEA:	mov	sp,r1
+9CEC:	mov	0010(sp),r0
+9CF0:	trap	10		;ADDF
+9CF2:	mov	0010(sp),r0
+9CF6:	dec	0004(r0)
+9CFA:	add	#6,sp
+9CFE:	rts	pc
+
+9D00:	.word	7996, 5A82, 8001	;1.4142135587 = SQR (2)
+9D06:	.word	ABBA, 6AD4, 7FFF	;0.4173075990
+9D0C:	.word	6E42, 4B8A, 8000	;0.5901620695
+
+; End of code borrowed from the RT-11 operating system.
+
+
+; start the BASIC system
+9D12:	mov	#200,sp
+9D16:	mov	#100,r2
+9D1A:	clr	-(r2)
+9D1C:	mov	#8006,-(r2)
+9D20:	tst	r2
+9D22:	bne	9D1A
+9D24:	mov	#5F,(r2)+
+9D28:	mov	#9D12,(r2)+	;vector of the BASIC system start
+9D2C:	mov	#806A,@#1C	;vector TRAP
+9D32:	jsr	pc,D7C0		;RAM initialisation
+9D36:	trap	6C
+9D38:	trap	02		;print CR, LF
+9D3A:	mov	#2F3E,r1
+9D3E:	mov	#986C,r0	;string 'BASIC V1.0 (c) 1986'
+9D42:	trap	36		;print a string pointed to by r0
+9D44:	mov	r1,sp
+9D46:	mov	r1,3810
+9D4A:	mov	#100,r1
+9D4E:	mov	r1,38EC
+9D52:	mov	38EC,r5
+9D56:	movb	#A,(r5)+
+9D5A:	clr	38FA
+9D5E:	jmp	8654
+
+; display character r2
+9D62:	cmpb	#20,r2
+9D66:	ble	9D6C		;branch if a printable character
+9D68:	jsr	pc,A0B2
+9D6C:	jsr	pc,A074
+9D70:	jsr	pc,9DB4
+9D74:	cmp	3824,3832
+9D7A:	ble	9D8C
+9D7C:	clr	3824
+9D80:	mov	#9D90,-(sp)
+9D84:	jsr	pc,9D92		;save registers on the stack
+9D88:	jmp	A0F8
+9D8C:	jsr	pc,A074
+9D90:	rts	pc
+
+; save registers on the stack
+9D92:	mov	r4,-(sp)
+9D94:	mov	r3,-(sp)
+9D96:	mov	r2,-(sp)
+9D98:	mov	r1,-(sp)
+9D9A:	mov	r0,-(sp)
+9D9C:	mov	000A(sp),-(sp)	;return address
+9DA0:	mov	r5,000C(sp)
+9DA4:	rts	pc
+
+; restore registers from the stack
+9DA6:	mov	(sp)+,r5
+9DA8:	mov	(sp)+,r0
+9DAA:	mov	(sp)+,r1
+9DAC:	mov	(sp)+,r2
+9DAE:	mov	(sp)+,r3
+9DB0:	mov	(sp)+,r4
+9DB2:	rts	r5
+
+9DB4:	jsr	pc,9D92		;save registers on the stack
+9DB8:	cmpb	r2,#20
+9DBC:	bge	9DC2
+9DBE:	jmp	9FC0
+9DC2:	tst	37D6
+9DC6:	bne	9DD4
+9DC8:	bit	#20,383A
+9DCE:	bne	9DD4
+9DD0:	jmp	9FC0
+9DD4:	movb	r2,r1
+9DD6:	mov	382A,3834
+9DDC:	mov	37C2,r5
+9DE0:	mov	3824,-(sp)
+9DE4:	mov	37D6,-(sp)
+9DE8:	mov	#3846,r4
+9DEC:	mov	r1,-(sp)
+9DEE:	cmpb	r1,#3F
+9DF2:	ble	9E00
+9DF4:	mov	#40,r3
+9DF8:	mov	37CE,37CC
+9DFE:	br	9E0A
+;
+9E00:	mov	#20,r3
+9E04:	mov	#D7DE,37CC	;font table
+9E0A:	sub	r3,r1
+9E0C:	mul	37C6,r1		;number of bits for each character
+9E10:	movb	3834,r3
+9E14:	mul	37C4,r3		;width of a character in pixels
+9E18:	add	r1,r3
+9E1A:	clr	r2
+9E1C:	div	#8,r2
+9E20:	clr	r1
+9E22:	add	37CC,r2
+9E26:	bisb	(r2)+,r1
+9E28:	swab	r1
+9E2A:	bisb	(r2),r1
+9E2C:	add	37C4,r3
+9E30:	sub	#8,r3
+9E34:	ash	r3,r1
+9E36:	swab	r1
+9E38:	mov	#8,r3
+9E3C:	sub	37C4,r3
+9E40:	ash	r3,r1
+9E42:	tst	3838
+9E46:	beq	9E76
+9E48:	cmp	3838,#2
+9E4E:	blt	9E66
+9E50:	clr	r0
+9E52:	mov	37C4,r3
+9E56:	aslb	r1
+9E58:	rorb	r0
+9E5A:	sob	r3,9E56
+9E5C:	mov	r0,r1
+9E5E:	cmp	#2,3838
+9E64:	beq	9E76
+9E66:	mov	#3846,r4
+9E6A:	mov	37C4,r3
+9E6E:	rolb	r1
+9E70:	rolb	(r4)+
+9E72:	sob	r3,9E6E
+9E74:	br	9E78
+9E76:	movb	r1,(r4)+
+9E78:	add	37D4,3834
+9E7E:	mov	(sp)+,r1
+9E80:	dec	r5
+9E82:	beq	9E88
+9E84:	jmp	9DEC
+9E88:	bit	#1,3838
+9E8E:	bne	9E9A
+9E90:	mov	37C2,r5
+9E94:	mov	37C4,r4
+9E98:	br	9EAE
+9E9A:	mov	#8,r3
+9E9E:	mov	#3846,r4
+9EA2:	aslb	(r4)+
+9EA4:	sob	r3,9EA2
+9EA6:	mov	37C4,r5
+9EAA:	mov	37C2,r4
+9EAE:	bit	#1,383A
+9EB4:	beq	9EC2
+9EB6:	mov	#4,r3
+9EBA:	mov	#3846,r2
+9EBE:	com	(r2)+
+9EC0:	sob	r3,9EBE
+9EC2:	inc	r5
+9EC4:	mov	#3846,r3
+9EC8:	mov	r4,-(sp)
+9ECA:	movb	(r3)+,r1
+9ECC:	mov	r3,-(sp)
+9ECE:	mov	3824,-(sp)
+9ED2:	mov	#8,-(sp)
+9ED6:	mov	r1,r0
+9ED8:	clr	r1
+9EDA:	mov	37E0,r3
+9EDE:	bic	#FF00,r0
+9EE2:	asl	r0
+9EE4:	asl	r1
+9EE6:	bis	r0,r1
+9EE8:	clrb	r1
+9EEA:	dec	(sp)
+9EEC:	bgt	9F24
+9EEE:	mov	#FF00,3842
+9EF4:	mov	37D6,(sp)
+9EF8:	cmp	#1,r5
+9EFC:	bne	9F04
+9EFE:	mov	#1,r2
+9F02:	br	9F08
+9F04:	mov	37DE,r2
+9F08:	jsr	pc,9FD2		;plot a dot
+9F0C:	inc	37D6
+9F10:	sob	r2,9F08
+9F12:	mov	(sp)+,37D6
+9F16:	tst	r4
+9F18:	beq	9F58
+9F1A:	mov	#8,-(sp)
+9F1E:	add	(sp),3824
+9F22:	clr	r1
+9F24:	sob	r3,9EE4
+9F26:	sob	r4,9EDA
+9F28:	bic	#FF00,r0
+9F2C:	asl	r0
+9F2E:	asl	r1
+9F30:	bis	r0,r1
+9F32:	clrb	r1
+9F34:	tst	(sp)
+9F36:	beq	9EEE
+9F38:	dec	(sp)
+9F3A:	beq	9EEE
+9F3C:	mov	(sp),r3
+9F3E:	neg	r3
+9F40:	add	#8,r3
+9F44:	mov	#FF,r2
+9F48:	sec
+9F4A:	ror	r2
+9F4C:	sob	r3,9F4A
+9F4E:	clrb	r2
+9F50:	mov	r2,3842
+9F54:	ash	(sp),r1
+9F56:	br	9EF4
+9F58:	add	37DE,37D6
+9F5E:	mov	(sp)+,3824
+9F62:	mov	(sp)+,r3
+9F64:	mov	(sp),r4
+9F66:	dec	r5
+9F68:	beq	9F6E
+9F6A:	jmp	9ECA
+9F6E:	tst	(sp)+
+9F70:	bit	#1,3836
+9F76:	beq	9FA8
+9F78:	tst	(sp)+
+9F7A:	sub	37DE,37D6
+9F80:	mov	(sp)+,3824
+9F84:	cmp	#1,3836
+9F8A:	bne	9F94
+9F8C:	add	37DA,37D6
+9F92:	br	9FC0
+9F94:	sub	382E,37D6
+9F9A:	sub	382E,37D6
+9FA0:	add	37DA,37D6
+9FA6:	br	9FC0
+9FA8:	mov	(sp)+,37D6
+9FAC:	tst	3836
+9FB0:	bne	9FB8
+9FB2:	add	382C,(sp)
+9FB6:	br	9FBC
+9FB8:	sub	382C,(sp)
+9FBC:	mov	(sp)+,3824
+9FC0:	mov	#3846,r4
+9FC4:	mov	#4,r3
+9FC8:	clr	(r4)+
+9FCA:	sob	r3,9FC8
+9FCC:	jsr	pc,9DA6		;restore registers from the stack
+9FD0:	rts	pc
+
+; plot a dot
+9FD2:	jsr	pc,9D92		;save registers on the stack
+9FD6:	mov	37D6,r3		;coordinate Y
+9FDA:	cmp	r3,#40		;height of the screen in pixels
+9FDE:	bhis	A048		;out of the screen
+9FE0:	mov	3824,r5		;coordinate X
+9FE4:	cmp	r5,#78		;width of the screen in pixels
+9FE8:	bhis	A048		;out of the screen
+9FEA:	mov	#70,r0
+9FEE:	sub	3824,r0
+9FF2:	bpl	9FFE
+9FF4:	sub	#8,r0
+9FF8:	ash	r0,r1
+9FFA:	neg	r0
+9FFC:	ash	r0,r1
+9FFE:	clr	r4
+A000:	clr	r2
+A002:	div	#20,r2
+A006:	div	#8,r4
+A00A:	mul	#F,r3
+A00E:	add	r4,r3
+A010:	asl	r3
+A012:	add	r2,r3
+A014:	mov	r5,r0
+A016:	clr	r5
+A018:	mov	r3,r2
+A01A:	add	3812,r2
+A01E:	bisb	(r2),r5
+A020:	swab	r5
+A022:	bisb	0002(r2),r5
+A026:	ashc	r0,r4
+A028:	bic	#FF,r1
+A02C:	movb	37DC,r2
+A030:	asl	r2
+A032:	jsr	pc,@A062(r2)
+A036:	neg	r0
+A038:	ashc	r0,r4
+A03A:	add	3812,r3
+A03E:	movb	r5,0002(r3)
+A042:	swab	r5
+A044:	movb	r5,(r3)
+A046:	clc
+A048:	jsr	pc,9DA6		;restore registers from the stack
+A04C:	rts	pc
+A04E:	bic	r1,r5
+A050:	rts	pc
+A052:	bic	3842,r5
+A056:	bis	r1,r5
+A058:	rts	pc
+A05A:	xor	r1,r5
+A05C:	rts	pc
+A05E:	bis	r5,r1
+A060:	rts	pc
+
+; display modes
+A062:	.word	A04E
+A064:	.word	A052
+A066:	.word	A05A
+A068:	.word	A056
+A06A:	.word	A05E
+
+A06C:	movb	(r1)+,(r4)+
+A06E:	cmpb	(r1)+,(r4)+
+A070:	sob	r3,A06C
+A072:	rts	pc
+
+A074:	tst	383E
+A078:	bne	A0B0
+A07A:	mov	3824,-(sp)
+A07E:	mov	37D6,-(sp)
+A082:	movb	37DC,-(sp)
+A086:	movb	#2,37DC
+A08C:	add	382E,37D6
+A092:	sub	37DA,37D6
+A098:	mov	r1,-(sp)
+A09A:	mov	#F800,r1
+A09E:	jsr	pc,9FD2		;plot a dot
+A0A2:	mov	(sp)+,r1
+A0A4:	movb	(sp)+,37DC
+A0A8:	mov	(sp)+,37D6
+A0AC:	mov	(sp)+,3824
+A0B0:	rts	pc
+A0B2:	cmpb	#E,r2
+A0B6:	bne	A0C0
+A0B8:	mov	37CA,37CE
+A0BE:	br	A0CC
+A0C0:	cmpb	#F,r2
+A0C4:	bne	A0D8
+A0C6:	mov	37C8,37CE
+A0CC:	tst	3822
+A0D0:	beq	A15A
+A0D2:	mov	#20,r2
+A0D6:	rts	pc
+A0D8:	jsr	pc,9D92		;save registers on the stack
+A0DC:	mov	#A0F2,r0
+A0E0:	clr	r3
+A0E2:	bisb	(r0)+,r3
+A0E4:	beq	A156
+A0E6:	cmpb	r2,(r0)+
+A0E8:	bne	A0E0
+A0EA:	jsr	pc,A074
+A0EE:	asl	r3
+A0F0:	add	r3,pc
+A0F2:	clr	r3
+A0F4:	mark	1B
+A0F6:	halt
+A0F8:	cmp	3830,37D6
+A0FE:	bgt	A120
+A100:	mov	#8,37D6
+A106:	jsr	pc,A1D2
+A10A:	mov	3830,37D6
+A110:	bit	#10,383A
+A116:	beq	A152
+A118:	sub	382E,3826
+A11E:	br	A152
+A120:	add	382E,37D6
+A126:	br	A152
+A128:	clr	3824
+A12C:	br	A152
+A12E:	sub	382C,3824
+A134:	bge	A150
+A136:	mov	3832,3824
+A13C:	sub	382E,37D6
+A142:	cmp	#8,37D6
+A148:	blt	A150
+A14A:	mov	3830,37D6
+A150:	rts	pc
+A152:	jsr	pc,A074
+A156:	jsr	pc,9DA6		;restore registers from the stack
+A15A:	tst	(sp)+
+A15C:	rts	pc
+A15E:	mov	r0,-(sp)
+A160:	mov	r1,-(sp)
+A162:	mov	37DE,r1
+A166:	mul	37D0,r1
+A16A:	add	37DA,r1
+A16E:	mov	r1,382E
+A172:	mov	37E0,r1
+A176:	mul	37D2,r1
+A17A:	add	37D8,r1
+A17E:	mov	r1,382C
+A182:	clr	r0
+A184:	mov	#38,r1
+A188:	div	382E,r0
+A18C:	add	382E,r1
+A190:	neg	r1
+A192:	add	#40,r1
+A196:	mov	r1,3830
+A19A:	clr	r0
+A19C:	mov	#78,r1
+A1A0:	div	382C,r0
+A1A4:	add	382C,r1
+A1A8:	neg	r1
+A1AA:	add	#78,r1
+A1AE:	mov	r1,3832
+A1B2:	mov	(sp)+,r1
+A1B4:	mov	(sp)+,r0
+A1B6:	rts	pc
+A1B8:	jsr	pc,A074
+A1BC:	jsr	pc,A12E
+A1C0:	movb	#20,r2
+A1C4:	jsr	pc,9DB4
+A1C8:	jsr	pc,A12E
+A1CC:	jsr	pc,A074
+A1D0:	rts	pc
+A1D2:	jsr	pc,A22C
+A1D6:	mov	r1,r4
+A1D8:	asl	r4
+A1DA:	asl	r5
+A1DC:	mov	r5,r1
+A1DE:	add	r4,r1
+A1E0:	mov	0002(sp),r3
+A1E4:	bne	A1F4
+A1E6:	mov	(sp),r3
+A1E8:	sub	0004(sp),r3
+A1EC:	add	3812,r1
+A1F0:	inc	r1
+A1F2:	br	A212
+; display scroll
+A1F4:	add	3812,r4
+A1F8:	add	3812,r1
+A1FC:	jsr	pc,A06C
+A200:	mov	3812,r1
+A204:	inc	r1
+A206:	mov	0004(sp),r3
+A20A:	jsr	pc,A06C
+A20E:	clr	r4
+A210:	mov	(sp),r3
+A212:	add	3812,r4
+A216:	inc	r4
+A218:	jsr	pc,A06C
+A21C:	mov	0004(sp),r3
+A220:	clrb	(r4)+
+A222:	inc	r4
+A224:	sob	r3,A220
+A226:	add	#8,sp
+A22A:	rts	pc
+A22C:	jsr	pc,A25C
+A230:	mov	#78,r1
+A234:	mov	r1,-(sp)
+A236:	mov	r1,r5
+A238:	mul	#F,r3
+A23C:	neg	r3
+A23E:	add	#1E0,r3
+A242:	sub	(sp),r3
+A244:	tst	r2
+A246:	bne	A254
+A248:	mov	r3,-(sp)
+A24A:	mov	#1E0,-(sp)
+A24E:	sub	0004(sp),(sp)
+A252:	br	A258
+A254:	clr	-(sp)
+A256:	mov	r3,-(sp)
+A258:	mov	0006(sp),pc
+A25C:	clr	r2
+A25E:	mov	37D6,r3
+A262:	div	#20,r2
+A266:	rts	pc
+
+; command AUTO
+A268:	trap	46		;get a pair of integer numbers
+A26A:	tst	r3
+A26C:	bne	A272
+A26E:	mov	#A,r3
+A272:	mov	r3,388E
+A276:	tst	r4
+A278:	bne	A27E
+A27A:	mov	#A,r4
+A27E:	mov	r4,3890
+A282:	mov	#1,384E
+A288:	jmp	A3C2
+A28C:	sub	#8,sp
+A290:	mov	sp,r0
+A292:	mov	388E,r1
+A296:	trap	0A		;ITOA
+A298:	mov	sp,r0
+A29A:	tst	(r0)+
+A29C:	clrb	0006(sp)
+A2A0:	mov	#3898,r3
+A2A4:	cmpb	#20,(r0)+
+A2A8:	beq	A2A4
+A2AA:	dec	r0
+A2AC:	movb	(r0),r2
+A2AE:	movb	(r0)+,(r3)+
+A2B0:	beq	A2B6
+A2B2:	trap	00		;print character r2
+A2B4:	br	A2AC
+A2B6:	dec	r3
+A2B8:	add	3890,388E
+A2BE:	add	#8,sp
+A2C2:	rts	pc
+
+; command WAIT
+A2C4:	mov	#A5E6,r4	;evaluate the argument to the variable 388A
+A2C8:	mov	#1,r3		;number of arguments
+A2CC:	jsr	pc,A68E		;evaluate arguments to integer variables
+A2D0:	sub	#1,r0
+A2D4:	bne	A2D0		;simple delay loop
+A2D6:	br	A3C2
+
+; command PLAY
+A2D8:	mov	#A5E8,r4	;evaluate arguments to variables 388A, 388C
+A2DC:	mov	#2,r3		;number of arguments
+A2E0:	jsr	pc,A68E		;evaluate arguments to integer variables
+A2E4:	cmp	#28,388A
+A2EA:	bhis	A2EE
+A2EC:	trap	3F		;error 31 - wrong note in the PLAY operator
+A2EE:	mov	388A,r2
+A2F2:	asl	r2
+A2F4:	jsr	pc,A2FA
+A2F8:	br	A3C2
+
+; play a note specified in R2 of duration time specified in R0
+; duration time = 8 * R0 / frequency
+A2FA:	mov	#FB,@#E814
+A300:	mov	A336(r2),@#E812
+A306:	clr	@#E816		;start of the transfer
+A30A:	jsr	pc,A32E
+A30E:	clr	@#E810		;transmit dummy data
+A312:	jsr	pc,A32E
+A316:	sob	r0,A30E
+A318:	tst	@#E816		;end of the transfer
+A31C:	jsr	pc,A32E
+A320:	mov	#73,@#E814
+A326:	mov	#EA,@#E814
+A32C:	rts	pc
+
+A32E:	tstb	@#E814
+A332:	bpl	A32E
+A334:	rts	pc
+
+; tone frequency table, notes 0 (F4 = 349.23Hz) to 40 (A7 = 3520.0Hz)
+; frequency = 800kHz / table_entry
+A336:	.word	08EE, 0872, 07F9, 0783
+A33E:	.word	071A, 06B5, 0653, 05F7
+A346:	.word	05A4, 0551, 0506, 04BC
+A34E:	.word	0477, 0439, 03FC, 03C2
+A356:	.word	038D, 035A, 032A, 02FB
+A35E:	.word	02D2, 02A8, 0281, 025E
+A366:	.word	023D, 021D, 01FE, 01E2
+A36E:	.word	01C7, 01AD, 0193, 017E
+A376:	.word	0169, 0155, 0142, 012F
+A37E:	.word	0121, 010E, 00FF, 00F1
+A386:	.word	00E3
+
+; command DIS
+A388:	jsr	pc,B53E
+A38C:	clr	383C
+A390:	tst	383E
+A394:	beq	A3C2
+A396:	clr	383E
+A39A:	jsr	pc,A074
+A39E:	br	A3C2
+
+; command CLS
+A3A0:	mov	3812,r3
+A3A4:	mov	#1E0,r2
+A3A8:	clr	(r3)+
+A3AA:	sob	r2,A3A8
+A3AC:	bis	#20,383A
+A3B2:	clr	3824
+A3B6:	clr	37D6
+A3BA:	inc	383C
+A3BE:	inc	383E
+A3C2:	trap	48
+A3C4:	jmp	85FC
+
+; command LOCATE
+A3C8:	mov	r1,-(sp)
+A3CA:	jsr	pc,A074
+A3CE:	mov	(sp)+,r1
+A3D0:	mov	#2,r3		;number of arguments
+A3D4:	mov	#A5EC,r4
+A3D8:	jsr	pc,A68E		;evaluate arguments to integer variables
+A3DC:	mov	r1,-(sp)
+A3DE:	jsr	pc,A074
+A3E2:	mov	(sp)+,r1
+A3E4:	br	A3C2
+A3E6:	jsr	pc,9D92		;save registers on the stack
+A3EA:	mov	#3854,r0
+A3EE:	mov	#1,3876
+A3F4:	mov	#1,3878
+A3FA:	mov	0006(r0),r1
+A3FE:	sub	0002(r0),r1
+A402:	bge	A40A
+A404:	neg	3876
+A408:	neg	r1
+A40A:	mov	0008(r0),r2
+A40E:	sub	0004(r0),r2
+A412:	bge	A41A
+A414:	neg	3878
+A418:	neg	r2
+A41A:	mov	r2,-(sp)
+A41C:	sub	r1,(sp)
+A41E:	ble	A434
+A420:	mov	3876,r3
+A424:	mov	3878,3876
+A42A:	mov	r3,3878
+A42E:	mov	r2,r3
+A430:	mov	r1,r2
+A432:	mov	r3,r1
+A434:	mov	r2,r3
+A436:	asl	r3
+A438:	mov	r3,388C
+A43C:	sub	r1,r3
+A43E:	mov	r3,3888
+A442:	mov	r1,r3
+A444:	asl	r3
+A446:	mov	r3,388A
+A44A:	sub	388C,388A
+A450:	tst	(sp)
+A452:	ble	A462
+A454:	mov	0002(r0),r5
+A458:	mov	0004(r0),r4
+A45C:	mov	0008(r0),r3
+A460:	br	A46E
+A462:	mov	0002(r0),r4
+A466:	mov	0004(r0),r5
+A46A:	mov	0006(r0),r3
+A46E:	jsr	pc,A49C
+A472:	cmp	r4,r3
+A474:	beq	A494
+A476:	add	3876,r4
+A47A:	tst	3888
+A47E:	bge	A488
+A480:	add	388C,3888
+A486:	br	A46E
+A488:	add	3878,r5
+A48C:	sub	388A,3888
+A492:	br	A46E
+A494:	tst	(sp)+
+A496:	jsr	pc,9DA6		;restore registers from the stack
+A49A:	rts	pc
+A49C:	tst	0002(sp)
+A4A0:	ble	A4AC
+A4A2:	mov	r5,3824
+A4A6:	mov	r4,37D6
+A4AA:	br	A4B4
+A4AC:	mov	r4,3824
+A4B0:	mov	r5,37D6
+A4B4:	movb	37DC,-(sp)
+A4B8:	movb	3852,37DC
+A4BE:	mov	r1,-(sp)
+A4C0:	mov	#8000,r1
+A4C4:	jsr	pc,9FD2		;plot a dot
+A4C8:	mov	(sp)+,r1
+A4CA:	movb	(sp)+,37DC
+A4CE:	rts	pc
+A4D0:	inc	3840
+A4D4:	mov	#A4DC,-(sp)
+A4D8:	jmp	A614
+A4DC:	trap	3A		;get a character other than space to r2
+A4DE:	cmpb	r2,#3E
+A4E2:	beq	A4EC
+A4E4:	cmpb	r2,#3B
+A4E8:	beq	A4D4
+A4EA:	trap	39		;error 28 - illegal PRINT syntax
+A4EC:	jsr	pc,A074
+A4F0:	tst	37DE
+A4F4:	bne	A4FC
+A4F6:	mov	#1,37DE
+A4FC:	tst	37E0
+A500:	bne	A508
+A502:	mov	#1,37E0
+A508:	jsr	pc,A15E
+A50C:	jsr	pc,A074
+A510:	rts	pc
+A512:	clr	3840
+A516:	jsr	pc,A074
+A51A:	mov	#1,37DE
+A520:	mov	#1,37E0
+A526:	clr	3836
+A52A:	clr	3838
+A52E:	movb	#1,37DC
+A534:	mov	#1,37D4
+A53A:	clr	382A
+A53E:	bic	#1,383A
+A544:	mov	37C2,37D0
+A54A:	mov	37C4,37D2
+A550:	mov	#1,37D8
+A556:	mov	#1,37DA
+A55C:	jsr	pc,A15E
+A560:	jsr	pc,A074
+A564:	rts	pc
+A566:	mov	#3856,r3
+A56A:	movb	#3,3852
+A570:	mov	r1,-(sp)
+A572:	mov	r3,r4
+A574:	cmp	(r4)+,(r4)+
+A576:	mov	#2,r2
+A57A:	mov	#2,r0
+A57E:	mov	(r4),r1
+A580:	mov	(r3),(r4)
+A582:	jsr	pc,A3E6
+A586:	mov	r1,(r4)+
+A588:	tst	(r3)+
+A58A:	sob	r0,A57E
+A58C:	mov	r3,r4
+A58E:	cmp	-(r4),-(r4)
+A590:	sob	r2,A57A
+A592:	mov	(sp)+,r1
+A594:	rts	pc
+
+; evaluate an arithmetical expression to an integer in R0
+A596:	trap	3A		;get a character other than space to r2
+A598:	dec	r1
+A59A:	cmpb	r2,#3A
+A59E:	beq	A5E0
+A5A0:	cmpb	r2,#A
+A5A4:	beq	A5E0
+A5A6:	mov	r3,-(sp)
+A5A8:	mov	r4,-(sp)
+A5AA:	trap	5E		;evaluate an arithmetical expression
+A5AC:	trap	20		;FIX
+A5AE:	mov	(sp)+,r4
+A5B0:	mov	(sp)+,r3
+A5B2:	trap	3A		;get a character other than space to r2
+A5B4:	cmpb	r2,#2C
+A5B8:	beq	A5DC
+A5BA:	cmpb	r2,#3A
+A5BE:	beq	A5DA
+A5C0:	cmpb	r2,#A
+A5C4:	beq	A5DA
+A5C6:	tst	3840
+A5CA:	beq	A5D8
+A5CC:	cmpb	r2,#3B
+A5D0:	beq	A5DA
+A5D2:	cmpb	r2,#3E
+A5D6:	beq	A5DA
+A5D8:	trap	39		;error 28 - illegal PRINT syntax
+A5DA:	dec	r1
+A5DC:	clc
+A5DE:	rts	pc
+A5E0:	dec	r1
+A5E2:	sec
+A5E4:	rts	pc
+
+A5E6:	.word	388A
+A5E8:	.word	388A, 388C
+A5EC:	3824 37D6
+A5F0:	37DE 37E0 3838 37D8 37DA 3836
+A5FC:	.word	3824, 37D6
+A600:	3888 388A 388C 3888 388A 388C 3858 385A
+A610:	3856
+
+; comand DRAW
+A612:	mov	r3,-(sp)
+A614:	trap	3A		;get a character other than space to r2
+A616:	mov	#A634,r0
+A61A:	clr	r3		;those two instructions could be replaced...
+A61C:	bis	(r0)+,r3	;...with a single MOV (R0)+,R3
+A61E:	bne	A622
+A620:	trap	3B		;error 29 - wrong DRAW function
+A622:	cmp	r2,(r0)+
+A624:	bne	A61A
+A626:	asl	r3
+A628:	tst	3840
+A62C:	bne	A632
+A62E:	mov	#A676,-(sp)
+A632:	add	r3,pc
+
+; offset to the handler routine, command code
+A634:	.word	0069, 'O'	;A634+2*0069 = A706
+	.word	0124, 'H'	;A634+2*0124 = A87C
+	.word	00FC, 'D'	;A634+2*00FC = A82C
+	.word	0134, 'E'	;A634+2*0134 = A89C
+	.word	006E, 'I'	;A634+2*006E = A710
+	.word	00A6, 'A'	;A634+2*00A6 = A780
+	.word	0139, 'C'	;A634+2*0139 = A8A6
+	.word	014B, 'X'	;A634+2*014B = A8CA
+	.word	01AA, 'G'	;A634+2*01AA = A988
+	.word	0025, 'S'	;A634+2*0025 = A67E
+	.word	003E, 'Q'	;A634+2*003E = A6B0
+	.word	0034, 'Z'	;A634+2*0034 = A69C
+	.word	0039, 'Y'	;A634+2*0039 = A6A6
+	.word	00B5, 'M'	;A634+2*00B5 = A79E
+	.word	0096, 'N'	;A634+2*0096 = A760
+	.word	009E, 'P'	;A634+2*009E = A770
+	.word	0000		;end marker
+
+A676:	mov	(sp)+,r3
+A678:	trap	48
+A67A:	jmp	85FC
+
+; graphic command 'S'
+A67E:	mov	#A5F0,r4
+A682:	mov	#2,r3
+A686:	tst	3840
+A68A:	bne	A68E
+A68C:	trap	3B		;error 29 - wrong DRAW function
+; evaluate arguments to integer variables
+; number of arguments in R3
+; addresses of integer variables pointed to by R4
+A68E:	jsr	pc,A596		;evaluate arithm. expression to integer in R0
+A692:	bhis	A696
+A694:	trap	3D		;error 30 - wrong parameters
+A696:	mov	r0,@(r4)+
+A698:	sob	r3,A68E
+A69A:	rts	pc
+
+; graphic command 'Z'
+A69C:	mov	#A5F6,r4
+A6A0:	mov	#2,r3
+A6A4:	br	A686
+
+; graphic command 'Y'
+A6A6:	mov	#A5FA,r4
+A6AA:	mov	#1,r3
+A6AE:	br	A686
+
+; graphic command 'Q'
+A6B0:	mov	#A5F4,r4
+A6B4:	mov	#1,r3
+A6B8:	jsr	pc,A686
+A6BC:	bic	#FFFC,3838
+A6C2:	bit	#1,3838
+A6C8:	bne	A6D8
+A6CA:	mov	37C4,37D2
+A6D0:	mov	37C2,37D0
+A6D6:	br	A6E4
+A6D8:	mov	37C2,37D2
+A6DE:	mov	37C4,37D0
+A6E4:	mov	#1,37D4
+A6EA:	clr	382A
+A6EE:	cmp	#2,r0
+A6F2:	blt	A704
+A6F4:	beq	A6FA
+A6F6:	tst	r0
+A6F8:	beq	A704
+A6FA:	mov	#6,382A
+A700:	neg	37D4
+A704:	rts	pc
+
+; graphic command 'O' - set the current screen position
+A706:	mov	#A5FC,r4	;evaluate arguments to variables 3824, 37D6
+A70A:	mov	#2,r3		;number of arguments
+A70E:	br	A68E		;evaluate arguments to integer variables
+
+; graphic command 'I' - draw a line specified by relative coordinates
+A710:	mov	#3856,-(sp)
+A714:	mov	(sp),r3
+A716:	mov	3824,(r3)+
+A71A:	mov	37D6,(r3)+
+A71E:	mov	#2,r4
+A722:	jsr	pc,A596		;evaluate arithm. expression to integer in R0
+A726:	blo	A75E
+A728:	mov	r0,(r3)+
+A72A:	sob	r4,A722
+A72C:	mov	(sp),r3
+A72E:	add	(r3),0004(r3)
+A732:	add	0002(r3),0006(r3)
+A738:	movb	#3,3852
+A73E:	jsr	pc,A3E6
+A742:	mov	0004(r3),(r3)
+A746:	mov	0006(r3),0002(r3)
+A74C:	cmp	(r3)+,(r3)+
+A74E:	mov	#2,r4
+A752:	jsr	pc,A596		;evaluate arithm. expression to integer in R0
+A756:	blo	A75A
+A758:	br	A728
+A75A:	tst	(sp)+
+A75C:	rts	pc
+A75E:	trap	3D		;error 30 - wrong parameters
+
+; graphic command 'N' - inverted print mode (white on black)
+A760:	tst	3840
+A764:	bne	A768
+A766:	trap	3B		;error 29 - wrong DRAW function
+A768:	bis	#1,383A
+A76E:	rts	pc
+
+; graphic command 'P' - normal print mode (black on white)
+A770:	tst	3840
+A774:	bne	A778
+A776:	trap	3B		;error 29 - wrong DRAW function
+A778:	bic	#1,383A
+A77E:	rts	pc
+
+; graphic command 'A' - draw a rectangle
+A780:	mov	r1,-(sp)
+A782:	mov	#3856,r3
+A786:	mov	#4,r4
+A78A:	jsr	pc,A596		;evaluate arithm. expression to integer in R0
+A78E:	blo	A79C
+A790:	mov	r0,(r3)+
+A792:	sob	r4,A78A
+A794:	jsr	pc,A566
+A798:	mov	(sp)+,r1
+A79A:	rts	pc
+A79C:	trap	3D		;error 30 - wrong parameters
+
+; graphic command 'M' - draw a bitmap specified with hexadecimal numbers
+A79E:	mov	#2,r3
+A7A2:	clr	r2
+A7A4:	clr	r4
+A7A6:	bis	r2,r4
+A7A8:	trap	3A		;get a character other than space to r2
+A7AA:	cmpb	r2,#A
+A7AE:	beq	A7B6
+A7B0:	cmpb	r2,#3A
+A7B4:	bne	A7C2
+A7B6:	cmp	#2,r3
+A7BA:	beq	A826
+A7BC:	dec	r1
+A7BE:	clr	r2
+A7C0:	br	A7E0
+A7C2:	sub	#30,r2
+A7C6:	bmi	A826
+A7C8:	cmp	r2,#9
+A7CC:	ble	A7DE
+A7CE:	sub	#7,r2
+A7D2:	cmp	r2,#F
+A7D6:	bhi	A826
+A7D8:	cmp	r2,#A
+A7DC:	blt	A826
+A7DE:	sob	r3,A7A6
+A7E0:	mov	#4,r3
+A7E4:	asl	r4
+A7E6:	sob	r3,A7E4
+A7E8:	bis	r2,r4
+A7EA:	swab	r4
+A7EC:	mov	r1,-(sp)
+A7EE:	mov	r4,r1
+A7F0:	cmp	#40,37D6
+A7F6:	bgt	A802
+A7F8:	clr	37D6
+A7FC:	add	#8,3824
+A802:	movb	37DC,-(sp)
+A806:	movb	#2,37DC
+A80C:	jsr	pc,9FD2		;plot a dot
+A810:	mov	(sp)+,37DC
+A814:	mov	(sp)+,r1
+A816:	inc	37D6
+A81A:	cmpb	(r1),#A
+A81E:	beq	A826
+A820:	cmpb	(r1),#3A
+A824:	bne	A79E
+A826:	trap	48
+A828:	jmp	85FC
+
+; graphic command 'D' - draw a line specified by absolute coordinates
+A82C:	movb	#3,3852
+A832:	mov	#3856,r3
+A836:	mov	#2,r4
+A83A:	mov	3824,(r3)+
+A83E:	mov	37D6,(r3)+
+A842:	sob	r4,A83A
+A844:	mov	#3856,r3
+A848:	mov	#4,r4
+A84C:	jsr	pc,A596		;evaluate arithm. expression to integer in R0
+A850:	bhis	A85A
+A852:	cmp	#2,r4
+A856:	beq	A85E
+A858:	trap	3D		;error 30 - wrong parameters
+A85A:	mov	r0,(r3)+
+A85C:	sob	r4,A84C
+A85E:	jsr	pc,A3E6
+A862:	jsr	pc,A596		;evaluate arithm. expression to integer in R0
+A866:	blo	A87A
+A868:	mov	#3856,r3
+A86C:	mov	3824,(r3)+
+A870:	mov	37D6,(r3)+
+A874:	mov	#2,r4
+A878:	br	A85A
+A87A:	rts	pc
+
+; graphic command 'H' - plot a dot
+A87C:	jsr	pc,A706
+A880:	movb	37DC,-(sp)
+A884:	mov	r1,-(sp)
+A886:	movb	#3,37DC
+A88C:	mov	#8000,r1
+A890:	jsr	pc,9FD2		;plot a dot
+A894:	mov	(sp)+,r1
+A896:	movb	(sp)+,37DC
+A89A:	rts	pc
+
+; graphic command 'E' - erase a dot or a line
+A89C:	clrb	3852
+A8A0:	jsr	pc,A844
+A8A4:	rts	pc
+
+; graphic command 'C' - draw a circle
+A8A6:	clr	3854
+A8AA:	mov	#385C,388A
+A8B0:	mov	#A60C,r4
+A8B4:	mov	#3,r3		;number of arguments
+A8B8:	jsr	pc,A68E		;evaluate arguments to integer variables
+A8BC:	jsr	pc,9D92		;save registers on the stack
+A8C0:	jmp	AD82
+
+A8C4:	.word	0000, 4000, 8000
+
+; graphic command 'X' - draw the coordinate axes
+A8CA:	mov	r1,-(sp)
+A8CC:	mov	3824,-(sp)
+A8D0:	mov	37D6,-(sp)
+A8D4:	mov	#A600,r4
+A8D8:	mov	#3,r3		;number of arguments
+A8DC:	jsr	pc,A68E		;evaluate arguments to integer variables
+A8E0:	bic	#FFFC,3888
+A8E6:	mov	3888,-(sp)
+A8EA:	mov	388A,r3
+A8EE:	mov	r0,r4
+A8F0:	mov	r0,r1
+A8F2:	mul	r3,r1
+A8F4:	mov	#3856,r2
+A8F8:	mov	3824,(r2)+
+A8FC:	mov	37D6,(r2)+
+A900:	mov	3824,(r2)+
+A904:	mov	37D6,(r2)
+A908:	bit	#1,(sp)
+A90C:	beq	A910
+A90E:	tst	-(r2)
+A910:	tst	(sp)
+A912:	beq	A91A
+A914:	cmp	#3,(sp)
+A918:	bne	A91C
+A91A:	neg	r1
+A91C:	add	r1,(r2)
+A91E:	movb	#3,3852
+A924:	jsr	pc,A3E6
+A928:	mov	(sp)+,r0
+A92A:	mov	#8000,r1
+A92E:	mov	#3856,r2
+A932:	cmp	3824,(r2)+
+A936:	ble	A93E
+A938:	mov	FFFE(r2),3824
+A93E:	cmp	37D6,(r2)
+A942:	ble	A948
+A944:	mov	(r2),37D6
+A948:	inc	r4
+A94A:	movb	37DC,-(sp)
+A94E:	movb	#3,37DC
+A954:	bit	#1,r0
+A958:	bne	A96A
+A95A:	inc	3824
+A95E:	jsr	pc,9FD2		;plot a dot
+A962:	add	r3,37D6
+A966:	sob	r4,A95E
+A968:	br	A978
+A96A:	dec	37D6
+A96E:	jsr	pc,9FD2		;plot a dot
+A972:	add	r3,3824
+A976:	sob	r4,A96E
+A978:	movb	(sp)+,37DC
+A97C:	mov	(sp)+,37D6
+A980:	mov	(sp)+,3824
+A984:	mov	(sp)+,r1
+A986:	rts	pc
+
+; graphic command 'G' - draw horizontal or vertical stripes
+A988:	mov	#A606,r4
+A98C:	mov	#3,r3		;number of arguments
+A990:	jsr	pc,A68E		;evaluate arguments to integer variables
+A994:	bic	#FFFC,3888
+A99A:	mov	3888,-(sp)
+A99E:	mov	388A,r4
+A9A2:	mov	#3856,r3
+A9A6:	mov	3824,(r3)
+A9AA:	mov	(r3)+,-(sp)
+A9AC:	mov	37D6,(r3)
+A9B0:	mov	(r3)+,-(sp)
+A9B2:	mov	3824,(r3)
+A9B6:	add	r4,(r3)
+A9B8:	mov	(r3)+,-(sp)
+A9BA:	mov	37D6,(r3)
+A9BE:	add	r0,(r3)
+A9C0:	mov	(r3)+,-(sp)
+A9C2:	jsr	pc,A566
+A9C6:	mov	#4,r4
+A9CA:	mov	#385E,r3
+A9CE:	mov	(sp)+,-(r3)
+A9D0:	sob	r4,A9CE
+A9D2:	tst	(sp)
+A9D4:	beq	AA2C
+A9D6:	mov	#2,r2
+A9DA:	mov	#3856,r3
+A9DE:	mov	(r3),r4
+A9E0:	cmp	0004(r3),r4
+A9E4:	bge	A9EE
+A9E6:	mov	0004(r3),(r3)
+A9EA:	mov	r4,0004(r3)
+A9EE:	tst	(r3)+
+A9F0:	sob	r2,A9DE
+A9F2:	mov	#3856,r3
+A9F6:	jsr	pc,A596		;evaluate arithm. expression to integer in R0
+A9FA:	bhis	AA00
+A9FC:	mov	#1,r0
+AA00:	cmp	#1,(sp)
+AA04:	bne	AA14
+AA06:	mov	0006(r3),r4
+AA0A:	mov	0002(r3),0006(r3)
+AA10:	tst	(r3)+
+AA12:	br	AA1C
+AA14:	mov	0004(r3),r4
+AA18:	mov	(r3),0004(r3)
+AA1C:	add	r0,(r3)
+AA1E:	cmp	(r3),r4
+AA20:	bge	AA2C
+AA22:	add	r0,0004(r3)
+AA26:	jsr	pc,A3E6
+AA2A:	br	AA1C
+AA2C:	tst	(sp)+
+AA2E:	rts	pc
+
+; command EDIT
+AA30:	bis	#10,383A
+AA36:	mov	#1,3822
+AA3C:	trap	4E
+AA3E:	trap	46		;get a pair of integer numbers
+AA40:	mov	r3,r0
+AA42:	trap	3C
+AA44:	beq	AA4A
+AA46:	jmp	8638
+AA4A:	mov	3824,3828
+AA50:	mov	37D6,3826
+AA56:	mov	#3898,r3
+AA5A:	mov	#50,r2
+AA5E:	movb	#20,(r3)+
+AA62:	sob	r2,AA5E
+AA64:	mov	#3898,r3
+AA68:	movb	(r1)+,r2
+AA6A:	bpl	AA90
+AA6C:	bic	#FF80,r2
+AA70:	mov	#87C0,r0
+AA74:	mov	r2,r4
+AA76:	dec	r4
+AA78:	blt	AA82
+AA7A:	cmpb	(r0)+,#24
+AA7E:	bne	AA7A
+AA80:	br	AA76
+AA82:	movb	(r0)+,r2
+AA84:	cmpb	r2,#24
+AA88:	beq	AA68
+AA8A:	trap	00		;print character r2
+AA8C:	movb	r2,(r3)+
+AA8E:	br	AA82
+AA90:	movb	r2,(r3)+
+AA92:	cmpb	r2,#A
+AA96:	beq	AA9C
+AA98:	trap	00		;print character r2
+AA9A:	br	AA68
+AA9C:	movb	#20,r2
+AAA0:	trap	00		;print character r2
+AAA2:	jsr	pc,A074
+AAA6:	mov	3826,37D6
+AAAC:	mov	3828,3824
+AAB2:	jsr	pc,A074
+AAB6:	mov	r3,r4
+AAB8:	movb	#20,-(r4)
+AABC:	mov	#3898,r3
+AAC0:	jsr	pc,AB16
+AAC4:	bic	#10,383A
+AACA:	mov	3826,37D6
+AAD0:	mov	3828,3824
+AAD6:	cmp	r3,r4
+AAD8:	blo	AAE0
+AADA:	bne	AADE
+AADC:	inc	r3
+AADE:	mov	r3,r4
+AAE0:	movb	#A,(r4)+
+AAE4:	mov	r1,r0
+AAE6:	mov	37CE,-(sp)
+AAEA:	mov	37C8,37CE
+AAF0:	movb	(r0)+,r2
+AAF2:	cmpb	#A,r2
+AAF6:	beq	AAFE
+AAF8:	jsr	pc,9D62		;display character r2
+AAFC:	br	AAF0
+AAFE:	jsr	pc,9D62		;display character r2
+AB02:	movb	#D,r2
+AB06:	jsr	pc,9D62		;display character r2
+AB0A:	clr	3822
+AB0E:	mov	(sp)+,37CE
+AB12:	jmp	867E
+AB16:	jsr	pc,B250		;wait for a key
+AB1A:	beq	AB16
+AB1C:	cmpb	#D,r2
+AB20:	bne	AB26
+AB22:	jmp	AC9A
+AB26:	mov	#AB3C,r0
+AB2A:	clr	r1
+AB2C:	bisb	(r0)+,r1
+AB2E:	beq	AB56
+AB30:	cmpb	r2,(r0)+
+AB32:	bne	AB2A
+AB34:	jsr	pc,A074
+AB38:	asl	r1
+AB3A:	add	r1,pc
+AB3C:	mov	@-(r0),1933(sp)
+AB40:	mov	(r5),(r1)+
+AB42:	mov	(r0)+,@ACC6
+AB46:	blt	AA5A
+AB48:	mov	-(r2),-(pc)
+AB4A:	bne	AC22
+AB4C:	bgt	AC08
+AB4E:	illop
+AB50:	illop
+AB52:	sob	r4,AB02
+AB54:	45fpp
+AB56:	cmpb	r2,#20
+AB5A:	blo	AB16
+AB5C:	jsr	pc,AD62
+AB60:	blo	AB16
+AB62:	bit	#1,3820
+AB68:	beq	AB70
+AB6A:	jsr	pc,ACAA
+AB6E:	br	AB16
+AB70:	jsr	pc,AD76
+AB74:	jsr	pc,AD62
+AB78:	br	AB16
+AB7A:	mov	37C8,-(sp)
+AB7E:	jsr	pc,ACAA
+AB82:	mov	(sp)+,37CE
+AB86:	br	AB16
+AB88:	mov	37CA,-(sp)
+AB8C:	br	AB7E
+AB8E:	cmp	r3,#3898
+AB92:	blos	ABB4
+AB94:	jsr	pc,A074
+AB98:	movb	#20,-(r3)
+AB9C:	jsr	pc,A1B8
+ABA0:	br	AB16
+ABA2:	jsr	pc,AD1A
+ABA6:	br	ABB4
+ABA8:	cmp	#3898,r3
+ABAC:	beq	ABB4
+ABAE:	dec	r3
+ABB0:	jsr	pc,A12E
+ABB4:	jsr	pc,A074
+ABB8:	br	AB16
+ABBA:	cmp	r3,r4
+ABBC:	bhis	ABB4
+ABBE:	mov	r3,-(sp)
+ABC0:	sub	r3,r4
+ABC2:	mov	r4,r1
+ABC4:	dec	r4
+ABC6:	beq	ABD0
+ABC8:	inc	r3
+ABCA:	movb	(r3),-(r3)
+ABCC:	inc	r3
+ABCE:	sob	r4,ABC8
+ABD0:	movb	#20,(r3)
+ABD4:	mov	r3,r4
+ABD6:	mov	(sp)+,r3
+ABD8:	jsr	pc,ACE4
+ABDC:	br	ABB4
+ABDE:	bit	#1,3820
+ABE4:	beq	ABEE
+ABE6:	bic	#1,3820
+ABEC:	br	ABB4
+ABEE:	bis	#1,3820
+ABF4:	br	ABB4
+ABF6:	cmpb	(r3),#20
+ABFA:	beq	AC02
+ABFC:	jsr	pc,AD1A
+AC00:	br	ABF6
+AC02:	cmp	r3,r4
+AC04:	bhis	ABB4
+AC06:	jsr	pc,AD1A
+AC0A:	cmpb	(r3),#20
+AC0E:	beq	AC02
+AC10:	br	ABB4
+AC12:	cmp	#3898,r3
+AC16:	beq	ABB4
+AC18:	dec	r3
+AC1A:	jsr	pc,A12E
+AC1E:	cmpb	(r3),#20
+AC22:	beq	AC12
+AC24:	cmp	#3898,r3
+AC28:	beq	ABB4
+AC2A:	dec	r3
+AC2C:	jsr	pc,A12E
+AC30:	cmpb	(r3),#20
+AC34:	bne	AC24
+AC36:	jsr	pc,AD1A
+AC3A:	br	ABB4
+AC3C:	mov	3826,37D6
+AC42:	mov	3828,3824
+AC48:	mov	#3898,r3
+AC4C:	br	ABB4
+AC4E:	cmp	r3,r4
+AC50:	bhis	ABB4
+AC52:	mov	3824,-(sp)
+AC56:	mov	37D6,-(sp)
+AC5A:	mov	3826,-(sp)
+AC5E:	sub	r3,r4
+AC60:	mov	r3,r1
+AC62:	movb	#20,r2
+AC66:	mov	r2,(r3)+
+AC68:	jsr	pc,9D62		;display character r2
+AC6C:	sob	r4,AC62
+AC6E:	jsr	pc,A074
+AC72:	mov	r1,r3
+AC74:	mov	r3,r4
+AC76:	cmp	3826,(sp)+
+AC7A:	beq	AC80
+AC7C:	sub	382E,(sp)
+AC80:	mov	(sp)+,37D6
+AC84:	mov	(sp)+,3824
+AC88:	br	ABB4
+AC8A:	cmp	r3,r4
+AC8C:	bhis	ABB4
+AC8E:	mov	r4,r2
+AC90:	sub	r3,r2
+AC92:	jsr	pc,AD1A
+AC96:	sob	r2,AC92
+AC98:	br	ABB4
+AC9A:	jsr	pc,A074
+AC9E:	bic	#1,3820
+ACA4:	mov	#3898,r1
+ACA8:	rts	pc
+ACAA:	cmp	#38E9,r3
+ACAE:	blos	ACB8
+ACB0:	cmp	r3,r4
+ACB2:	blo	ACBE
+ACB4:	jsr	pc,AD76
+ACB8:	jsr	pc,A074
+ACBC:	rts	pc
+ACBE:	mov	r4,-(sp)
+ACC0:	sub	r3,r4
+ACC2:	inc	r4
+ACC4:	mov	r4,r1
+ACC6:	mov	(sp),r3
+ACC8:	movb	(r3)+,(r3)
+ACCA:	cmpb	-(r3),-(r3)
+ACCC:	sob	r4,ACC8
+ACCE:	inc	r3
+ACD0:	mov	(sp)+,r4
+ACD2:	inc	r4
+ACD4:	movb	r2,(r3)
+ACD6:	jsr	pc,ACE4
+ACDA:	jsr	pc,AD1A
+ACDE:	jsr	pc,A074
+ACE2:	rts	pc
+ACE4:	mov	3824,-(sp)
+ACE8:	mov	37D6,-(sp)
+ACEC:	mov	3826,-(sp)
+ACF0:	mov	r3,r0
+ACF2:	mov	37CE,-(sp)
+ACF6:	movb	(r0)+,r2
+ACF8:	jsr	pc,9D62		;display character r2
+ACFC:	sob	r1,ACF6
+ACFE:	mov	(sp)+,37CE
+AD02:	jsr	pc,A074
+AD06:	cmp	3826,(sp)+
+AD0A:	beq	AD10
+AD0C:	sub	382E,(sp)
+AD10:	mov	(sp)+,37D6
+AD14:	mov	(sp)+,3824
+AD18:	rts	pc
+AD1A:	cmp	#38E8,r3
+AD1E:	blos	AD60
+AD20:	inc	r3
+AD22:	add	382C,3824
+AD28:	cmp	3832,3824
+AD2E:	bhis	AD60
+AD30:	clr	3824
+AD34:	add	382E,37D6
+AD3A:	cmp	3830,37D6
+AD40:	bhis	AD60
+AD42:	mov	#8,37D6
+AD48:	mov	r4,-(sp)
+AD4A:	mov	r3,-(sp)
+AD4C:	jsr	pc,A1D2
+AD50:	mov	(sp)+,r3
+AD52:	mov	(sp)+,r4
+AD54:	mov	3830,37D6
+AD5A:	sub	382E,3826
+AD60:	rts	pc
+AD62:	cmp	#38E9,r3
+AD66:	blos	AD72
+AD68:	cmp	r3,r4
+AD6A:	blos	AD6E
+AD6C:	mov	r3,r4
+AD6E:	clc
+AD70:	rts	pc
+AD72:	sec
+AD74:	rts	pc
+AD76:	movb	r2,(r3)+
+AD78:	trap	00		;print character r2
+AD7A:	cmp	r4,r3
+AD7C:	bhis	AD80
+AD7E:	mov	r3,r4
+AD80:	rts	pc
+AD82:	movb	#3,3852
+AD88:	mov	#1,3892
+AD8E:	mov	#1,3894
+AD94:	clr	3896
+AD98:	mov	#3854,r0
+AD9C:	tst	(r0)
+AD9E:	bne	ADAA
+ADA0:	clr	0008(r0)
+ADA4:	mov	0002(r0),000A(r0)
+ADAA:	mov	0008(r0),r4
+ADAE:	mov	000A(r0),r5
+ADB2:	jsr	pc,B0C4
+ADB6:	jsr	pc,B12C
+ADBA:	mov	#1,3876
+ADC0:	mov	#1,3878
+ADC6:	mov	0004(r0),387A
+ADCC:	mov	0006(r0),387C
+ADD2:	add	r4,387A
+ADD6:	sub	r5,387C
+ADDA:	mov	#FFFF,-(sp)
+ADDE:	jsr	pc,AF20
+ADE2:	jsr	pc,B092
+ADE6:	mov	387A,r4
+ADEA:	mov	387C,r5
+ADEE:	tst	(r0)
+ADF0:	beq	ADF6
+ADF2:	jsr	pc,AEEA
+ADF6:	jsr	pc,A49C
+ADFA:	tst	r3
+ADFC:	bge	AE0E
+ADFE:	add	3876,r4
+AE02:	sub	387E,r2
+AE06:	add	3880,r1
+AE0A:	add	r2,r3
+AE0C:	br	AE20
+AE0E:	add	3876,r4
+AE12:	add	3878,r5
+AE16:	sub	3880,r2
+AE1A:	add	3882,r1
+AE1E:	sub	r1,r3
+AE20:	cmp	r4,387A
+AE24:	bne	AE30
+AE26:	cmp	r5,387C
+AE2A:	bne	AE30
+AE2C:	jmp	AEDE
+AE30:	tst	r2
+AE32:	bge	AE3A
+AE34:	jsr	pc,AEA4
+AE38:	br	AE20
+AE3A:	tst	r1
+AE3C:	bge	ADF6
+AE3E:	jsr	pc,AE44
+AE42:	br	AE20
+AE44:	mov	r4,-(sp)
+AE46:	mov	r5,r4
+AE48:	mov	(sp),r5
+AE4A:	mov	3876,(sp)
+AE4E:	mov	3878,3876
+AE54:	mov	(sp)+,3878
+AE58:	neg	0002(sp)
+AE5C:	mov	3880,r0
+AE60:	asl	r0
+AE62:	sub	3882,r0
+AE66:	mov	r0,-(sp)
+AE68:	sub	387E,r0
+AE6C:	mov	r0,387E
+AE70:	sub	3882,3880
+AE76:	neg	3882
+AE7A:	mov	3880,r0
+AE7E:	asr	r0
+AE80:	sub	r0,r2
+AE82:	add	r1,r2
+AE84:	neg	r3
+AE86:	add	r2,r3
+AE88:	mov	r1,r0
+AE8A:	asr	r0
+AE8C:	sub	r0,r3
+AE8E:	mov	3882,r0
+AE92:	asr	r0
+AE94:	asr	r0
+AE96:	asr	r0
+AE98:	add	r0,r3
+AE9A:	mov	(sp)+,r0
+AE9C:	asr	r0
+AE9E:	neg	r1
+AEA0:	add	r0,r1
+AEA2:	rts	pc
+AEA4:	neg	3878
+AEA8:	mov	3880,r0
+AEAC:	sub	387E,r0
+AEB0:	neg	387E
+AEB4:	mov	387E,3880
+AEBA:	add	r0,3880
+AEBE:	asl	r0
+AEC0:	asl	r0
+AEC2:	neg	3882
+AEC6:	add	r0,3882
+AECA:	neg	r2
+AECC:	sub	r0,r2
+AECE:	neg	r3
+AED0:	sub	r1,r3
+AED2:	add	r2,r3
+AED4:	sub	r0,r1
+AED6:	mov	r2,r0
+AED8:	asl	r0
+AEDA:	sub	r0,r1
+AEDC:	rts	pc
+AEDE:	jsr	pc,A49C
+AEE2:	tst	(sp)+
+AEE4:	jsr	pc,9DA6		;restore registers from the stack
+AEE8:	rts	pc
+AEEA:	mov	r4,-(sp)
+AEEC:	mov	r5,-(sp)
+AEEE:	mov	r1,-(sp)
+AEF0:	mov	r2,-(sp)
+AEF2:	mov	000C(r0),r4
+AEF6:	mov	000E(r0),r5
+AEFA:	jsr	pc,B0C4
+AEFE:	mov	0004(r0),387A
+AF04:	mov	0006(r0),387C
+AF0A:	add	r4,387A
+AF0E:	sub	r5,387C
+AF12:	jsr	pc,B092
+AF16:	mov	(sp)+,r2
+AF18:	mov	(sp)+,r1
+AF1A:	mov	(sp)+,r5
+AF1C:	mov	(sp)+,r4
+AF1E:	rts	pc
+AF20:	cmpb	#1,3886
+AF26:	bne	AF88
+AF28:	mov	3894,387E
+AF2E:	asl	387E
+AF32:	mov	3896,3880
+AF38:	asl	3880
+AF3C:	mov	3892,3882
+AF42:	asl	3882
+AF46:	add	3880,3882
+AF4C:	add	387E,3880
+AF52:	add	3880,3882
+AF58:	mov	r5,r2
+AF5A:	asl	r2
+AF5C:	sub	3894,r2
+AF60:	sub	3896,r2
+AF64:	mov	r4,r1
+AF66:	asl	r1
+AF68:	sub	r2,r1
+AF6A:	mov	3892,r3
+AF6E:	asr	r3
+AF70:	asr	r3
+AF72:	neg	r3
+AF74:	sub	r4,r3
+AF76:	add	r2,r3
+AF78:	add	3884,r3
+AF7C:	mov	r4,-(sp)
+AF7E:	mov	r5,r4
+AF80:	mov	(sp)+,r5
+AF82:	neg	0002(sp)
+AF86:	rts	pc
+AF88:	cmpb	#2,3886
+AF8E:	bne	AFF2
+AF90:	mov	3892,387E
+AF96:	asl	387E
+AF9A:	neg	387E
+AF9E:	mov	3896,3880
+AFA4:	asl	3880
+AFA8:	neg	3880
+AFAC:	mov	3894,3882
+AFB2:	asl	3882
+AFB6:	neg	3882
+AFBA:	add	3880,3882
+AFC0:	add	387E,3880
+AFC6:	add	3880,3882
+AFCC:	mov	r4,r2
+AFCE:	asl	r2
+AFD0:	add	3892,r2
+AFD4:	add	3896,r2
+AFD8:	mov	r5,r1
+AFDA:	asl	r1
+AFDC:	sub	r2,r1
+AFDE:	mov	3894,r3
+AFE2:	asr	r3
+AFE4:	asr	r3
+AFE6:	add	r2,r3
+AFE8:	sub	r5,r3
+AFEA:	sub	3884,r3
+AFEE:	jmp	AF86
+AFF2:	cmpb	#3,3886
+AFF8:	bne	B010
+AFFA:	neg	3878
+AFFE:	neg	3892
+B002:	neg	3894
+B006:	neg	r4
+B008:	neg	3884
+B00C:	jmp	AF90
+B010:	cmpb	#4,3886
+B016:	bne	B02E
+B018:	neg	3876
+B01C:	neg	3894
+B020:	neg	3892
+B024:	neg	r4
+B026:	neg	3884
+B02A:	jmp	AF28
+B02E:	cmpb	#5,3886
+B034:	bne	B046
+B036:	neg	3876
+B03A:	neg	3878
+B03E:	neg	r4
+B040:	neg	r5
+B042:	jmp	AF28
+B046:	cmpb	#6,3886
+B04C:	bne	B05E
+B04E:	neg	3876
+B052:	neg	3878
+B056:	neg	r4
+B058:	neg	r5
+B05A:	jmp	AF90
+B05E:	cmpb	#7,3886
+B064:	bne	B07C
+B066:	neg	3876
+B06A:	neg	3892
+B06E:	neg	3894
+B072:	neg	r5
+B074:	neg	3884
+B078:	jmp	AF90
+B07C:	neg	3878
+B080:	neg	3894
+B084:	neg	3892
+B088:	neg	r5
+B08A:	neg	3884
+B08E:	jmp	AF28
+B092:	cmpb	#1,3886
+B098:	bne	B0AA
+B09A:	mov	387A,-(sp)
+B09E:	mov	387C,387A
+B0A4:	mov	(sp)+,387C
+B0A8:	rts	pc
+B0AA:	cmpb	#4,3886
+B0B0:	beq	B09A
+B0B2:	cmpb	#5,3886
+B0B8:	beq	B09A
+B0BA:	cmpb	#8,3886
+B0C0:	beq	B09A
+B0C2:	br	B0A8
+B0C4:	mov	r4,r1
+B0C6:	mov	r5,r2
+B0C8:	tst	r4
+B0CA:	bge	B0FE
+B0CC:	tst	r5
+B0CE:	bge	B0E8
+B0D0:	neg	r1
+B0D2:	neg	r2
+B0D4:	cmp	r1,r2
+B0D6:	bge	B0E0
+B0D8:	movb	#6,3886
+B0DE:	br	B12A
+B0E0:	movb	#5,3886
+B0E6:	br	B12A
+B0E8:	neg	r1
+B0EA:	cmp	r1,r2
+B0EC:	bge	B0F6
+B0EE:	movb	#3,3886
+B0F4:	br	B12A
+B0F6:	movb	#4,3886
+B0FC:	br	B12A
+B0FE:	tst	r5
+B100:	bgt	B118
+B102:	neg	r2
+B104:	cmp	r1,r2
+B106:	bge	B110
+B108:	movb	#7,3886
+B10E:	br	B12A
+B110:	movb	#8,3886
+B116:	br	B12A
+B118:	cmp	r1,r2
+B11A:	bge	B124
+B11C:	movb	#2,3886
+B122:	br	B12A
+B124:	movb	#1,3886
+B12A:	rts	pc
+B12C:	mov	0002(r0),r1
+B130:	mul	r1,r1
+B132:	mov	r1,3884
+B136:	mov	0008(r0),r1
+B13A:	mul	r1,r1
+B13C:	sub	r1,3884
+B140:	mov	000A(r0),r1
+B144:	mul	r1,r1
+B146:	sub	r1,3884
+B14A:	rts	pc
+
+; keyboard interrupt service routine
+B14C:	mov	#F2,@#E814
+B152:	clr	@#E816		;start of the transfer
+B156:	tstb	@#E814
+B15A:	bpl	B156
+B15C:	mov	@#E816,3864	;key scan code, end of the transfer
+B162:	tstb	@#E814
+B166:	bpl	B162
+B168:	mov	r2,-(sp)
+B16A:	tst	3874
+B16E:	beq	B180
+B170:	mov	r0,-(sp)
+B172:	mov	#28,r2		;note C3
+B176:	mov	#1,r0
+B17A:	jsr	pc,A2FA
+B17E:	mov	(sp)+,r0
+B180:	mov	3864,r2
+B184:	cmpb	r2,#1B		;key SU ?
+B188:	bne	B1AE
+B18A:	xor	r2,3872		;SU keyboard mode flag
+B18E:	mov	#FFE0,r2
+B192:	xor	r2,386A
+B196:	jsr	pc,B62A
+B19A:	xor	r2,386A
+B19E:	mov	(sp)+,r2
+B1A0:	mov	#72,@#E814
+B1A6:	mov	#EA,@#E814
+B1AC:	rti
+;
+B1AE:	tstb	3872		;SU keyboard mode flag
+B1B2:	beq	B19E		;branch if not SU keyboard mode
+B1B4:	clr	3872
+B1B8:	cmpb	r2,#17		;key [ ?
+B1BC:	bne	B1C4
+B1BE:	xor	r2,3874
+B1C2:	br	B242
+B1C4:	cmpb	r2,#33		;key S ?
+B1C8:	beq	B20A
+B1CA:	cmpb	r2,#EF		;key P ?
+B1CE:	bne	B19E
+B1D0:	mov	380C,-(sp)
+B1D4:	jsr	pc,A512
+B1D8:	clr	3902		;select the LCD as the output device
+B1DC:	mov	#1,380C
+B1E2:	mov	#5E,r2
+B1E6:	trap	00		;print character r2
+B1E8:	mov	#50,r2
+B1EC:	trap	00		;print character r2
+B1EE:	mov	(sp)+,380C
+B1F2:	mov	#1,38FA
+B1F8:	clr	3864
+B1FC:	clr	386A
+B200:	jsr	pc,B62A
+B204:	clr	384E
+B208:	br	B19E
+B20A:	clr	386A
+B20E:	jsr	pc,B62A
+B212:	mov	#EA,@#E814
+B218:	wait
+B21A:	tst	3872
+B21E:	beq	B218
+B220:	clr	3872
+B224:	wait
+B226:	cmpb	3864,#EF
+B22C:	beq	B1D0
+B22E:	clr	3872
+B232:	clr	386A
+B236:	jsr	pc,B62A
+B23A:	cmpb	3864,#F7
+B240:	bne	B218
+B242:	clr	3864
+B246:	clr	386A
+B24A:	jsr	pc,B62A
+B24E:	br	B19E
+
+; wait for a key, return the ASCII code of the pressed key in r2
+B250:	mov	#E2,@#E814
+B256:	wait
+B258:	mov	r4,-(sp)
+B25A:	mov	r5,-(sp)
+B25C:	mov	3864,r0		;key scan code
+B260:	clr	3864
+B264:	bic	#FF00,r0
+B268:	cmp	#DF,r0		;key ZV (backspace) ?
+B26C:	bne	B27E
+B26E:	tst	386C
+B272:	bne	B36A
+B274:	xor	r0,3866
+B278:	jsr	pc,B61A
+B27C:	br	B36A
+;
+B27E:	sub	#0A,r0
+B282:	asr	r0
+B284:	asr	r0
+B286:	tst	3866
+B28A:	beq	B312
+B28C:	cmp	r0,#3D
+B290:	ble	B294
+B292:	br	B36A
+B294:	mov	#B414,r5	;keywords typed with a single key stroke
+B298:	mov	r0,r4
+B29A:	inc	r0
+B29C:	cmpb	(r5)+,#24	;'$'
+B2A0:	bne	B29C
+B2A2:	sob	r0,B29C
+B2A4:	bicb	#38,r4
+B2A8:	cmp	r4,#5
+B2AC:	bgt	B2EE
+B2AE:	movb	#20,r2
+B2B2:	bit	#10,383A
+B2B8:	beq	B2DA
+B2BA:	mov	r4,-(sp)
+B2BC:	mov	0004(sp),r4
+B2C0:	bit	#1,3820
+B2C6:	beq	B2CE
+B2C8:	jsr	pc,ACAA
+B2CC:	br	B2D2
+B2CE:	jsr	pc,AD76
+B2D2:	mov	r4,0004(sp)
+B2D6:	mov	(sp)+,r4
+B2D8:	br	B2E8
+B2DA:	jsr	pc,9D62		;display character r2
+B2DE:	movb	r2,(r3)+
+B2E0:	cmp	r3,#38E9
+B2E4:	blo	B2E8
+B2E6:	trap	19		;error 12 - input line too long (more than 80
+				;characters)
+B2E8:	tst	3866
+B2EC:	beq	B36A
+B2EE:	movb	(r5)+,r2
+B2F0:	cmpb	r2,#2A
+B2F4:	beq	B2FC
+B2F6:	cmpb	#24,r2
+B2FA:	bne	B2B2
+B2FC:	clr	3866
+B300:	jsr	pc,B61A
+B304:	cmpb	r2,#2A
+B308:	beq	B36A
+B30A:	cmp	r4,#5
+B30E:	ble	B2AE
+B310:	br	B36A
+;
+B312:	cmp	#34,r0
+B316:	bne	B31E
+B318:	mov	#7F,r0
+B31C:	br	B34E
+B31E:	mov	#1,r5
+B322:	mov	#10,r2
+B326:	cmp	#3D,r0
+B32A:	beq	B386
+B32C:	asl	r2
+B32E:	cmpb	#5,r0
+B332:	beq	B374
+B334:	neg	r2
+B336:	cmp	#4,r0
+B33A:	beq	B362
+B33C:	add	pc,r0
+B33E:	add	#0098,r0	;B33E+0098 = B3D6, table of key codes
+B342:	movb	(r0),r0
+B344:	cmp	r0,#40
+B348:	blt	B396
+B34A:	bis	3868,r0
+B34E:	bic	386A,r0
+B352:	tst	386A
+B356:	beq	B36C
+B358:	clr	386A
+B35C:	jsr	pc,B62A
+B360:	br	B36C
+B362:	xor	r2,386A
+B366:	jsr	pc,B62A
+B36A:	clr	r0
+B36C:	mov	(sp)+,r5
+B36E:	mov	(sp)+,r4
+B370:	mov	r0,r2
+B372:	rts	pc
+
+B374:	xor	r2,3868
+B378:	xor	r5,37C0
+B37C:	movb	37C0,r0
+B380:	jsr	pc,B608
+B384:	br	B34E
+B386:	xor	r2,3870
+B38A:	asl	r2
+B38C:	xor	r2,3868
+B390:	jsr	pc,B5F4
+B394:	br	B36A
+B396:	cmp	r0,#30
+B39A:	blt	B3A2
+B39C:	sub	3870,r0
+B3A0:	br	B34E
+B3A2:	tst	3870
+B3A6:	beq	B3AE
+B3A8:	cmp	r0,#20
+B3AC:	ble	B3B4
+B3AE:	add	3870,r0
+B3B2:	br	B34E
+B3B4:	cmp	#14,r0
+B3B8:	bne	B3C0
+B3BA:	bis	#2,r0
+B3BE:	br	B34E
+B3C0:	cmp	#13,r0
+B3C4:	bne	B3CA
+B3C6:	dec	r0
+B3C8:	br	B34E
+B3CA:	cmp	#8,r0
+B3CE:	bne	B34E
+B3D0:	mov	#2,r0
+B3D4:	br	B34E
+
+; table of key codes
+B3D6:	      41 49  52 5B 00 00	  AIR[..
+B3DC:	31 36 42 4A  53 5D 1C 1D	16BJS]..
+B3E4:	32 37 57 4B  54 58 1A 14	27WKTX..
+B3EC:	33 38 47 4C  55 59 2C 20	38GLUY, 
+B3F4:	34 39 44 4D  46 5F 2E 20	49DMF_. 
+B3FC:	35 30 45 4E  48 5C 19 13	50ENH\..
+B404:	3A 2F 56 4F  43 40 7F 1B	:/VOC@..
+B40C:	3B 2D 5A 50  5E 51 0D 00	;-ZP^Q..
+
+; keywords typed with a single key stroke
+B414:	             24 41 55 54  4F 24 49 4E  50 55 54 24      $AUTO$INPUT$
+B420:	52 55 4E 24  52 45 54 55  52 4E 24 2A  24 2A 24 53  RUN$RETURN$*$*$S
+B430:	49 4E 28 24  43 4F 53 28  24 44 52 41  57 24 49 4E  IN($COS($DRAW$IN
+B440:	49 54 24 53  54 45 50 24  52 45 53 54  4F 52 45 24  IT$STEP$RESTORE$
+B450:	44 49 53 24  47 4F 53 55  42 24 45 58  50 28 24 4C  DIS$GOSUB$EXP($L
+B460:	4F 47 28 24  57 41 49 54  24 4B 49 4C  4C 24 53 41  OG($WAIT$KILL$SA
+B470:	56 45 24 52  45 4D 24 44  45 56 24 2A  24 41 42 53  VE$REM$DEV$*$ABS
+B480:	28 24 53 47  4E 28 24 47  4F 54 4F 24  4C 45 54 24  ($SGN($GOTO$LET$
+B490:	53 54 4F 50  24 52 45 41  44 24 44 45  46 20 46 4E  STOP$READ$DEF FN
+B4A0:	24 2A 24 53  51 52 28 24  41 54 4E 28  24 44 41 54  $*$SQR($ATN($DAT
+B4B0:	41 24 4C 49  53 54 24 46  4F 52 24 52  41 4E 44 4F  A$LIST$FOR$RANDO
+B4C0:	4D 49 5A 45  24 44 49 4D  24 2A 24 49  4E 54 28 24  MIZE$DIM$*$INT($
+B4D0:	52 4E 44 28  24 45 4E 44  24 4E 45 58  54 24 48 45  RND($END$NEXT$HE
+B4E0:	4C 50 24 46  49 4C 45 53  24 44 45 4C  45 54 45 24  LP$FILES$DELETE$
+B4F0:	2A 24 20 4C  4C 49 53 54  20 24 20 4C  46 49 4C 45  *$ LLIST $ LFILE
+B500:	53 20 24 45  44 49 54 24  4E 41 4D 45  24 43 4C 53  S $EDIT$NAME$CLS
+B510:	24 4C 4F 41  44 24 2A 24  2A 24 20 4C  50 52 49 4E  $LOAD$*$*$ LPRIN
+B520:	54 20 24 24  54 48 45 4E  24 50 52 49  4E 54 24 50  T $$THEN$PRINT$P
+B530:	4C 41 59 24  4C 4F 43 41  54 45 24 24  24           LAY$LOCATE$$$
+B53D:	.even
+
+B53E:	jsr	pc,A15E
+B542:	mov	37D6,-(sp)
+B546:	mov	3824,-(sp)
+B54A:	mov	r3,-(sp)
+B54C:	clr	37D6
+B550:	bis	#21,383A
+B556:	clr	3824
+B55A:	mov	r0,-(sp)
+B55C:	mov	#17,r0		;number of characters to print
+B560:	mov	#B5DC,r3	;string "basic v..."
+B564:	movb	(r3)+,r2
+B566:	jsr	pc,9D62		;display character r2
+B56A:	sob	r0,B564
+B56C:	clr	3824
+B570:	clr	37D6
+B574:	mov	37DC,-(sp)
+B578:	mov	#2,37DC
+B57E:	clr	r0
+B580:	mov	#A,r2
+B584:	mov	r1,-(sp)
+B586:	movb	B5D2(r0),r1
+B58A:	swab	r1
+B58C:	movb	B5BE(r0),r3
+B590:	add	r3,37D6
+B594:	movb	B5C8(r0),r3
+B598:	add	r3,3824
+B59C:	jsr	pc,9FD2		;plot a dot
+B5A0:	inc	r0
+B5A2:	sob	r2,B586
+B5A4:	mov	(sp)+,r1
+B5A6:	mov	(sp)+,37DC
+B5AA:	mov	(sp)+,r0
+B5AC:	mov	(sp)+,r3
+B5AE:	mov	(sp)+,3824
+B5B2:	mov	(sp)+,37D6
+B5B6:	bic	#21,383A
+B5BC:	rts	pc
+B5BE:	br	B5C4
+B5C0:	br	B5C4
+B5C2:	45fpp
+B5C4:	br	B5C8
+B5C6:	br	B5CA
+B5C8:	illop
+B5CA:	halt
+B5CC:	jsr	r0,r0
+B5CE:	halt
+B5D0:	halt
+B5D2:	bicb	r5,r0
+B5D4:	bic	E0EC(r5),r1
+B5D8:	bis	r0,E090(r0)
+B5DC:	cmp	r0,(pc)
+B5DE:	add	r5,-(r2)
+B5E0:	add	-(r5),2063(r3)
+B5E4:	cmp	r1,2020(sp)
+B5E8:	illop
+B5EA:	cmp	r0,-(r0)
+B5EC:	bis	(r1),#4C20
+B5F0:	bis	(r1)+,r1
+B5F2:	45fpp
+B5F4:	mov	#B64C,r5
+B5F8:	tst	3870
+B5FC:	beq	B602
+B5FE:	mov	#B64F,r5
+B602:	jsr	pc,B65E
+B606:	rts	pc
+B608:	mov	#B642,r5
+B60C:	cmp	#E,37C0
+B612:	beq	B602
+B614:	mov	#B647,r5
+B618:	br	B602
+B61A:	mov	#B652,r5
+B61E:	tst	3866
+B622:	bne	B602
+B624:	mov	#B656,r5
+B628:	br	B602
+B62A:	mov	r5,-(sp)
+B62C:	mov	#B65A,r5
+B630:	tst	386A
+B634:	bne	B63A
+B636:	mov	#B656,r5
+B63A:	jsr	pc,B65E
+B63E:	mov	(sp)+,r5
+B640:	rts	pc
+B642:	bis	(r1),-(sp)
+B644:	bis	(r5),(r5)+
+B646:	add	@(r0)+,r0
+B648:	bic	r5,(r4)
+B64A:	jmp	(r4)+
+B64C:	bis	@(r5)+,(r4)+
+B64E:	bis	(r0)+,r0
+B650:	jmp	(sp)
+B652:	bic	@(r1)+,r2
+B654:	jmp	(r3)
+B656:	cmp	r1,r2
+B658:	illop
+B65A:	bis	(r5),r2
+B65C:	jmp	(r5)+
+B65E:	tst	383C
+B662:	bne	B6B8
+B664:	mov	r2,-(sp)
+B666:	mov	37D6,-(sp)
+B66A:	mov	3824,-(sp)
+B66E:	mov	#1,383E
+B674:	bis	#21,383A
+B67A:	mov	37CE,-(sp)
+B67E:	mov	3822,-(sp)
+B682:	clr	3822
+B686:	clr	37D6
+B68A:	movb	(r5)+,3824
+B68E:	mov	#E,r2
+B692:	jsr	pc,9D62		;display character r2
+B696:	movb	(r5)+,r2
+B698:	beq	B69C
+B69A:	br	B692
+B69C:	clr	383E
+B6A0:	mov	(sp)+,3822
+B6A4:	mov	(sp)+,37CE
+B6A8:	mov	(sp)+,3824
+B6AC:	mov	(sp)+,37D6
+B6B0:	mov	(sp)+,r2
+B6B2:	bic	#21,383A
+B6B8:	rts	pc
+
+; file access routine
+; byte 0(R0) - ?
+; byte 1(R0) - action:	0 - kill file
+;			1 - read file
+;			2 - write file
+;			3 - rename file
+;			4 - ?
+; word 2(R0) - pointer to the file name(s) in the Radix-50 format
+B6BA:	jsr	pc,9D92		;save registers on the stack
+B6BE:	mov	r0,r1
+B6C0:	cmpb	(r1),#2
+B6C4:	bhis	B6F4
+B6C6:	movb	(r1)+,3906
+B6CA:	cmpb	(r1),#5		;action code
+B6CE:	bhis	B6FA		;invalid command
+B6D0:	movb	(r1)+,r2	;action code
+B6D2:	mov	(r1)+,(sp)	;pointer to the file name(s)
+B6D4:	mov	(sp),r0
+B6D6:	mov	r1,3914
+B6DA:	tst	(r1)+
+B6DC:	mov	r1,3916
+B6E0:	clr	r5
+B6E2:	asl	r2
+B6E4:	tst	(r2)+		;R2 <- R2 + 2
+B6E6:	add	pc,r2		;B6E8+0002 = B6EA
+B6E8:	add	(r2),pc
+
+B6EA:	.word	006C		;B6EA+006C = B756, kill file
+B6EC:	.word	001A		;B6EA+001A = B704, read file
+B6EE:	.word	007E		;B6EA+007E = B768, write file
+B6F0:	.word	0016		;B6EA+0016 = B700, rename file
+B6F2:	.word	0328		;B6EA+0328 = BA12
+
+B6F4:	mov	#-1,(sp)
+B6F8:	br	B752
+
+B6FA:	mov	#-2,(sp)
+B6FE:	br	B752
+
+; rename file
+B700:	mov	#40,r5
+; read file
+B704:	jsr	r5,B8DA
+B708:	mov	r4,3912
+B70C:	jsr	r5,BADA
+B710:	br	B74E
+B712:	mov	#8,-(sp)
+B716:	tst	r5
+B718:	bne	B730
+B71A:	add	(sp)+,r1
+B71C:	mov	3912,@3916
+B722:	mov	(r1),(sp)
+B724:	mov	(r1)+,@3914
+B728:	clc
+B72A:	jsr	pc,9DA6		;restore registers from the stack
+B72E:	rts	pc
+B730:	add	#6,r0
+B734:	mov	#200,(r1)+
+B738:	mov	(r0)+,(r1)+
+B73A:	mov	(r0)+,(r1)+
+B73C:	mov	(r0)+,(r1)+
+B73E:	sub	(sp)+,r1
+B740:	jmp	BA4A
+B744:	clr	(sp)
+B746:	br	B728
+B748:	mov	#-3,(sp)
+B74C:	br	B752
+B74E:	mov	#-4,(sp)
+B752:	sec
+B754:	br	B72A
+
+; kill file
+B756:	jsr	r5,B8DA
+B75A:	jsr	r5,BADA
+B75E:	br	B74E
+B760:	mov	#200,(r1)
+B764:	jmp	BA9C
+
+; write file
+B768:	clr	3918
+B76C:	mov	#80,r5
+B770:	jsr	r5,B8DA
+B774:	mov	33C4,3910
+B77A:	clr	3908
+B77E:	clr	390A
+B782:	br	B78A
+B784:	jsr	r5,B922
+B788:	br	B7CE
+B78A:	jsr	pc,B99A
+B78E:	mov	r4,3912
+B792:	mov	#3908,r5
+B796:	jsr	r5,B8EE
+B79A:	.word	0200
+B79C:	br	B784
+B79E:	mov	0008(r1),r0
+B7A2:	mov	@3914,r2
+B7A6:	beq	B7AE
+B7A8:	cmp	#FFFF,r2
+B7AC:	bne	B7F4
+B7AE:	cmp	(r5)+,r0
+B7B0:	bhis	B7C4
+B7B2:	cmp	(r5),r0
+B7B4:	bhis	B7BE
+B7B6:	mov	(r5),-(r5)
+B7B8:	add	#8,r5
+B7BC:	mov	-(r5),-(r5)
+B7BE:	mov	r0,-(r5)
+B7C0:	mov	r3,0004(r5)
+B7C4:	add	r0,3912
+B7C8:	jsr	pc,BAAC
+B7CC:	br	B792
+B7CE:	tst	(r5)+
+B7D0:	mov	@3914,r2
+B7D4:	bne	B7E0
+B7D6:	ror	(r5)
+B7D8:	cmp	(r5),-(r5)
+B7DA:	blo	B7E4
+B7DC:	tst	(r5)+
+B7DE:	br	B7E4
+B7E0:	inc	r2
+B7E2:	bne	B748
+B7E4:	mov	(r5),@3914
+B7E8:	beq	B748
+B7EA:	mov	0004(r5),r3
+B7EE:	jsr	r5,B92C
+B7F2:	br	B78A
+B7F4:	cmp	r0,r2
+B7F6:	blo	B7C4
+B7F8:	mov	r1,-(sp)
+B7FA:	mov	391E,r1
+B7FE:	jsr	pc,BAAA
+B802:	jsr	pc,BAAC
+B806:	cmp	r1,#37C0
+B80A:	bhi	B86C
+B80C:	mov	(sp)+,r1
+B80E:	mov	3912,r4
+B812:	mov	r1,r5
+B814:	sub	r2,0008(r1)
+B818:	sub	#E,r5
+B81C:	sub	33C6,r5
+B820:	cmp	r5,#33CA
+B824:	blo	B83C
+B826:	bit	#100,(r5)
+B82A:	beq	B83C
+B82C:	jsr	pc,B904
+B830:	mov	#200,(r1)
+B834:	clr	0008(r1)
+B838:	jsr	pc,BAAC
+B83C:	jsr	pc,B904
+B840:	mov	#100,(r1)+
+B844:	mov	(sp),r0
+B846:	mov	(r0)+,(r1)+
+B848:	mov	(r0)+,(r1)+
+B84A:	mov	(r0)+,(r1)+
+B84C:	mov	r2,(r1)+
+B84E:	clr	(r1)+
+B850:	mov	@#2C,(r1)
+B854:	add	#B2,(r1)
+B858:	mov	@0000(r1),(r1)
+B85C:	mov	r2,@3914
+B860:	mov	r4,@3916
+B864:	jsr	r5,B966
+B868:	jmp	B728
+
+; EXTEND:
+; enlarge the size of a directory
+B86C:	tst	(sp)+
+B86E:	mov	3910,r2
+B872:	cmp	r2,33C0
+B876:	bge	B8D2
+B878:	mov	#33C8,r1
+B87C:	mov	r1,r4
+B87E:	add	#1FC,r4
+B882:	mov	(r1)+,r5
+B884:	jsr	pc,BAA4
+B888:	cmp	r1,r4
+B88A:	blo	B884
+B88C:	clr	r4
+B88E:	bit	#500,(r1)
+B892:	beq	B884
+B894:	mov	(r1),-(sp)
+B896:	mov	#800,(r1)
+B89A:	inc	r2
+B89C:	mov	33C2,-(sp)
+B8A0:	mov	r2,33C2
+B8A4:	jsr	r5,B966
+B8A8:	mov	#33C0,r0
+B8AC:	tst	(r0)+
+B8AE:	mov	(sp)+,(r0)+
+B8B0:	mov	(sp)+,(r1)
+B8B2:	cmp	(r0)+,(r0)+
+B8B4:	mov	r5,(r0)+
+B8B6:	mov	(r1)+,(r0)+
+B8B8:	cmp	r1,#37C0
+B8BC:	blos	B8B6
+B8BE:	mov	r2,r0
+B8C0:	jsr	r5,B96C
+B8C4:	jsr	r5,B95E
+B8C8:	inc	33C4
+B8CC:	jsr	r5,B966
+B8D0:	br	B7EE
+B8D2:	mov	#FFFB,(sp)
+B8D6:	jmp	B752
+B8DA:	bis	(sp),391C
+B8DE:	mov	#1,r3
+B8E2:	jsr	r5,B92C
+B8E6:	.word	0102
+B8E8:	tst	(r5)+
+B8EA:	tst	(r5)+
+B8EC:	rts	r5
+
+; ENTRY:
+; scan for entry of specified type in current segment
+B8EE:	bit	(r5),(r1)
+B8F0:	bne	B8E8
+B8F2:	bit	(r1),#800
+B8F6:	bne	B8EA
+B8F8:	add	0008(r1),3912
+B8FE:	jsr	pc,BAAC
+B902:	br	B8EE
+
+; PUSH:
+; make room in current directory segment for new entry
+B904:	mov	r3,-(sp)
+B906:	mov	r1,r5
+B908:	jsr	r5,B8EE
+B90C:	.word	0000
+B90E:	mov	r1,r3
+B910:	jsr	pc,BAAC
+B914:	cmp	(r3)+,(r1)+
+B916:	mov	-(r3),-(r1)
+B918:	cmp	r3,r5
+B91A:	bne	B916
+B91C:	mov	r5,r1
+B91E:	mov	(sp)+,r3
+B920:	rts	pc
+B922:	mov	33C2,r0
+B926:	beq	B95C
+B928:	mov	r0,r3
+B92A:	tst	(r5)+
+B92C:	mov	r0,-(sp)
+B92E:	mov	r3,r0
+B930:	bic	#FFE0,r0
+B934:	cmp	r0,3918
+B938:	bne	B942
+B93A:	cmp	3906,391A
+B940:	beq	B94E
+B942:	mov	r0,3918
+B946:	mov	r3,-(sp)
+B948:	jsr	r5,B964
+B94C:	mov	(sp)+,r3
+B94E:	mov	3906,391A
+B954:	mov	#33C8,r1
+B958:	mov	(r1)+,r4
+B95A:	mov	(sp)+,r0
+B95C:	rts	r5
+
+; SEGRD1
+; read directory segments
+B95E:	mov	#1,3918
+B964:	cmp	#A1,pc		;instead of SEC : BR B968
+; SEGWR:
+; write directory segments
+; B966:	clc
+B968:	mov	3918,r0
+; SEGRW:
+B96C:	jsr	r0,B976
+B970:	.word	0002		;number of sectors
+B972:	.word	33C0		;USRBUF
+B974:	.word	3906		;device number
+
+; Carry set = read, Carry cleared = write
+B976:	mov	(r0)+,r1	;number of sectors
+B978:	mov	(r0)+,r2	;source/destination address
+B97A:	mov	@(r0)+,r3	;device number
+B97C:	mov	(sp)+,r0
+B97E:	rol	r0
+B980:	add	#0,r0
+B984:	bit	#1,r0		;read or write?
+B988:	beq	B994
+B98A:	bic	#1,r0
+B98E:	jsr	pc,BBBA		;read sectors from the memory module
+B992:	br	B998
+B994:	jsr	pc,BBD0		;write sectors to the memory module
+B998:	rts	r5
+
+; CONSOL:
+; remove unnecessary entries from a directory
+B99A:	mov	r4,-(sp)
+B99C:	mov	r3,-(sp)
+B99E:	mov	r1,-(sp)
+B9A0:	mov	#E,r4
+B9A4:	add	33C6,r4
+B9A8:	jsr	r5,B8EE
+B9AC:	.word	0100
+B9AE:	br	B9B8
+B9B0:	mov	#200,(r1)
+B9B4:	add	r4,r1
+B9B6:	br	B9A8
+B9B8:	mov	(sp),r1
+B9BA:	jsr	r5,B8EE
+B9BE:	.word	0200
+B9C0:	br	BA06
+B9C2:	mov	r1,r2
+B9C4:	add	r4,r2
+B9C6:	bit	#200,(r2)
+B9CA:	beq	B9EA
+B9CC:	add	0008(r2),0008(r1)
+B9D2:	mov	r2,r5
+B9D4:	add	r4,r5
+B9D6:	mov	r1,-(sp)
+B9D8:	jsr	r5,B8EE
+B9DC:	.word	0000
+B9DE:	mov	r1,r3
+B9E0:	mov	(r5)+,(r2)+
+B9E2:	cmp	r5,r3
+B9E4:	blos	B9E0
+B9E6:	mov	(sp)+,r1
+B9E8:	br	B9BA
+B9EA:	tst	0008(r1)
+B9EE:	bne	BA02
+B9F0:	mov	r1,r2
+B9F2:	mov	r1,r3
+B9F4:	sub	r4,r3
+B9F6:	cmp	r3,#33CA
+B9FA:	blo	BA02
+B9FC:	bit	#400,(r3)
+BA00:	bne	B9D2
+BA02:	add	r4,r1
+BA04:	br	B9BA
+BA06:	mov	r1,391E
+BA0A:	mov	(sp)+,r1
+BA0C:	mov	(sp)+,r3
+BA0E:	mov	(sp)+,r4
+BA10:	rts	pc
+
+BA12:	mov	#1,r3
+BA16:	jsr	r5,B92C
+BA1A:	br	BA22
+BA1C:	jsr	r5,B922
+BA20:	br	BAA0
+BA22:	mov	(sp),r0
+BA24:	jsr	r5,B8EE
+BA28:	.word	0100
+BA2A:	br	BA1C
+BA2C:	tst	(r1)+
+BA2E:	mov	r1,r2
+BA30:	add	#6,r2
+BA34:	cmp	(r0)+,(r1)+
+BA36:	beq	BA42
+BA38:	mov	r2,r1
+BA3A:	cmp	(r1)+,(r1)+
+BA3C:	add	33C6,r1
+BA40:	br	BA22
+BA42:	cmp	r1,r2
+BA44:	bne	BA34
+BA46:	sub	#8,r1
+BA4A:	mov	#3908,r0
+BA4E:	mov	(r1)+,(r0)+
+BA50:	mov	(r1)+,(r0)+
+BA52:	mov	(r1)+,(r0)+
+BA54:	mov	(r1),(r0)
+BA56:	cmp	-(r0),-(r0)
+BA58:	cmp	-(r1),-(r1)
+BA5A:	mov	r1,-(sp)
+BA5C:	mov	r3,-(sp)
+BA5E:	mov	#1,r3
+BA62:	jsr	r5,BADA
+BA66:	br	BA76
+BA68:	mov	#200,(r1)
+BA6C:	mov	r3,r1
+BA6E:	cmp	r1,(sp)
+BA70:	beq	BA76
+BA72:	jsr	pc,BAB6
+BA76:	mov	(sp)+,r3
+BA78:	jsr	r5,B92C
+BA7C:	mov	(sp)+,r1
+BA7E:	mov	#400,-(r1)
+BA82:	bit	#40,391C
+BA88:	bne	BAC8
+BA8A:	add	#8,r1
+BA8E:	mov	(r1),r2
+BA90:	mov	@3914,(r1)
+BA94:	sub	(r1),r2
+BA96:	jsr	pc,BAAC
+BA9A:	add	r2,(r1)
+BA9C:	jsr	pc,BAB6
+BAA0:	jmp	B744
+
+; INCR1A:
+; move R1 past one or two directory entries
+BAA4:	add	0008(r1),r5
+BAA8:	br	BAAC
+; INCR2:
+BAAA:	mov	pc,-(sp)
+; INCR1:
+BAAC:	add	33C6,r1
+BAB0:	add	#E,r1
+BAB4:	rts	pc
+
+; CLOSUP:
+; consolidate and rewrite a directory segment
+BAB6:	mov	r0,-(sp)
+BAB8:	mov	#33CA,r1
+BABC:	jsr	pc,B99A
+BAC0:	jsr	r5,B966
+BAC4:	mov	(sp)+,r0
+BAC6:	rts	pc
+
+BAC8:	tst	(r1)+
+BACA:	mov	(r0)+,(r1)+
+BACC:	mov	(r0)+,(r1)+
+BACE:	mov	(r0)+,(r1)+
+BAD0:	cmp	(r1)+,(r1)+
+BAD2:	bic	#40,391C
+BAD8:	br	BA9C
+BADA:	mov	r0,-(sp)
+BADC:	jsr	r5,B92C
+BAE0:	mov	(sp),r0
+BAE2:	jsr	r5,B8EE
+BAE6:	.word	0400
+BAE8:	br	BB12
+BAEA:	tst	(r1)+
+BAEC:	mov	r1,r2
+BAEE:	add	#6,r2
+BAF2:	cmp	(r0)+,(r1)+
+BAF4:	bne	BB04
+BAF6:	cmp	r1,r2
+BAF8:	bne	BAF2
+BAFA:	sub	#8,r1
+BAFE:	tst	(r5)+
+BB00:	mov	(sp)+,r0
+BB02:	rts	r5
+BB04:	mov	r2,r1
+BB06:	add	(r1)+,3912
+BB0A:	cmp	(r1)+,(r1)+
+BB0C:	add	33C6,r1
+BB10:	br	BAE0
+BB12:	jsr	r5,B922
+BB16:	br	BB00
+BB18:	br	BAE0
+
+; write R0 to the memory module address register
+BB1A:	swab	r0
+BB1C:	jsr	pc,9D92		;save registers on the stack
+BB20:	mov	#2,r1		;number of bytes
+BB24:	mov	sp,r2
+BB26:	clr	r0
+BB28:	jsr	r5,BB50
+BB2C:	.word	BB3A		;rts pc
+BB2E:	.word	00A0		;Write Address
+BB30:	.word	0000
+BB32:	.word	BB4A		;movb (r2)+,@#E810
+BB34:	jsr	pc,9DA6		;restore registers from the stack
+BB38:	swab	r0
+BB3A:	rts	pc
+
+BB3C:	tstb	@#E814
+BB40:	bpl	BB3C
+BB42:	rts	pc
+
+BB44:	movb	@#E810,(r2)+
+BB48:	rts	pc
+
+BB4A:	movb	(r2)+,@#E810
+BB4E:	rts	pc
+
+; number of bytes in r1
+; device number in r3
+; the call to this procedure should be followed by:
+; 1. address of the procedure called before the transfer
+; 2. code to be written to the E816 register (command for the memory module)
+; 3. bit mask for the E814 register (data direction)
+; 4. address of the data transfer procedure
+BB50:	mov	#0009,@#E812
+BB56:	cmp	0002(r5),#20	;command Write Postdecrement?
+BB5C:	beq	BB66
+BB5E:	mov	r0,r4
+BB60:	bic	#FFFF,r4	;WTF?
+BB64:	add	r4,r0
+BB66:	jsr	pc,@(r5)+	;procedure called before the transfer
+BB68:	tst	@#E816		;terminate the previous transfer
+BB6C:	bic	#FFFE,r3
+BB70:	bis	#00F8,r3
+BB74:	mov	r3,@#E814
+BB78:	mov	(r5)+,@#E816	;command for the SMP module
+BB7C:	jsr	pc,BB3C
+BB80:	bic	(r5)+,r3
+BB82:	mov	r3,@#E814
+BB86:	jsr	pc,BB3C
+BB8A:	jsr	pc,@0000(r5)	;call the data transfer procedure
+BB8E:	jsr	pc,BB3C
+BB92:	inc	r0
+BB94:	dec	r1
+BB96:	beq	BBAE
+BB98:	cmp	FFFC(r5),#20	;command Write Postdecrement?
+BB9E:	beq	BB8A
+BBA0:	mov	r0,r4
+BBA2:	bic	#FFFF,r4	;WTF?
+BBA6:	beq	BB8A
+BBA8:	sub	#6,r5
+BBAC:	br	BB64
+BBAE:	tst	@#E816		;end of the transfer
+BBB2:	tst	(r5)+
+BBB4:	jsr	pc,BB3C
+BBB8:	rts	r5
+
+; read R1 sectors from the memory module starting from the sector R0
+BBBA:	swab	r0		;convert the starting sector number to ...
+BBBC:	asl	r0		;... an address
+BBBE:	swab	r1		;convert the number of sectors to read to ...
+BBC0:	asl	r1		;... the number of bytes
+; read a memory block from the SMP
+; source address in r0
+; destination address in r2
+; number of bytes in r1
+; device number in r3
+BBC2:	jsr	r5,BB50
+BBC6:	.word	BB1A		;write R0 to the SMP address register
+BBC8:	.word	00D0		;Read Postincrement
+BBCA:	.word	0008
+BBCC:	.word	BB44		;movb @#E810,(r2)+
+BBCE:	br	BBE4
+
+; write R1 sectors to the memory module starting from the sector R0
+BBD0:	swab	r0		;convert the starting sector number to ...
+BBD2:	asl	r0		;... an address
+BBD4:	swab	r1		;convert the number of sectors to write to ...
+BBD6:	asl	r1		;... the number of bytes
+; write a memory block to the SMP
+; destination address in r0
+; source address in r2
+; number of bytes in r1
+; device number in r3
+BBD8:	jsr	r5,BB50
+BBDC:	.word	BB1A		;write R0 to the SMP address register
+BBDE:	.word	00C0		;Write Postincrement
+BBE0:	.word	0000
+BBE2:	.word	BB4A		;movb (r2)+,@#E810
+BBE4:	bic	#FFFE,r3
+BBE8:	bis	#58,r3
+BBEC:	mov	r3,@#E814
+BBF0:	mov	#EA,@#E814
+BBF6:	bic	#FFFE,r3
+BBFA:	rts	pc
+
+; erase the SMP with spaces
+BBFC:	mov	#FFFF,r0	;obligatory destination address
+BC00:	clr	r1		;number of bytes = 65536
+BC02:	jsr	r5,BB50
+BC06:	.word	BB1A		;write R0 to the SMP address register
+BC08:	.word	0020		;Erase Postdecrement
+BC0A:	.word	0000
+BC0C:	.word	BC10		;movb #20,@#E810
+BC0E:	br	BBE4
+
+BC10:	movb	#20,@#E810
+BC16:	rts	pc
+
+BC18:	clr	(r0)+
+BC1A:	clr	(r0)+
+BC1C:	mov	r0,r4
+BC1E:	clr	(r0)
+BC20:	cmp	-(r0),-(r0)
+BC22:	mov	#5B5B,r3
+BC26:	trap	3A		;get a character other than space to r2
+BC28:	trap	38		;is r2 a digit?
+BC2A:	bvs	BC5A
+BC2C:	bne	BC32
+BC2E:	add	#2E,r2
+BC32:	sub	#40,r2
+BC36:	asrb	r3
+BC38:	bhis	BC4A
+BC3A:	asl	r2
+BC3C:	asl	r2
+BC3E:	asl	r2
+BC40:	mov	r2,-(sp)
+BC42:	asl	r2
+BC44:	asl	r2
+BC46:	add	(sp)+,r2
+BC48:	br	BC36
+BC4A:	cmp	r0,r4
+BC4C:	beq	BC66
+BC4E:	add	r2,(r0)
+BC50:	asrb	r3
+BC52:	blo	BC26
+BC54:	tst	(r0)+
+BC56:	swab	r3
+BC58:	br	BC26
+BC5A:	cmpb	r2,#2E
+BC5E:	bne	BC6A
+BC60:	mov	r4,r0
+BC62:	tst	(r4)+
+BC64:	br	BC22
+BC66:	sec
+BC68:	rts	pc
+BC6A:	clc
+BC6C:	rts	pc
+BC6E:	mov	r1,-(sp)
+BC70:	mov	r5,r4
+BC72:	mov	38EC,r3
+BC76:	sub	r3,r4
+BC78:	movb	(r3)+,r2
+BC7A:	bmi	BC9A
+BC7C:	cmp	r2,#A
+BC80:	bne	BC84
+BC82:	inc	r4
+BC84:	cmp	r3,r5
+BC86:	blo	BC78
+BC88:	add	#1FF,r4
+BC8C:	clrb	r4
+BC8E:	swab	r4
+BC90:	asr	r4
+BC92:	mov	r4,0004(r0)
+BC96:	mov	(sp)+,r1
+BC98:	rts	pc
+BC9A:	mov	#87C0,r1
+BC9E:	dec	r4
+BCA0:	bic	#FF80,r2
+BCA4:	beq	BCAE
+BCA6:	cmpb	(r1)+,#24
+BCAA:	bne	BCA6
+BCAC:	sob	r2,BCA6
+BCAE:	cmpb	(r1)+,#24
+BCB2:	beq	BC84
+BCB4:	inc	r4
+BCB6:	br	BCAE
+
+; fetch the file name optionally preceeded by the device name
+BCB8:	mov	r0,-(sp)
+BCBA:	trap	3A		;get a character other than space to r2
+BCBC:	cmpb	r2,#22		;quotation mark
+BCC0:	bne	BCF8
+BCC2:	mov	r1,-(sp)
+BCC4:	trap	60		;get a pair of characters to r4
+BCC6:	cmp	r4,#534D	;"SM"
+BCCA:	bne	BCF0
+BCCC:	trap	08		;ATOI
+BCCE:	mov	r0,r4
+BCD0:	mov	0002(sp),r0
+BCD4:	cmpb	(r1)+,#3A	;colon
+BCD8:	bne	BCF0
+BCDA:	mov	r4,(r0)+
+BCDC:	tst	(sp)+
+BCDE:	mov	(r0)+,r0	;R0 points to the output buffer
+BCE0:	jsr	pc,BC18		;fetch the filename and convert it to Radix-50
+BCE4:	blo	BCF8		;branch if illegal characters in the filename
+BCE6:	cmpb	r2,#22		;quotation mark
+BCEA:	bne	BCF8
+BCEC:	mov	(sp)+,r0
+BCEE:	rts	pc
+BCF0:	mov	(sp)+,r1
+BCF2:	mov	3900,(r0)+
+BCF6:	br	BCDE
+BCF8:	tst	(sp)+
+BCFA:	trap	7F		;error 63 - illegal file name
+
+; command KILL
+BCFC:	mov	#3814,r0
+BD00:	jsr	pc,BCB8		;fetch the device and file name
+BD04:	jsr	pc,B6BA		;file access
+BD08:	bhis	BD0C
+BD0A:	trap	7D		;error 62 - file not found
+BD0C:	jmp	8654
+
+; command LOAD
+BD10:	mov	#3814,r0
+BD14:	jsr	pc,BCB8		;fetch the device and file name
+BD18:	tst	3926
+BD1C:	bne	BD24
+BD1E:	mov	#CBB,3926
+BD24:	movb	#1,0001(r0)	;read file
+BD2A:	jsr	pc,B6BA		;file access
+BD2E:	blo	BD0A
+BD30:	mov	381A,r2
+BD34:	swab	r2
+BD36:	asl	r2
+BD38:	mov	r2,3904
+BD3C:	mov	#1,38F6
+BD42:	mov	r1,-(sp)
+BD44:	trap	60		;get a pair of characters to r4
+BD46:	cmp	r4,#2C52	;",R"
+BD4A:	bne	BD52
+BD4C:	inc	38F6
+BD50:	mov	r1,(sp)
+BD52:	mov	(sp)+,r1
+BD54:	mov	38EC,r5
+BD58:	inc	r5
+BD5A:	clr	38F0
+BD5E:	clr	38FA
+BD62:	clr	38EA
+BD66:	jmp	85FC
+
+BD6A:	jsr	pc,9D92		;save registers on the stack
+BD6E:	mov	3904,r0		;source address
+BD72:	mov	#1,r1		;number of bytes
+BD76:	mov	r3,r2		;destination address
+BD78:	mov	3906,r3		;device number
+BD7C:	jsr	pc,BBC2		;read a memory block from the SMP
+BD80:	inc	3904
+BD84:	jsr	pc,9DA6		;restore registers from the stack
+BD88:	movb	(r3),r2
+BD8A:	beq	BD8E
+BD8C:	rts	pc
+BD8E:	mov	#1,380C
+BD94:	tst	(sp)+
+BD96:	asr	38F6
+BD9A:	blo	BD0C
+BD9C:	clr	38F6
+BDA0:	jmp	8928
+
+; command NAME
+BDA4:	mov	#3814,r0
+BDA8:	jsr	pc,BCB8		;fetch the device and file name
+BDAC:	trap	60		;get a pair of characters to r4
+BDAE:	cmp	r4,#4153
+BDB2:	bne	BDD0
+BDB4:	mov	#381C,r0
+BDB8:	jsr	pc,BCB8		;fetch the device and file name
+BDBC:	mov	#3814,r0
+BDC0:	movb	#3,0001(r0)	;rename file
+BDC6:	jsr	pc,B6BA		;file access
+BDCA:	blo	BDD2
+BDCC:	jmp	8654
+BDD0:	trap	7B		;error 61 - wrong NAME operator format
+BDD2:	trap	79		;error 60 - renamed file not found
+
+; command SAVE
+BDD4:	mov	#3814,r0
+BDD8:	jsr	pc,BC6E
+BDDC:	jsr	pc,BCB8		;fetch the device and file name
+BDE0:	tst	3926
+BDE4:	bne	BDEC
+BDE6:	mov	#CBB,3926
+BDEC:	movb	#2,0001(r0)	;write file
+BDF2:	jsr	pc,B6BA		;file access
+BDF6:	bhis	BDFA
+BDF8:	trap	77		;error 59 - SMP overflow
+BDFA:	mov	381A,r2
+BDFE:	swab	r2
+BE00:	asl	r2
+BE02:	mov	r2,3904
+BE06:	mov	#1,38F8
+BE0C:	jmp	84CC
+BE10:	jsr	pc,9D92		;save registers on the stack
+BE14:	mov	3904,r0		;destination address
+BE18:	mov	#2,r1		;number of bytes to write
+BE1C:	mov	3906,r3		;device number
+BE20:	mov	sp,r2
+BE22:	cmp	(r2)+,(r2)+	;R2 = source address
+BE24:	clrb	0001(r2)
+BE28:	jsr	pc,BBD8		;write a memory block to the SMP
+BE2C:	inc	3904
+BE30:	jsr	pc,9DA6		;restore registers from the stack
+BE34:	rts	pc
+
+BE36:	mov	#3814,r0
+BE3A:	movb	#4,0001(r0)
+BE40:	jsr	pc,B6BA		;file access
+BE44:	rts	pc
+
+; command INIT
+BE46:	mov	#3814,r0
+BE4A:	jsr	pc,BFD8		;test for the end of the command line
+BE4E:	beq	BE54		;skip if command without parameters
+BE50:	jsr	pc,BCB8		;fetch the device and file name
+BE54:	mov	r1,-(sp)
+BE56:	mov	(r0),r3		;device number
+BE58:	jsr	pc,BBFC		;erase the SMP with spaces
+BE5C:	clr	3918
+BE60:	mov	#C09A,r4	;data blocks copied to the SMP
+BE64:	mov	#4,-(sp)	;number of copied blocks
+BE68:	mov	(r4)+,r0	;destination address
+BE6A:	mov	(r4)+,r2	;source address
+BE6C:	mov	(r4)+,r1	;number of bytes to write
+BE6E:	mov	r4,-(sp)
+BE70:	jsr	pc,BBD8		;write a memory block to the SMP
+BE74:	mov	(sp)+,r4
+BE76:	dec	(sp)		;counter of copied blocks
+BE78:	bne	BE68		;next block
+BE7A:	tst	(sp)+
+BE7C:	mov	(sp)+,r1
+BE7E:	jmp	8654
+
+; command FILES
+BE82:	jsr	pc,9D92		;save registers on the stack
+BE86:	mov	#3814,r0
+BE8A:	jsr	pc,BFD8		;test for the end of the command line
+BE8E:	beq	BE98		;branch if command without parameters
+BE90:	jsr	pc,BCB8		;fetch the device and file name
+BE94:	mov	r1,0002(sp)
+BE98:	mov	(r0),3906
+BE9C:	clr	3908
+BEA0:	clr	390A
+BEA4:	clr	390C
+BEA8:	clr	r5
+BEAA:	jsr	r5,B8DA
+BEAE:	mov	r4,3912
+BEB2:	mov	#5,r5
+BEB6:	jsr	pc,BFB4
+BEBA:	jsr	r5,B8EE
+BEBE:	.word	0600
+BEC0:	br	BF3E
+BEC2:	jsr	pc,BF9E
+BEC6:	bit	(r1)+,#400
+BECA:	bne	BEE4
+BECC:	mov	#C013,r4
+BED0:	movb	(r4)+,(r0)+
+BED2:	bne	BED0
+BED4:	movb	#20,-(r0)
+BED8:	cmpb	(r0)+,(r0)+
+BEDA:	add	#6,r1
+BEDE:	add	(r1),3908
+BEE2:	br	BF06
+BEE4:	jsr	pc,C046
+BEE8:	add	(r1),390C
+BEEC:	inc	390A
+BEF0:	mov	#38A1,r0
+BEF4:	mov	#38A2,r4
+BEF8:	movb	-(r0),-(r4)
+BEFA:	movb	-(r0),-(r4)
+BEFC:	movb	-(r0),-(r4)
+BEFE:	movb	#2E,-(r4)
+BF02:	add	#6,r0
+BF06:	mov	(r1),r3
+BF08:	jsr	pc,BF86
+BF0C:	cmpb	(r0)+,(r0)+
+BF0E:	mov	3912,r3
+BF12:	jsr	pc,BF86
+BF16:	clrb	(r0)+
+BF18:	mov	#3898,r0
+BF1C:	trap	36		;print a string pointed to by r0
+BF1E:	trap	02		;print CR, LF
+BF20:	add	(r1)+,3912
+BF24:	cmp	(r1)+,(r1)+
+BF26:	add	33C6,r1
+BF2A:	sob	r5,BEBA
+BF2C:	jsr	pc,B250		;wait for a key	
+BF30:	cmpb	r2,#D
+BF34:	bne	BF7A
+BF36:	trap	02		;print CR, LF
+BF38:	mov	#6,r5
+BF3C:	br	BEBA
+BF3E:	jsr	r5,B922
+BF42:	br	BF46
+BF44:	br	BEBA
+BF46:	cmp	r5,#6
+BF4A:	beq	BF54
+BF4C:	jsr	pc,BFAE
+BF50:	jsr	pc,B250 	;wait for a key
+BF54:	mov	#4,r5
+BF58:	jsr	pc,BFAE
+BF5C:	mov	#C038,r5
+BF60:	mov	@(r5)+,r3
+BF62:	jsr	pc,BF9E
+BF66:	jsr	pc,BF86
+BF6A:	clrb	0001(r0)
+BF6E:	cmpb	-(r0),-(r0)
+BF70:	trap	36		;print a string pointed to by r0
+BF72:	mov	(r5)+,r0
+BF74:	trap	36		;print a string pointed to by r0
+BF76:	tst	(r5)
+BF78:	bne	BF60
+BF7A:	jsr	pc,9DA6		;restore registers from the stack
+BF7E:	clr	3902		;select the LCD as the output device
+BF82:	jmp	8654
+BF86:	clr	r2
+BF88:	div	#A,r2
+BF8C:	beq	BF94
+BF8E:	bis	#30,r2
+BF92:	movb	r2,(r0)
+BF94:	inc	r0
+BF96:	bis	#30,r3
+BF9A:	movb	r3,(r0)+
+BF9C:	rts	pc
+BF9E:	mov	#A,r2
+BFA2:	mov	#38AC,r0
+BFA6:	mov	#2020,-(r0)
+BFAA:	sob	r2,BFA6
+BFAC:	rts	pc
+BFAE:	trap	02		;print CR, LF
+BFB0:	sob	r5,BFAE
+BFB2:	rts	pc
+BFB4:	mov	383A,-(sp)
+BFB8:	mov	#C020,r0
+BFBC:	trap	36		;print a string pointed to by r0
+BFBE:	bis	#1,383A
+BFC4:	trap	36		;print a string pointed to by r0
+BFC6:	mov	3906,r2
+BFCA:	bis	#30,r2
+BFCE:	trap	00		;print character r2
+BFD0:	trap	36		;print a string pointed to by r0
+BFD2:	mov	(sp)+,383A
+BFD6:	rts	pc
+; test for the end of the command line
+BFD8:	mov	3900,(r0)
+BFDC:	trap	3A		;get a character other than space to r2
+BFDE:	dec	r1
+BFE0:	cmpb	r2,#A
+BFE4:	beq	BFEA
+BFE6:	cmpb	r2,#3A		;colon
+BFEA:	rts	pc
+
+BFE0:	97 A0 0A 00  02 03 97 A0  3A 00 87 00  0E 46 41 4A  . ..... :....FAJ
+BFF0:	4C 4F 57 2C  20 00 42 4C  4F 4B 4F 57  0D 0A 00 53  LOW, .BLOKOW...S
+C000:	57 4F 42 4F  44 4E 59 48  20 42 4C 4F  4B 4F 57 0F  WOBODNYH BLOKOW.
+C010:	0D 0A 00 0E  3C 53 57 4F  42 4F 44 4E  4F 3E 0F 00  ....<SWOBODNO>..
+C020:	20 20 00 0E  20 73 50 52  41 57 4F 5E  4E 49 4B 0F    .. sPRAWO^NIK.
+C030:	20 53 4D 00  20 0D 0A 00  0A 39 EC BF  0C 39 F6 BF   SM. ....9l?.9v?
+C040:	08 39 FF BF  00 00
+
+C046:	mov	r0,-(sp)
+C048:	mov	r3,-(sp)
+C04A:	mov	r4,-(sp)
+C04C:	mov	r5,-(sp)
+C04E:	mov	#3,r4
+C052:	sub	r4,r0
+C054:	mov	#3,r5
+C058:	add	#6,r0
+C05C:	mov	(r1)+,r3
+C05E:	jsr	pc,C072
+C062:	movb	r2,-(r0)
+C064:	sob	r5,C05E
+C066:	sob	r4,C054
+C068:	mov	(sp)+,r5
+C06A:	mov	(sp)+,r4
+C06C:	mov	(sp)+,r3
+C06E:	mov	(sp)+,r0
+C070:	rts	pc
+C072:	clr	r2
+C074:	div	#28,r2
+C078:	mov	r3,-(sp)
+C07A:	mov	r2,r3
+C07C:	mov	(sp)+,r2
+C07E:	beq	C094
+C080:	cmp	r2,#1B
+C084:	blt	C090
+C086:	beq	C08C
+C088:	add	#9,r2
+C08C:	add	#FFC9,r2
+C090:	add	#20,r2
+C094:	add	#20,r2
+C098:	rts	pc
+
+; destination address, source address, number of bytes
+C09A:	.word	0400, C0B2, 001A
+C0A0:	.word	0000, C0CC, 003C
+C0A6:	.word	0200, C108, 0002
+C0AC:	.word	03D2, C10A, 0025
+
+C0B2:	      01 00  00 00 01 00  00 00 04 00  00 02 20 20
+C0C0:	20 20 20 20  10 00 20 20  20 20 00 08
+
+; boot loader written to the SMP
+C0CC:	nop
+C0CE:	jsr	pc,@#D7C0	;RAM initialisation
+C0D2:	jsr	pc,@#A15E
+C0D6:	mov	@#3812,@#E800	;address of the display RAM
+C0DC:	mov	#88C6,@#E802
+C0E2:	jsr	r0,C0FE
+C0E6:	.asciz	"\016\r\n smp BEZ ZAGRUZ^IKA"	;SMP without loader
+C0FD:	.even
+C0FE:	movb	(r0)+,r2
+C100:	beq	C100
+C102:	jsr	pc,@#9D62	;display character r2
+C106:	br	C0FE
+
+C108:	halt
+C10A:	wait
+C10C:	rtt
+C10E:	illop
+
+C110:	42 41 53 49  43 20 20 20  20 20 20 20  20 20 20 20  BASIC           
+C120:	20 20 20 20  20 20 20 20  20 20 20 20  20 20 20 FF                 .
+
+; command DEV
+C130:	mov	#3814,r0
+C134:	jsr	pc,BFD8		;test for the end of the command line
+C138:	bne	C140		;branch if comand with parameters
+C13A:	clr	3900
+C13E:	br	C148
+C140:	jsr	pc,BCB8		;fetch the device and file name
+C144:	mov	(r0),3900
+C148:	jmp	8654
+
+; command HELP
+C14C:	trap	3A		;get a character other than space to r2
+C14E:	dec	r1
+C150:	trap	38		;is r2 a digit?
+C152:	bvs	C19A
+C154:	bne	C166
+C156:	br	C19A
+C158:	asl	r0
+C15A:	add	r3,r0
+C15C:	mov	(r0),r0
+C15E:	jsr	pc,C1B8
+C162:	jmp	8654
+C166:	mov	r1,-(sp)
+C168:	clr	r0
+C16A:	mov	#D549,r2
+C16E:	cmpb	(r1)+,(r2)+
+C170:	bne	C186
+C172:	cmpb	(r2),#24
+C176:	bne	C16E
+C178:	cmpb	(r1),#2F
+C17C:	beq	C186
+C17E:	tst	(sp)+
+C180:	mov	#C1D4,r3
+C184:	br	C158
+C186:	mov	(sp),r1
+C188:	cmpb	(r2)+,#24
+C18C:	bne	C188
+C18E:	cmpb	(r2),#24
+C192:	beq	C198
+C194:	inc	r0
+C196:	br	C16E
+C198:	mov	(sp)+,r1
+C19A:	mov	#C23A,r0
+C19E:	cmpb	(r1),#2A
+C1A2:	bne	C15E
+C1A4:	mov	#C1D4,r4
+C1A8:	mov	(r4)+,r0
+C1AA:	beq	C162
+C1AC:	jsr	pc,C1B8
+C1B0:	cmpb	r2,#D
+C1B4:	bne	C162
+C1B6:	br	C1A8
+C1B8:	movb	(r0)+,r3
+C1BA:	trap	36		;print a string pointed to by r0
+C1BC:	mov	r0,-(sp)
+C1BE:	jsr	pc,B250		;wait for a key
+C1C2:	mov	(sp)+,r0
+C1C4:	dec	r3
+C1C6:	bmi	C1D2
+C1C8:	cmpb	r2,#D
+C1CC:	beq	C1BA
+C1CE:	tst	(sp)+
+C1D0:	br	C162
+C1D2:	rts	pc
+
+; command LLIST
+D664:	mov	#1,3902		;select the printer as the output device
+D66A:	jmp	84CC
+
+; print character r2 on the printer
+D66E:	tstb	@#FF4C		;check printer status
+D672:	bpl	D66E
+D674:	movb	r2,@#FF4E	;send data to the printer
+D678:	rts	pc
+
+; command LPRINT
+D67A:	mov	#1,3902		;select the printer as the output device
+D680:	jmp	8E1C		;command PRINT
+
+; command LFILES
+D684:	mov	#1,3902		;select the printer as the output device
+D68A:	jmp	BE82		;command FILES
+
+; command MEM
+D68E:	jsr	pc,9D92		;save registers on the stack
+D692:	mov	37CE,-(sp)
+D696:	mov	#D71A,r1	;string '   '
+D69A:	jsr	pc,D70C		;print a string pointed to by r1
+D69E:	mov	383A,-(sp)
+D6A2:	bis	#1,383A		;inverted print mode
+; r1 points to a string 'Raspredelenie pamjati (w bajtah)'
+D6A8:	jsr	pc,D70C		;print a string pointed to by r1
+D6AC:	mov	(sp)+,383A
+D6B0:	mov	#D747,r1	;string 'Programma: '
+D6B4:	jsr	pc,D70C		;print a string pointed to by r1
+D6B8:	mov	r5,r3
+D6BA:	sub	38EC,r3
+D6BE:	jsr	pc,D6E2		;print the word r3 in decimal form
+D6C2:	mov	#D753,r1	;string 'Svobodno: '
+D6C6:	jsr	pc,D70C		;print a string pointed to by r1
+D6CA:	mov	sp,r3
+D6CC:	sub	r5,r3
+D6CE:	bpl	D6D2
+D6D0:	trap	01		;error 0 - out of memory
+D6D2:	jsr	pc,D6E2		;print the word r3 in decimal form
+D6D6:	mov	(sp)+,37CE
+D6DA:	jsr	pc,9DA6		;restore registers from the stack
+D6DE:	jmp	85FC
+
+; print the word r3 in decimal form
+D6E2:	mov	#38E8,r4	;r4 points to the end of the output buffer
+D6E6:	clrb	-(r4)
+D6E8:	movb	#A,-(r4)	;LF
+D6EC:	movb	#D,-(r4)	;CR
+; convert word r3 to decimal ASCII, leading zeros are suppressed,
+D6F0:	clr	r2
+D6F2:	div	#A,r2
+D6F6:	bis	#30,r3		;remainder
+D6FA:	movb	r3,-(r4)
+D6FC:	tst	r2		;quotient
+D6FE:	beq	D704
+D700:	mov	r2,r3
+D702:	br	D6F0
+D704:	mov	r4,r1
+D706:	jsr	pc,D70C		;print a string pointed to by r1
+D70A:	rts	pc
+
+; print a zero terminated string pointed to by r1
+D70C:	clr	r2
+D70E:	movb	(r1)+,r2
+D710:	beq	D718
+D712:	jsr	pc,9D62		;display character r2
+D716:	br	D70E
+D718:	rts	pc
+
+D710:	03 03 F7 09  4C C6 FB 01  87 00 20 20  20 00 20 0E  ..w.LF{...   . .
+D720:	72 41 53 50  52 45 44 45  4C 45 4E 49  45 0D 0A 20  rASPREDELENIE.. 
+D730:	50 41 4D 51  54 49 20 28  57 20 42 41  4A 54 41 48  PAMQTI (W BAJTAH
+D740:	29 20 20 0D  0A 0A 00 70  52 4F 47 52  41 4D 4D 41  )  ....pROGRAMMA
+D750:	3A 20 00 73  57 4F 42 4F  44 4E 4F 20  3A 20 00 FF  : .sWOBODNO : ..
+D760:	0F 00 07 00  05 00 23 00  6C D8 86 D9  DE D7 6C D8  ......#.lX.Y^WlX
+D770:	07 00 05 00  01 00 08 00  01 00 01 00  01 00 01 00  ................
+D780:	01 00 0E 73  62 6F 6A 20  70 6F 20 61  64 72 20 20  ...sboj po adr  
+D790:	20 20 20 20  20 0F 00 0E  6F 7B 20 20  20 20 20 20       ...o{      
+D7A0:	20 20 73 74  72 20 0F 00  47 17 03 01  01 00 01 00    str ..G.......
+D7B0:	EA 38 00 30  00 00 22 39  00 00 00 00  00 00 28 39  j8.0.."9......(9
+
+; RAM initialisation
+D7C0:	mov	#3000,r0
+D7C4:	mov	#800,r1
+D7C8:	clr	(r0)+
+D7CA:	sob	r1,D7C8
+D7CC:	mov	#D760,r0
+D7D0:	mov	#30,r1
+D7D4:	mov	#37C0,r2
+D7D8:	mov	(r0)+,(r2)+
+D7DA:	sob	r1,D7D8
+D7DC:	rts	pc
+
+; font data, 35 bits for each character (width = 5 pixels, height = 7 pixels)
+
+; character codes 0x20-0x3F
+D7DE:	                                             00 00
+D7E0:	00 00 04 21  08 40 11 4A  00 00 00 29  5F 57 D4 A2
+D7F0:	3E 8E 2F 89  8C 88 88 98  D1 4A 22 B2  69 84 40 00
+D800:	00 11 10 84  10 48 20 84  22 20 04 AB  AA 40 00 84
+D810:	F9 08 00 00  0C 61 10 00  03 E0 00 00  00 00 0C 60
+D820:	02 22 22 00  74 67 5C C5  C4 61 08 42  39 D1 08 88
+D830:	8F FC 44 10  62 E1 19 52  F8 85 F8 78  21 8B 8C 88
+D840:	7A 31 77 C2  22 21 08 74  62 E8 C5 CE  8C 5E 11 30
+D850:	0C 60 18 C0  01 8C 03 08  81 11 10 41  04 00 7C 1F
+D860:	00 10 41 04  44 43 A2 11  10 04 00 00
+
+; Latin characters, codes 0x40-0x7F
+D86C:	                                       74 6F 5B C1
+D870:	E4 54 63 F8  C7 D1 8F A3  1F 3A 30 84  22 EE 4A 31
+D880:	8C B9 F8 43  D0 87 FF 08  7A 10 83 A3  0B C6 2F 8C
+D890:	63 F8 C6 2E  21 08 42 38  E2 10 85 26  46 54 C5 25
+D8A0:	18 42 10 84  3F 1D D6 B1  8C 63 1C D6  71 8B A3 18
+D8B0:	C6 2E F4 63  E8 42 0E 8C  63 59 37 D1  8F A9 28 BA
+D8C0:	30 70 62 EF  90 84 21 09  18 C6 31 8B  A3 18 C6 2A
+D8D0:	24 63 1A D6  AA 8C 54 45  46 31 8C 54  42 13 E1 11
+D8E0:	11 0F B9 08  42 10 E0 41  04 10 40 E1  08 42 13 80
+D8F0:	00 7C 20 00  00 00 00 1F  22 18 00 00  00 07 82 F8
+D900:	BE 10 F4 63  1F 00 0F 84  20 F0 85 F1  8C 5E 00 3A
+D910:	3F 83 C6 42  7C 84 20 00  F8 BC 2E 84  3D 18 C6 24
+D920:	03 08 42 38  80 61 08 4C  42 12 A6 29  26 10 84 21
+D930:	1C 00 6A B5  AD 40 0F 46  31 88 00 E8  C6 2E 00 3D
+D940:	1F 42 00 03  E2 F0 84 00  B6 21 08 00  0F 83 83 E2
+D950:	13 E4 21 06  00 46 31 8B  C0 08 C6 2A  20 01 18 D6
+D960:	AA 00 22 A2  2A 20 04 62  F0 B8 00 F8  88 8F 8C 84
+D970:	41 08 32 10  84 21 09 82  10 44 26 3E  00 00 00 07
+D980:	FF FF FF FF  00 00
+
+; Cyrillic characters, codes 0x40-0x7F
+D986:	                   00 25  5E D6 40 07  82 F8 BC 2E
+D990:	87 A3 17 00  12 94 BE 10  01 CA 57 E2  00 3A 3F 83
+D9A0:	C0 07 56 AE  20 01 E8 42  10 00 22 A2  2A 20 04 67
+D9B0:	5C C4 00 AC  EB 98 80 12  A6 29 20 00  E5 2D 52 00
+D9C0:	47 75 8C 40  08 C7 F1 88  00 E8 C6 2E  00 3F 18 C6
+D9D0:	20 03 E2 F2  E4 00 F4 7D  08 00 0F 84  20 F0 03 E4
+D9E0:	21 08 00 46  2F 0B 80 0A  B9 D5 A8 01  E8 FA 3E 00
+D9F0:	21 0F 47 C0  04 63 D9 F4  00 74 4D 17  00 15 AD 6B
+DA00:	F0 03 C1 38  7C 00 56 B5  F8 40 08 C5  E1 08 01 84
+DA10:	39 2E 95 6B  DA D6 44 54  63 F8 C7 F0  F4 63 1F 4A
+DA20:	52 94 BE 17  29 4A 57 E3  F8 43 F0 87  DD 5A D6 AE
+DA30:	27 E1 08 42  10 8C 54 45  46 31 8C EB  98 C6 B5 9D
+DA40:	73 18 C6 54  C5 25 17 94  A5 2D 53 1D  D6 B1 8C 63
+DA50:	18 FE 31 8B  A3 18 C6 2E  FC 63 18 C6  2F 8C 5E 54
+DA60:	C7 D1 8F A1  08 3A 30 84  22 EF 90 84  21 09 18 C5
+DA70:	E1 8B AB 57  3A B5 AF A3  1F 46 3E 84  21 E8 C7 D1
+DA80:	8C 7B 39 F5  D1 09 83 17  56 B5 AD 6B  F7 44 2F 0C
+DA90:	5D 5A D6 B5  F8 63 18 BC  21 0F FF FF  FF FF
+
+; tests
+EDBA:	mov	#200,sp
+EDBE:	jsr	pc,EDC4
+EDC2:	br	EDFC
+
+EDC4:	jsr	pc,@#D7C0	;RAM initialisation
+EDC8:	mov	#1,@#383C
+EDCE:	jsr	pc,@#A15E
+EDD2:	mov	#3,37DC
+EDD8:	mov	#B14C,@#C8	;keyboard controller interrupt vector
+EDDE:	clr	@#CA
+EDE2:	mov	#36,@#E812
+EDE8:	mov	#E2,@#E814
+EDEE:	mov	@#3812,@#E800	;address of the display RAM
+EDF4:	mov	#88C6,@#E802
+EDFA:	rts	pc
+
+EDFC:	mov	#8,@#37D6
+EE02:	clr	@#3824
+EE06:	jsr	pc,@#A074
+EE0A:	mov	#EE3E,r1	;string containing the tests menu
+EE0E:	movb	(r1)+,r2
+EE10:	beq	EE18
+EE12:	jsr	pc,@#9D62	;display character r2
+EE16:	br	EE0E
+EE18:	jsr	pc,@#B250	;wait for a key
+EE1C:	jsr	pc,@#9D62	;display character r2
+EE20:	bic	#FFF8,r2
+EE24:	dec	r2
+EE26:	cmp	r2,#4
+EE2A:	bhis	EDBA
+EE2C:	asl	r2
+EE2E:	clr	@#383C
+EE32:	jmp	@EE36(r2)
+
+; addresses of test procedures
+EE30:	.word	EEA8		;memory module
+EE32:	.word	F554		;keyboard
+EE34:	.word	F404		;LCD
+EE36:	.word	F600		;system restart
+
+EE3E:	                                             0E 0D
+EE40:	0A 31 3A 20  74 45 53 54  20 73 6D 70  0D 0A 32 3A  .1: tEST smp..2:
+EE50:	20 74 45 53  54 20 4B 4C  41 57 49 41  54 55 52 59   tEST KLAWIATURY
+EE60:	0D 0A 33 3A  20 74 45 53  54 20 76 6B  69 0D 0A 34  ..3: tEST vki..4
+EE70:	3A 20 77 59  48 4F 44 20  57 20 5A 41  47 52 55 5A  : wYHOD W ZAGRUZ
+EE80:	5E 49 4B 0D  0A 77 57 45  44 49 54 45  20 4E 4F 4D  ^IK..wWEDITE NOM
+EE90:	45 52 20 54  45 53 54 41  20 28 31 2C  32 20 49 4C  ER TESTA (1,2 IL
+EEA0:	49 20 33 29  3A 0F 00 FF  F7 09 18 FF  DF 15 08 00  I 3):...w..._...
+
+; test of the memory module
+EEA8:	jsr	pc,EDC4
+EEAC:	mov	#8,@#37D6
+EEB2:	clr	@#3824
+EEB6:	jsr	pc,@#A074
+; ask the user to select the device number
+EEBA:	mov	#2C,r3		;number of characters
+EEBE:	mov	#F2FE,r1	;string 'enter the device number'
+EEC2:	movb	(r1)+,r2
+EEC4:	jsr	pc,@#9D62	;display character r2
+EEC8:	sob	r3,EEC2
+EECA:	jsr	pc,@#B250	;wait for a key
+EECE:	jsr	pc,@#9D62	;display character r2
+EED2:	mov	r2,-(sp)
+; ask the user to enter the starting address
+EED4:	mov	#26,r3		;number of characters
+EED8:	mov	#F32A,r1	;string 'enter the starting address'
+EEDC:	movb	(r1)+,r2
+EEDE:	jsr	pc,@#9D62	;display character r2
+EEE2:	sob	r3,EEDC
+EEE4:	mov	#33D4,r4	;input buffer
+EEE8:	mov	#6,33CA		;number of expected characters
+EEEE:	jsr	pc,@#B250	;wait for a key
+EEF2:	jsr	pc,@#9D62	;display character r2
+EEF6:	movb	r2,(r4)+
+EEF8:	mov	@-(r3),33CA	;here should have been DEC 33CA !!!
+EEFC:	bne	EEEE		;next character
+EEFE:	mov	#33D4,r3	;input buffer
+EF02:	mov	#33C4,r4	;buffer for the value
+EF06:	jsr	pc,EF5A		;convert an ASCII octal number to integer
+; ask the user to enter the ending address
+EF0A:	mov	#25,r3		;number of characters
+EF0E:	mov	#F350,r1	;string 'enter the ending address'
+EF12:	movb	(r1)+,r2
+EF14:	jsr	pc,@#9D62	;display character r2
+EF18:	sob	r3,EF12
+EF1A:	mov	#33D4,r4	;input buffer
+EF1E:	mov	#6,33CA		;number of expected characters
+EF24:	jsr	pc,@#B250	;wait for a key
+EF28:	jsr	pc,@#9D62	;display character r2
+EF2C:	movb	r2,(r4)+
+EF2E:	dec	33CA		;character counter
+EF32:	bne	EF24		;next character
+EF34:	mov	#33D4,r3	;input buffer
+EF38:	mov	#33C6,r4	;buffer for the value
+EF3C:	jsr	pc,EF5A		;convert an ASCII octal number to integer
+; check if the selected ending address is in allowed range
+EF40:	cmp	33C6,#27FF	;check the upper address limit
+EF46:	blos	EF78		;branch if ok
+EF48:	mov	#18,r3		;number of characters
+EF4C:	mov	#F374,r1	;string 'out of allowed address range'
+EF50:	movb	(r1)+,r2
+EF52:	jsr	pc,@#9D62	;display character r2
+EF56:	sob	r3,EF50
+EF58:	br	EF0A		;enter new ending address
+
+; convert an octal number in ASCII form pointed to by R3
+; the result will be stored at the memory location pointed to by R4
+EF5A:	mov	#6,r0
+EF5E:	clr	r1
+EF60:	movb	(r3)+,r2
+EF62:	bic	#FFF8,r2
+EF66:	add	r2,r1
+EF68:	dec	r0
+EF6A:	beq	EF74
+EF6C:	asl	r1
+EF6E:	asl	r1
+EF70:	asl	r1
+EF72:	br	EF60
+EF74:	mov	r1,(r4)
+EF76:	rts	pc
+
+; test the memory module specified by the value on the stack in the address
+; range specified in the memory locations 33C4, 33C6
+EF78:	movb	#F8,33C0	;writting to the SMP
+EF7E:	mov	33C4,33C8
+EF84:	mov	(sp)+,r1	;device number
+EF86:	bicb	#FE,r1
+EF8A:	bisb	r1,33C0		;writting to the SMP 0 or 1
+EF8E:	mov	#0,33D0
+EF94:	mov	#1,33C2
+EF9A:	mov	#0010,@#E812	;transfer rate
+EFA0:	mov	33C0,@#E814
+EFA6:	mov	#AA,r1
+EFAA:	clr	r2
+EFAC:	mov	33C4,r0
+EFB0:	mov	33C4,r3
+EFB4:	jsr	pc,F298		;set address R3
+EFB8:	mov	#C0,@#E816	;Write Postincrement
+EFBE:	jsr	pc,F290		;wait for the transfer to complete
+EFC2:	cmp	#1,33C2
+EFC8:	beq	EFE8
+EFCA:	cmp	#2,33C2
+EFD0:	beq	EFE8
+EFD2:	cmp	r0,r3
+EFD4:	beq	EFE8
+EFD6:	movb	r2,@#E810	;write the data byte to the SMP
+EFDA:	jsr	pc,F290		;wait for the transfer to complete
+;
+EFDE:	cmp	33C6,r3
+EFE2:	beq	F002
+EFE4:	inc	r3
+EFE6:	br	EFD2
+EFE8:	movb	r1,@#E810	;write the data byte to the SMP
+EFEC:	jsr	pc,F290		;wait for the transfer to complete
+EFF0:	cmp	#1,33C2
+EFF6:	beq	F002
+EFF8:	bit	#1002,33C2
+EFFE:	beq	F002
+F000:	br	EFDE
+F002:	tst	@#E816		;end of the transfer
+F006:	jsr	pc,F290		;wait for the transfer to complete
+F00A:	cmp	#1,33C2
+F010:	beq	F01E
+F012:	cmp	#2,33C2
+F018:	beq	F01E
+F01A:	mov	33C4,r3
+F01E:	jsr	pc,F298		;set address R3
+F022:	mov	#D0,@#E816	;Read Postincrement
+F028:	jsr	pc,F290		;wait for the transfer to complete
+F02C:	bicb	#8,33C0		;reading from the SMP
+F032:	mov	33C0,@#E814
+F038:	jsr	pc,F290		;wait for the transfer to complete
+;
+F03C:	mov	@#E810,r4	;read a data byte from the SMP
+F040:	jsr	pc,F290		;wait for the transfer to complete
+F044:	cmp	r0,r3
+F046:	beq	F050
+F048:	cmpb	r4,r2		;compare the data written and read back
+F04A:	bne	F058		;branch if mismatch
+F04C:	jmp	F174
+F050:	cmpb	r4,r1		;compare the data written and read back
+F052:	bne	F058		;branch if mismatch
+F054:	jmp	F174
+; test failed
+F058:	tst	@#E816		;end of the transfer
+F05C:	jsr	pc,F290		;wait for the transfer to complete
+F060:	mov	#3,33D2		;number of octal numbers to display
+F066:	mov	r2,-(sp)
+F068:	mov	#F39C,r5	;string 'error, address of faulty location:'
+F06C:	mov	#24,33CA	;number of characters
+F072:	jsr	pc,F078		;display string
+F076:	br	F086
+
+; display a string pointed to by the register R5
+; number of characters in the variable 33CA
+F078:	movb	(r5)+,r2
+F07A:	jsr	pc,@#9D62	;display character r2
+F07E:	dec	33CA
+F082:	bne	F078
+F084:	rts	pc
+
+; display octal an integer number R3
+F086:	mov	r3,33CA
+F08A:	mov	#5,33CE		;number of digits
+F090:	clc
+F092:	rol	33CA
+F096:	rol	33CA
+F09A:	rol	33CA
+F09E:	rol	33CA
+F0A2:	rolb	33CA
+F0A6:	mov	33CA,-(sp)
+F0AA:	bic	#FFF8,(sp)
+F0AE:	add	#30,(sp)
+F0B2:	movb	(sp)+,r2
+F0B4:	clc
+F0B6:	rol	33CA
+F0BA:	rol	33CA
+F0BE:	rol	33CA
+F0C2:	rolb	33CA
+F0C6:	jsr	pc,@#9D62	;display character r2
+F0CA:	dec	33CE
+F0CE:	bne	F0A6
+;
+F0D0:	dec	33D2		;counter of displayed numbers
+F0D4:	cmp	#2,33D2		;second item?
+F0DA:	bne	F124
+; 33D2 = #2, display the second item
+F0DC:	mov	#F3C0,r5	;string 'data written:'
+F0E0:	mov	#1A,33CA	;number of characters
+F0E6:	jsr	pc,F078		;display string
+F0EA:	cmp	r0,r3
+F0EC:	beq	F0F8
+F0EE:	mov	(sp)+,r2
+F0F0:	mov	r2,33CA
+F0F4:	mov	r2,-(sp)
+F0F6:	br	F0FC
+F0F8:	mov	r1,33CA
+F0FC:	mov	#3,33CE
+F102:	jsr	pc,F10A
+F106:	jmp	F090
+F10A:	rol	33CA
+F10E:	rol	33CA
+F112:	rol	33CA
+F116:	rol	33CA
+F11A:	rol	33CA
+F11E:	rol	33CA
+F122:	rts	pc
+;
+F124:	cmp	#0,33D2		;all three numbers displayed?
+; 33D2 = #1, display the third item
+F12A:	beq	F14C
+F12C:	mov	#F3DA,r5	;string 'data read:'
+F130:	mov	#19,33CA	;number of characters
+F136:	jsr	pc,F078		;display string
+F13A:	mov	r4,33CA
+F13E:	mov	#3,33CE
+F144:	jsr	pc,F10A
+F148:	jmp	F090
+;
+F14C:	mov	#F3F4,r5	;string 'test number:'
+F150:	mov	#10,33CA	;number of characters
+F156:	jsr	pc,F078		;display string
+F15A:	mov	33C2,33CA
+F160:	add	#30,33CA
+F166:	movb	33CA,r2
+F16A:	jsr	pc,@#9D62	;display character r2
+F16E:	mov	(sp)+,r2
+F170:	jmp	F2CC
+
+; next location
+F174:	cmp	33C6,r3		;compare current address against upper limit
+F178:	beq	F1A0
+F17A:	cmp	#1,33C2
+F180:	beq	F190
+F182:	cmp	#2,33C2
+F188:	beq	F190
+F18A:	inc	r3		;increment the current address
+F18C:	jmp	F03C
+;
+F190:	tst	@#E816		;end of the transfer
+F194:	jsr	pc,F290		;wait for the transfer to complete
+F198:	inc	r0
+F19A:	inc	r3
+F19C:	jmp	EFB4
+
+F1A0:	tst	@#E816		;end of the transfer
+F1A4:	jsr	pc,F290		;wait for the transfer to complete
+F1A8:	cmp	#3,33C2
+F1AE:	beq	F1BA
+F1B0:	cmp	#4,33C2
+F1B6:	beq	F1DA
+F1B8:	br	F1F8
+;
+F1BA:	dec	33CC
+F1BE:	cmp	#0,33CC
+F1C4:	beq	F1CE
+F1C6:	clc
+F1C8:	rorb	r1
+F1CA:	jmp	EFB0
+F1CE:	mov	#80,r1
+F1D2:	mov	#8,33CC
+F1D8:	br	F1F8
+F1DA:	dec	33CC
+F1DE:	cmp	#0,33CC
+F1E4:	beq	F1EE
+F1E6:	nop
+F1E8:	rorb	r1
+F1EA:	jmp	EFB0
+F1EE:	mov	#7F,r1
+F1F2:	mov	#8,33CC
+F1F8:	cmp	#1,33C2
+F1FE:	beq	F21E
+F200:	cmp	#2,33C2
+F206:	beq	F21E
+F208:	add	#800,r0
+F20C:	add	#800,33C4
+F212:	cmp	33C6,33C4
+F218:	blo	F21E
+F21A:	jmp	EFB0
+F21E:	inc	33C2
+F222:	cmp	#2,33C2
+F228:	bne	F232
+F22A:	mov	#55,r1
+F22E:	jmp	EFAC
+F232:	cmp	#3,33C2
+F238:	bne	F24E
+F23A:	mov	33C8,33C4
+F240:	mov	#80,r1
+F244:	mov	#8,33CC
+F24A:	jmp	EFAC
+F24E:	cmp	#4,33C2
+F254:	beq	F27C
+F256:	mov	#F,r3		;number of characters
+F25A:	mov	#F38C,r1	;string 'test passed'
+F25E:	movb	(r1)+,r2
+F260:	jsr	pc,@#9D62	;display character r2
+F264:	sob	r3,F25E
+F266:	mov	33C8,33C4
+F26C:	inc	33D0
+F270:	cmp	#5,33D0
+F276:	beq	F2FA
+F278:	jmp	EF94
+F27C:	mov	#7F,r1
+F280:	mov	#8,33CC
+F286:	mov	33C8,33C4
+F28C:	jmp	EFAC
+
+; wait for the transfer to complete
+F290:	tstb	@#E814
+F294:	bpl	F290
+F296:	rts	pc
+
+; set address R3
+F298:	bisb	#8,33C0		;writting to the SMP
+F29E:	mov	33C0,@#E814
+F2A4:	mov	#A0,@#E816	;Write Address
+F2AA:	jsr	pc,F290		;wait for the transfer to complete
+F2AE:	swab	r3
+F2B0:	movb	r3,@#E810	;high address byte
+F2B4:	jsr	pc,F290		;wait for the transfer to complete
+F2B8:	swab	r3
+F2BA:	movb	r3,@#E810	;low address byte
+F2BE:	jsr	pc,F290		;wait for the transfer to complete
+F2C2:	tst	@#E816		;end of the transfer
+F2C6:	jsr	pc,F290		;wait for the transfer to complete
+F2CA:	rts	pc
+
+F2CC:	mov	#0,-(sp)
+F2D0:	add	#1,(sp)
+F2D4:	cmp	#FFFF,(sp)
+F2D8:	bne	F2D0
+F2DA:	add	#2,sp
+F2DE:	cmp	r3,33C6
+F2E2:	beq	F2F2
+F2E4:	inc	r3
+F2E6:	cmp	#2,33C2
+F2EC:	blo	F2F6
+F2EE:	jmp	EFB4
+F2F2:	jmp	F1A8
+F2F6:	jmp	F01E
+F2FA:	jmp	@#EDBA
+
+F2FE:	                                             0E 0D
+F300:	0A 74 45 53  54 20 73 6D  70 0D 0A 77  57 45 44 49  .tEST smp..wWEDI
+F310:	54 45 20 4E  4F 4D 45 52  0A 0D 55 53  54 52 4F 4A  TE NOMER..USTROJ
+F320:	53 54 57 41  0F 5B 58 5D  3A FF 0E 0D  0A 7A 41 44  STWA.[X]:....zAD
+F330:	41 4A 54 45  20 4E 41 5E  41 4C 58 4E  59 4A 0A 0D  AJTE NA^ALXNYJ..
+F340:	41 44 52 45  53 0F 5B 58  58 58 58 58  58 5D 3A FF  ADRES.[XXXXXX]:.
+F350:	0E 0D 0A 7A  41 44 41 4A  54 45 20 4B  4F 4E 45 5E  ...zADAJTE KONE^
+F360:	4E 59 4A 0A  0D 41 44 52  45 53 0F 5B  58 58 58 58  NYJ..ADRES.[XXXX
+F370:	58 58 5D 3A  0E 0D 0A 77  59 48 4F 44  20 5A 41 20  XX]:...wYHOD ZA 
+F380:	47 52 41 4E  49 43 59 20  73 6D 70 0F  0E 0D 0A 74  GRANICY smp....t
+F390:	45 53 54 20  50 52 4F 48  4F 44 0F FF  0E 0D 0A 6F  EST PROHOD.....o
+F3A0:	5B 49 42 4B  41 2C 41 44  52 45 53 20  4E 45 49 53  [IBKA,ADRES NEIS
+F3B0:	50 52 41 57  4E 4F 47 4F  20 42 41 4A  54 41 3A 0F  PRAWNOGO BAJTA:.
+F3C0:	0E 0D 0A 7A  41 50 49 53  41 4E 4E 41  51 20 49 4E  ...zAPISANNAQ IN
+F3D0:	46 4F 52 4D  41 43 49 51  3A 0F 0E 0D  0A 73 5E 49  FORMACIQ:....s^I
+F3E0:	54 41 4E 4E  41 51 20 49  4E 46 4F 52  4D 41 43 49  TANNAQ INFORMACI
+F3F0:	51 3A 0F FF  0E 0D 0A 6E  4F 4D 45 52  20 54 45 53  Q:.....nOMER TES
+F400:	54 41 3A 0F                                         TA:.
+
+; test of the LCD
+F404:	jsr	pc,EDC4
+F408:	mov	#8,@#37D6
+F40E:	clr	@#3824
+F412:	jsr	pc,@#A074
+; ask the user to select the test pattern
+F416:	mov	#35,r3		;number of characters
+F41A:	mov	#F50C,r1	;string asking for the number or 'N'
+F41E:	movb	(r1)+,r2
+F420:	jsr	pc,@#9D62	;display character r2
+F424:	sob	r3,F41E
+F426:	jsr	pc,@#B250	;wait for a key
+F42A:	jsr	pc,@#9D62	;display character r2
+F42E:	cmp	#4E,r2		;key 'N'? (end of the test)
+F432:	bne	F438		;branch if not
+F434:	jmp	F4F4
+; test if the selected number is in allowed range
+F438:	mov	r2,r5
+F43A:	sub	#30,r5
+F43E:	cmp	#6,r5
+F442:	blt	F44A
+F444:	cmp	#0,r5
+F448:	blt	F45E
+; invalid key was pressed
+F44A:	mov	#12,r4		;number of characters
+F44E:	mov	#F542,r1	;string 'error'
+F452:	movb	(r1)+,r2
+F454:	jsr	pc,@#9D62	;display character r2
+F458:	sob	r4,F452
+F45A:	jmp	F426
+; perform the test
+F45E:	mov	@#3812,r3
+F462:	dec	r5
+F464:	add	r5,r5
+F466:	jsr	pc,@F500(r5)	;call the selected test procedure
+F46A:	jsr	pc,@#B250	;wait for a key
+F46E:	cmp	#4E,r2		;key 'N'? (end of the test)
+F472:	beq	F488		;branch if yes
+F474:	jsr	pc,F49A		;clear screen
+F478:	mov	@#3812,r3
+F47C:	mov	#1E0,r0
+F480:	clr	(r3)+
+F482:	sob	r0,F480
+F484:	jmp	F408
+F488:	jmp	F4F4
+
+; test pattern 0 (all pixels dark)
+F48C:	mov	#FFFF,r2
+F490:	mov	#1E0,r4
+F494:	mov	r2,(r3)+
+F496:	sob	r4,F494
+F498:	rts	pc
+
+; test pattern 1 (blank), can be also used to clear the screen
+F49A:	clr	r2
+F49C:	jsr	pc,F490
+F4A0:	rts	pc
+
+; test pattern 2
+F4A2:	mov	#FFFF,r2
+F4A6:	mov	#8,r5
+F4AA:	mov	@#3812,r3
+F4AE:	mov	r3,r4
+F4B0:	mov	#4,r1
+F4B4:	mov	#F,r0
+F4B8:	mov	r2,(r4)+
+F4BA:	com	r2
+F4BC:	sob	r0,F4B8
+F4BE:	add	#D2,r4
+F4C2:	sob	r1,F4B4
+F4C4:	add	#1E,r3
+F4C8:	sob	r5,F4AE
+F4CA:	rts	pc
+
+; test pattern 3
+F4CC:	clr	r2
+F4CE:	jsr	pc,F4A6
+F4D2:	rts	pc
+
+; test pattern 4
+F4D4:	mov	#AAAA,r2
+F4D8:	jsr	pc,F490
+F4DC:	rts	pc
+
+; test pattern 5
+F4DE:	mov	#FFFF,r2
+F4E2:	mov	#20,r1
+F4E6:	mov	#F,r4
+F4EA:	mov	r2,(r3)+
+F4EC:	sob	r4,F4EA
+F4EE:	com	r2
+F4F0:	sob	r1,F4E6
+F4F2:	rts	pc
+
+F4F4:	mov	@#3812,r3
+F4F8:	jsr	pc,F49A		;clear screen
+F4FC:	jmp	@#EDBA
+
+; addresses of the LCD test procedures
+F500:	.word	F48C, F49A, F4A2, F4CC, F4D4, F4DE
+
+F50C:	                                       0E 74 45 53  tES
+F510:	54 20 56 4B  2D 5C 4B 52  41 4E 41 0D  0A 31 20 20  T VK-\KRANA..1  
+F520:	32 20 20 33  20 20 34 20  20 35 20 20  36 0D 0A 6E  2  3  4  5  6..n
+F530:	4F 4D 45 52  20 28 0F 4E  0E 2D 4B 4F  4E 45 43 29  OMER (.N.-KONEC)
+F540:	3F 0F 0D 0A  0E 6F 5B 49  42 4B 41 21  20 6E 4F 4D  ?....o[IBKA! nOM
+F550:	45 52 3F 0F  F7 09 6C F8  DF 15 08 00  D6 37 1F 0A  ER?.w.lx_...V7..
+
+; test of the keyboard
+F554:	jsr	pc,EDC4
+F558:	mov	#8,@#37D6
+F55E:	clr	@#3824
+F562:	jsr	pc,@#A074
+F566:	mov	#1E,r3
+F56A:	mov	#F5E2,r1
+F56E:	movb	(r1)+,r2
+F570:	jsr	pc,@#9D62	;display character r2
+F574:	sob	r3,F56E
+F576:	clr	r3
+F578:	clr	r4
+F57A:	jsr	pc,@#B250	;wait for a key
+F57E:	jsr	pc,@#9D62	;display character r2
+F582:	cmp	#44,r2
+F586:	bne	F598
+F588:	cmp	#4E,r3
+F58C:	bne	F598
+F58E:	cmp	#45,r4
+F592:	bne	F598
+F594:	jmp	F5D0
+F598:	mov	r3,r4
+F59A:	mov	r2,r3
+F59C:	mov	#A,-(sp)
+F5A0:	mov	#D,-(sp)
+F5A4:	mov	#3,r0
+F5A8:	mov	r2,r5
+F5AA:	bic	#FFF8,r5
+F5AE:	add	#30,r5
+F5B2:	mov	r5,-(sp)
+F5B4:	asr	r2
+F5B6:	asr	r2
+F5B8:	asr	r2
+F5BA:	sob	r0,F5A8
+F5BC:	mov	#20,-(sp)
+F5C0:	mov	#6,r0
+F5C4:	mov	(sp)+,r2
+F5C6:	jsr	pc,@#9D62	;display character r2
+F5CA:	sob	r0,F5C4
+F5CC:	jmp	F57A
+F5D0:	mov	@#3812,r1
+F5D4:	mov	#1E0,r3
+F5D8:	clr	r2
+F5DA:	mov	r2,(r1)+
+F5DC:	sob	r3,F5DA
+F5DE:	jmp	@#EDBA
+
+F5E0:	BA ED 0E 74  45 53 54 20  20 4B 4C 41  57 49 41 54  :m.tEST  KLAWIAT
+F5F0:	55 52 59 0D  0A 6B 4C 41  57 49 5B 41  3F 0D 0A 0F  URY..kLAWI[A?...
+
+; system restart
+F600:	mov	#200,sp
+F604:	mov	#0000,@#E81C
+F60A:	mov	#0A00,@#E81A	;RAM address range 0000-7FFF, E800-EBFF
+				;ROM address range 8000-DFFF, EC00-FDFF
+F610:	bit	#0100,@#EA1A	;RTC register D, valid data?
+F616:	beq	F630		;branch if not
+F618:	mov	@#EA1E,r0	;RTC user RAM, address 0F
+F61C:	asr	r0
+F61E:	swab	r0
+F620:	clrb	r0
+F622:	mov	@#EA1C,r1	;RTC user RAM, address 0E
+F626:	asr	r1
+F628:	bisb	r1,r0
+F62A:	clr	-(sp)
+F62C:	mov	r0,-(sp)
+F62E:	rti
+;
+F630:	mov	#EC60,@#EA1C	;30 shl 1 -> RTC user RAM, address 0E
+F636:	mov	#01EC,@#EA1E	;F6 shl 1 -> RTC user RAM, address 0F
+F63C:	jsr	pc,D7C0		;RAM initialisation
+F640:	jsr	pc,F86A		;LCD controller initialisation
+F644:	mov	#F7FE,@#C8	;keyboard controller interrupt vector
+F64A:	clr	@#CA
+F64E:	mov	#36,@#E812
+F654:	mov	#EA,@#E814
+F65A:	jsr	pc,A15E
+F65E:	mov	#10,37D6
+F664:	mov	#4,3824
+F66A:	mov	#F980,r0
+F66E:	jsr	pc,F952
+F672:	clr	3824
+F676:	clr	37D6
+F67A:	bis	#20,383A
+F680:	mov	#F9AD,r0
+F684:	jsr	pc,F952
+F688:	bic	#20,383A
+F68E:	mov	#8,37D6
+F694:	clr	3824
+F698:	mov	#F9B1,r0
+F69C:	jsr	pc,F952
+F6A0:	mov	#18,37D6
+F6A6:	clr	3824
+F6AA:	mov	#F9B1,r0
+F6AE:	jsr	pc,F952
+F6B2:	mov	#20,37D6
+F6B8:	clr	3824
+F6BC:	mov	#F9AD,r0
+F6C0:	jsr	pc,F952
+F6C4:	mov	#3,r3
+F6C8:	clr	r2
+F6CA:	mov	F770(r2),3824
+F6D0:	mov	F76A(r2),37D6
+F6D6:	mov	F94C(r2),r0
+F6DA:	jsr	pc,F952
+F6DE:	tst	(r2)+
+F6E0:	sob	r3,F6CA
+F6E2:	mov	#4,r1
+F6E6:	mov	F770(r1),3824
+F6EC:	mov	F76A(r1),37D6
+F6F2:	jsr	pc,F782
+F6F6:	asr	r1
+F6F8:	jsr	pc,F86A
+F6FC:	jsr	pc,F7F2		;wait for a key
+F700:	cmpb	r0,#BB		;cursor right?
+F704:	beq	F722
+F706:	cmpb	r0,#5B		;cursor left?
+F70A:	beq	F74C
+F70C:	cmpb	r0,#FB		;key VK (enter) ?
+F710:	beq	F758
+F712:	cmpb	r0,#53		;key T ?
+F716:	bne	F71C
+F718:	jmp	@#EDBA		;tests
+F71C:	jsr	pc,F822		;make a beep when unsupported key pressed
+F720:	br	F6FC
+
+; cursor right (on the welcome screen)
+F722:	mov	r1,r0
+F724:	inc	r0
+F726:	cmp	r1,#2
+F72A:	blt	F72E
+F72C:	clr	r0
+F72E:	asl	r1
+F730:	jsr	pc,F782
+F734:	mov	r0,r1
+F736:	asl	r1
+F738:	mov	F76A(r1),37D6
+F73E:	mov	F770(r1),3824
+F744:	jsr	pc,F782
+F748:	asr	r1
+F74A:	br	F6FC
+
+; cursor left (on the welcome screen)
+F74C:	mov	r1,r0
+F74E:	dec	r0
+F750:	bpl	F72E
+F752:	add	#3,r0
+F756:	br	F72E
+
+; enter (on the welcome screen)
+F758:	clr	r0
+F75A:	asr	r1
+F75C:	adc	r0
+F75E:	asl	r1
+F760:	reset
+F762:	jmp	@F766(r1)
+
+F766:	.word	F878		;boot from the SMP
+F768:	.word	F942		;start the BASIC system
+F76A:	.word	0038, 0038, 0038
+F770:	.word	002E, 004C, 0004, 0019, 0019
+F77A:	.word	0025, 0009, 0009, 0009, 1066
+
+F782:	mov	r1,-(sp)
+F784:	mov	3824,-(sp)
+F788:	dec	3824
+F78C:	mov	r0,-(sp)
+F78E:	movb	#2,37DC
+F794:	mov	F776(r1),r3
+F798:	beq	F7CA
+F79A:	mov	F77C(r1),r2
+F79E:	beq	F7CA
+F7A0:	mov	#FF00,r1
+F7A4:	mov	r3,r4
+F7A6:	bic	#FFF8,r4
+F7AA:	ash	#FFFD,r3
+F7AE:	beq	F7BC
+F7B0:	jsr	pc,F7D8
+F7B4:	add	#8,3824
+F7BA:	sob	r3,F7B0
+F7BC:	mov	#8,r0
+F7C0:	sub	r4,r0
+F7C2:	ash	r0,r1
+F7C4:	beq	F7CA
+F7C6:	jsr	pc,F7D8
+F7CA:	mov	(sp)+,r0
+F7CC:	mov	(sp)+,3824
+F7D0:	mov	(sp)+,r1
+F7D2:	clrb	37DC
+F7D6:	rts	pc
+F7D8:	mov	r2,r5
+F7DA:	mov	37D6,-(sp)
+F7DE:	dec	37D6
+F7E2:	jsr	pc,9FD2		;plot a dot
+F7E6:	inc	37D6
+F7EA:	sob	r5,F7E2
+F7EC:	mov	(sp)+,37D6
+F7F0:	rts	pc
+
+; wait for a key, return the row and column of a pressed key in r0
+F7F2:	mtps	#0
+F7F6:	wait
+F7F8:	mov	@#2C,r0
+F7FC:	rts	pc
+
+; keyboard interrupt service routine
+F7FE:	mov	#F2,@#E814
+F804:	clr	@#E816		;start of the transfer
+F808:	tstb	@#E814
+F80C:	bpl	F808
+F80E:	mov	@#E816,@#2C	;key scan code, end of the transfer
+F814:	tstb	@#E814
+F818:	bpl	F814
+F81A:	mov	#EA,@#E814
+F820:	rti
+
+; make a warning beep
+F822:	mov	#40,r0		;sound duration, 64 * 8 / 660Hz = 0.8 sec.
+F826:	mov	#F7FE,@#C8	;keyboard controller interrupt vector
+F82C:	clr	@#CA
+F830:	mov	#FB,@#E814
+F836:	mov	#04BC,@#E812	;660Hz
+F83C:	clr	@#E816		;start of the transfer
+F840:	tstb	@#E814
+F844:	bpl	F840
+F846:	clr	@#E810		;dummy data to emit 8 clock cycles
+F84A:	tstb	@#E814
+F84E:	bpl	F84A
+F850:	sob	r0,F846
+F852:	tst	@#E816		;end of the transfer
+F856:	tstb	@#E814
+F85A:	bpl	F856
+F85C:	mov	#EA,@#E814
+F862:	mov	#0036,@#E812
+F868:	rts	pc
+
+; LCD controller initialisation
+F86A:	mov	3812,@#E800
+F870:	mov	#88C6,@#E802
+F876:	rts	pc
+
+; boot from the SMP, r0 selects between the SMP0/1
+F878:	mov	#0009,@#E812	;transfer rate
+F87E:	mov	#E814,r1	;control/status register
+F882:	mov	#00F8,r5	;writing to the SMP
+F886:	add	r0,r5
+F888:	mov	#F946,r2	;procedure 'wait for the transfer completed'
+F88C:	mov	r5,(r1)
+F88E:	clr	@#E816		;Read Status
+F892:	jsr	pc,(r2)
+F894:	bic	#8,r5		;reading from the SMP
+F898:	mov	r5,(r1)
+F89A:	mov	@#E816,r3	;read from the SMP, end of the transfer
+F89E:	jsr	pc,(r2)
+; test whether the password protection is active
+F8A0:	tstb	r3
+F8A2:	bpl	F8EC		;branch if inactive password protection
+; test the attempt counter
+F8A4:	aslb	r3
+F8A6:	bpl	F8AC		;less than 3 attempts counted, try to unlock
+F8A8:	aslb	r3
+F8AA:	bmi	F930		;three attempts counted, don't even try
+;
+; the password protection is active,
+; an attempt to unlock the memory module
+F8AC:	bis	#8,r5		;writing to the SMP
+F8B0:	mov	r5,(r1)
+F8B2:	mov	#A0,@#E816	;Write Address
+F8B8:	jsr	pc,(r2)
+F8BA:	clrb	@#E810		;high address byte
+F8BE:	jsr	pc,(r2)
+F8C0:	clrb	@#E810		;low address byte
+F8C4:	jsr	pc,(r2)
+F8C6:	tst	@#E816		;end of the transfer
+F8CA:	jsr	pc,(r2)
+;
+F8CC:	mov	#90,@#E816	;Unlock
+F8D2:	jsr	pc,(r2)
+F8D4:	mov	#F978,r4	;password A0 00 A0 00 A0 00 A0 00
+F8D8:	mov	#8,r3
+F8DC:	movb	(r4)+,@#E810
+F8E0:	jsr	pc,(r2)
+F8E2:	sob	r3,F8DC
+F8E4:	tst	@#E816		;end of the transfer
+F8E8:	jsr	pc,(r2)
+F8EA:	br	F87E		;back to the begin of the boot routine
+;
+; the password protection is inactive,
+; continue with boot sector loading
+F8EC:	bis	#8,r5		;writing to the SMP
+F8F0:	mov	r5,(r1)
+F8F2:	mov	#A0,@#E816	;Write Address
+F8F8:	jsr	pc,(r2)
+F8FA:	clr	@#E810		;high address byte
+F8FE:	jsr	pc,(r2)
+F900:	clr	@#E810		;low address byte
+F904:	jsr	pc,(r2)
+F906:	tst	@#E816		;end of the transfer
+F90A:	jsr	pc,(r2)
+; read the SMP boot sector to the RAM 0000..01FF
+F90C:	mov	#0200,r4	;number of bytes
+F910:	clr	r3
+F912:	mov	#D0,@#E816	;Read Postincrement
+F918:	jsr	pc,(r2)
+F91A:	bic	#8,r5		;reading from the SMP
+F91E:	mov	r5,(r1)
+F920:	jsr	pc,(r2)
+F922:	movb	@#E810,(r3)+	;read data byte from the SMP to the RAM
+F926:	jsr	pc,(r2)
+F928:	sob	r4,F922		;next data byte
+F92A:	tst	@#E816		;end of the transfer
+F92E:	jsr	pc,(r2)
+F930:	cmpb	#A0,@#0000	;test for instruction NOP at address 0000
+F936:	bne	F93A
+F938:	clr	pc		;start the program from address 0000
+;
+F93A:	jsr	pc,F822		;make a beep when wrong bootloader code
+F93E:	jmp	F600		;system restart
+
+; start the BASIC system
+F942:	jmp	@#9D12
+
+F946:	tstb	(r1)
+F948:	bpl	F946
+F94A:	rts	pc
+
+F94C:	.word	F996
+F94E:	.word	F99D
+F950:	.word	F9A4
+
+; print a zero terminated string pointed to by r0
+F952:	movb	(r0)+,37E0
+F956:	movb	(r0)+,37DE
+F95A:	mov	37CA,37CE
+F960:	mov	#1,37DC
+F966:	mov	r2,-(sp)
+F968:	clr	r2
+F96A:	movb	(r0)+,r2
+F96C:	beq	F974
+F96E:	jsr	pc,9DB4
+F972:	br	F968
+F974:	mov	(sp)+,r2
+F976:	rts	pc
+
+F978:	A0 00 A0 00 A0 00 A0 00
+
+F980:	01 01 7C 6C  65 6B 74 72  6F 6E 69 6B  61 20 2D 20  ..|lektronika - 
+F990:	70 6B 31 30  30 00 01 01  73 6D 70 30  00 01 01 73  pk100...smp0...s
+F9A0:	6D 70 31 00  01 01 62 65  6A 73 69 6B  00 18 01 3D  mp1...bejsik...=
+F9B0:	00 18 01 7F  00
